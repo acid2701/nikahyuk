@@ -17,6 +17,7 @@ import { EventSwitcher, SubEventOption } from "./event-switcher";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface DashboardHeaderProps {
+  weddingId?: string;
   groomName?: string;
   brideName?: string;
   userEmail?: string;
@@ -26,6 +27,7 @@ export interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({
+  weddingId,
   groomName = "Pengantin Pria",
   brideName = "Pengantin Wanita",
   userEmail = "user@nikahyuk.com",
@@ -65,6 +67,7 @@ export function DashboardHeader({
             <EventSwitcher
               events={events}
               activeEventId={activeEventId}
+              weddingId={weddingId}
               onAddEventClick={onAddEventClick}
             />
           </div>
@@ -97,7 +100,7 @@ export function DashboardHeader({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => router.push("/admin/storage-config")}
+              onClick={() => router.push("/admin")}
               className="text-xs font-medium cursor-pointer"
             >
               <Shield className="h-3.5 w-3.5 mr-2 text-muted-foreground" />

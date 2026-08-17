@@ -3,16 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestTableView } from "@/components/modules/guests/guest-table-view";
 import { Users, UserCheck, UserX, Clock } from "lucide-react";
 
-export default async function GuestsPage(props: { params: Promise<any> }) {
+export default async function GuestsPage(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
   const { weddingId } = (await props.params) as { weddingId: string };
+  const searchParams = (await props.searchParams) || {};
+  const urlEventId = searchParams.eventId as string | undefined;
+
   const supabase = await createClient();
 
   const { data: events } = await supabase
     .from("wedding_events")
     .select("id, event_name")
-    .eq("wedding_id", weddingId);
+    .eq("wedding_id", weddingId)
+    .order("event_date", { ascending: true });
 
-  const activeEventId = events && events.length > 0 ? events[0].id : null;
+  const activeEvent =
+    events?.find((e) => e.id === urlEventId) || events?.[0];
+  const activeEventId = activeEvent?.id || null;
 
   const { data: guestsData } = await supabase
     .from("guests")
@@ -33,7 +42,7 @@ export default async function GuestsPage(props: { params: Promise<any> }) {
 
   guests.forEach((g) => {
     totalPaxCount += g.default_pax || 1;
-    const assignment = g.assignments[0];
+    const assignment = g.assignments.find((a: any) => a.event_id === activeEventId) || g.assignments[0];
     if (assignment) {
       if (assignment.attendance_status === "attending" || assignment.attendance_status === "checked_in") {
         confirmedPaxCount += assignment.actual_pax || g.default_pax || 1;
@@ -54,7 +63,7 @@ export default async function GuestsPage(props: { params: Promise<any> }) {
           Master Guest Pool & RSVP Tracker
         </h1>
         <p className="text-sm text-muted-foreground">
-          Kelola buku tamu utama, impor file CSV massal, dan kirim undangan via WhatsApp.
+          Kelola buku tamu utama untuk: <span className="font-semibold text-primary">{activeEvent?.event_name || "Semua Acara"}</span>.
         </p>
       </div>
 

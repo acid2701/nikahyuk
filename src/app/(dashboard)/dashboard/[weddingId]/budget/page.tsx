@@ -2,21 +2,31 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BudgetFormModal } from "@/components/modules/budget/budget-form-modal";
+import { BudgetPresetDialog } from "@/components/modules/budget/budget-preset-dialog";
 import { MilestoneTimeline } from "@/components/modules/budget/milestone-timeline";
 import { evaluatePaymentDueDate } from "@/lib/utils/due-date-evaluator";
 import { DollarSign, AlertCircle, CheckCircle, Wallet, ArrowRightLeft } from "lucide-react";
 
-export default async function BudgetPage(props: { params: Promise<any> }) {
+export default async function BudgetPage(props: {
+  params: Promise<any>;
+  searchParams: Promise<any>;
+}) {
   const { weddingId } = (await props.params) as { weddingId: string };
+  const searchParams = (await props.searchParams) || {};
+  const urlEventId = searchParams.eventId as string | undefined;
+
   const supabase = await createClient();
 
   const { data: events } = await supabase
     .from("wedding_events")
     .select("id, event_name")
-    .eq("wedding_id", weddingId);
+    .eq("wedding_id", weddingId)
+    .order("event_date", { ascending: true });
 
-  const activeEventId = events && events.length > 0 ? events[0].id : undefined;
-  const eventIds = (events || []).map((e) => e.id);
+  const activeEvent =
+    events?.find((e) => e.id === urlEventId) || events?.[0];
+  const activeEventId = activeEvent?.id || undefined;
+  const eventIds = activeEventId ? [activeEventId] : (events || []).map((e) => e.id);
 
   let budgetItems: any[] = [];
   if (eventIds.length > 0) {
@@ -57,10 +67,13 @@ export default async function BudgetPage(props: { params: Promise<any> }) {
             Anggaran & Multiple Payment Milestones
           </h1>
           <p className="text-sm text-muted-foreground">
-            Kelola pos biaya, termin pembayaran, dan lacak jatuh tempo secara real-time.
+            Kelola pos biaya untuk: <span className="font-semibold text-primary">{activeEvent?.event_name || "Semua Acara"}</span>.
           </p>
         </div>
-        <BudgetFormModal weddingId={weddingId} eventId={activeEventId} />
+        <div className="flex items-center space-x-2">
+          <BudgetPresetDialog weddingId={weddingId} eventId={activeEventId} />
+          <BudgetFormModal weddingId={weddingId} eventId={activeEventId} />
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
@@ -139,10 +152,10 @@ export default async function BudgetPage(props: { params: Promise<any> }) {
             <DollarSign className="h-10 w-10 text-muted-foreground mx-auto" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                Belum Ada Pos Anggaran
+                Belum Ada Pos Anggaran untuk Acara Ini
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Klik tombol &apos;Tambah Pos Anggaran&apos; di atas untuk mencatat anggaran pertama Anda.
+                Klik &apos;Seeder Presets Anggaran&apos; atau &apos;Tambah Pos Anggaran&apos; di atas.
               </p>
             </div>
           </Card>

@@ -8,12 +8,12 @@ import { EventSideEnum } from "@/types/database.types";
 export interface CreateEventInput {
   weddingId: string;
   eventName: string;
-  eventDate: string;
-  timeStart?: string;
-  timeEnd?: string;
+  eventDate?: string | null;
+  timeStart?: string | null;
+  timeEnd?: string | null;
   eventSide?: EventSideEnum;
-  locationName?: string;
-  locationMapsUrl?: string;
+  locationName?: string | null;
+  locationMapsUrl?: string | null;
 }
 
 export async function createEventAction(input: CreateEventInput) {
@@ -31,7 +31,7 @@ export async function createEventAction(input: CreateEventInput) {
     .insert({
       wedding_id: input.weddingId,
       event_name: input.eventName,
-      event_date: input.eventDate,
+      event_date: input.eventDate || null,
       time_start: input.timeStart || null,
       time_end: input.timeEnd || null,
       event_side: input.eventSide || "joint",
@@ -61,7 +61,15 @@ export async function createEventAction(input: CreateEventInput) {
 export async function updateEventAction(
   eventId: string,
   weddingId: string,
-  updates: Partial<CreateEventInput>
+  updates: {
+    eventName?: string;
+    eventDate?: string | null;
+    timeStart?: string | null;
+    timeEnd?: string | null;
+    eventSide?: EventSideEnum;
+    locationName?: string | null;
+    locationMapsUrl?: string | null;
+  }
 ) {
   const supabase = await createClient();
   const {
@@ -75,13 +83,13 @@ export async function updateEventAction(
   const { data: event, error } = await supabase
     .from("wedding_events")
     .update({
-      ...(updates.eventName && { event_name: updates.eventName }),
-      ...(updates.eventDate && { event_date: updates.eventDate }),
-      ...(updates.timeStart !== undefined && { time_start: updates.timeStart }),
-      ...(updates.timeEnd !== undefined && { time_end: updates.timeEnd }),
-      ...(updates.eventSide && { event_side: updates.eventSide }),
-      ...(updates.locationName !== undefined && { location_name: updates.locationName }),
-      ...(updates.locationMapsUrl !== undefined && { location_maps_url: updates.locationMapsUrl }),
+      ...(updates.eventName !== undefined && { event_name: updates.eventName }),
+      ...(updates.eventDate !== undefined && { event_date: updates.eventDate || null }),
+      ...(updates.timeStart !== undefined && { time_start: updates.timeStart || null }),
+      ...(updates.timeEnd !== undefined && { time_end: updates.timeEnd || null }),
+      ...(updates.eventSide !== undefined && { event_side: updates.eventSide }),
+      ...(updates.locationName !== undefined && { location_name: updates.locationName || null }),
+      ...(updates.locationMapsUrl !== undefined && { location_maps_url: updates.locationMapsUrl || null }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", eventId)

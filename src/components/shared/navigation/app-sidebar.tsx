@@ -14,6 +14,7 @@ import {
   Settings,
   QrCode,
   HeartHandshake,
+  CheckSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,11 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       title: "Ringkasan",
       href: baseUrl,
       icon: LayoutDashboard,
+    },
+    {
+      title: "Checklist Persiapan",
+      href: `${baseUrl}/checklists`,
+      icon: CheckSquare,
     },
     {
       title: "Live Rundown",

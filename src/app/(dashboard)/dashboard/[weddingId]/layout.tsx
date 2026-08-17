@@ -47,6 +47,7 @@ export default async function WeddingDashboardLayout(props: {
       <AppSidebar weddingId={weddingId} />
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <DashboardHeader
+          weddingId={weddingId}
           groomName={wedding.groom_name}
           brideName={wedding.bride_name}
           userEmail={user.email || "user@nikahyuk.com"}

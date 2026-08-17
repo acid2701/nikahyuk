@@ -41,16 +41,31 @@ export async function updateSession(request: NextRequest) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/admin");
 
-  const isAuthRoute =
-    pathname === "/login" || pathname === "/register";
+  const isAdminRoute = pathname.startsWith("/admin");
+  const isAuthRoute = pathname === "/login" || pathname === "/register";
 
   if (!user && isProtectedRoute) {
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
+  if (user && isAdminRoute) {
+    const isSuperadmin =
+      user.app_metadata?.role === "superadmin" ||
+      user.user_metadata?.role === "superadmin";
+
+    if (!isSuperadmin) {
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && isAuthRoute) {
-    url.pathname = "/dashboard";
+    const isSuperadmin =
+      user.app_metadata?.role === "superadmin" ||
+      user.user_metadata?.role === "superadmin";
+
+    url.pathname = isSuperadmin ? "/admin" : "/dashboard";
     return NextResponse.redirect(url);
   }
 

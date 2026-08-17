@@ -181,7 +181,7 @@ export interface Database {
           id: string;
           wedding_id: string;
           event_name: string;
-          event_date: string;
+          event_date: string | null;
           time_start: string | null;
           time_end: string | null;
           event_side: EventSideEnum;
@@ -194,7 +194,7 @@ export interface Database {
           id?: string;
           wedding_id: string;
           event_name: string;
-          event_date: string;
+          event_date?: string | null;
           time_start?: string | null;
           time_end?: string | null;
           event_side?: EventSideEnum;
@@ -207,7 +207,7 @@ export interface Database {
           id?: string;
           wedding_id?: string;
           event_name?: string;
-          event_date?: string;
+          event_date?: string | null;
           time_start?: string | null;
           time_end?: string | null;
           event_side?: EventSideEnum;

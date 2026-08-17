@@ -320,6 +320,8 @@ Task: Complete Phase 0 from DEVELOPMENT_PLAN.md:
    - Configure vitest.config.ts with jsdom environment and @/* path resolution.
 
 Run 'npm run build' and verify zero compile errors.
+
+
 🟢 Prompt Fase 1: Supabase SSR Clients, Types & Complete Auth Flow
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/schema.md, and docs/api-spec.md.
@@ -343,6 +345,8 @@ Task: Execute Phase 1 from DEVELOPMENT_PLAN.md:
    - src/app/(auth)/auth-callback/route.ts: Exchange OAuth code for session token.
 
 Run 'npx tsc --noEmit' and test login/register flows.
+
+
 🟢 Prompt Fase 2: Dynamic Superadmin Panel & Cloudflare R2 Engine
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/architecture.md, docs/sdd.md, and docs/wireframe.md.
@@ -366,6 +370,8 @@ Task: Complete Full Superadmin Panel & Dynamic Storage Engine
    - src/components/shared/media-uploader/dropzone.tsx: Client-side WebP compressor using browser-image-compression with direct-to-R2 upload progress bar.
 
 Verify that Cloudflare R2 credentials are dynamically fetched from the database, never from process.env.
+
+
 🟢 Prompt Fase 3: Workspace Hub, Multi-Event Manager & Collaborative RBAC
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/erd.md, docs/wireframe.md, and docs/DESIGN.md.
@@ -391,6 +397,8 @@ Task: Build Master Workspace, Sub-Events Hub & Navigation
    - src/types/presets.types.ts & src/components/modules/rundown/rundown-preset-dialog.tsx: Starter template injector.
 
 Verify that switching sub-events in the top bar updates data context globally.
+
+
 🟢 Prompt Fase 4: Financial Core (Multiple Milestones & Due-Date Tracker)
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/DESIGN.md.

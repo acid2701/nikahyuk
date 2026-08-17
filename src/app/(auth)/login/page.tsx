@@ -36,25 +36,33 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) {
+    if (error || !data.user) {
       toast({
         title: "Gagal Masuk",
-        description: error.message || "Email atau kata sandi tidak valid.",
+        description: error?.message || "Email atau kata sandi tidak valid.",
         variant: "destructive",
       });
       setLoading(false);
     } else {
+      const isSuperadmin =
+        data.user.app_metadata?.role === "superadmin" ||
+        data.user.user_metadata?.role === "superadmin";
+
       toast({
-        title: "Berhasil Masuk",
-        description: "Selamat datang kembali di NikahYuk!",
+        title: isSuperadmin ? "Berhasil Masuk Superadmin" : "Berhasil Masuk",
+        description: isSuperadmin
+          ? "Selamat datang di Superadmin Control Plane NikahYuk!"
+          : "Selamat datang kembali di NikahYuk!",
         variant: "success",
       });
-      router.push("/dashboard");
+
+      const targetPath = isSuperadmin ? "/admin" : "/dashboard";
+      router.push(targetPath);
       router.refresh();
     }
   }
