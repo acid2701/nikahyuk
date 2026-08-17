@@ -1,16 +1,5 @@
 import { describe, it, expect } from "vitest";
-
-export function evaluateSeatingCapacity(seatedPax: number, maxSeats: number) {
-  if (maxSeats <= 0) return { ratio: 0, status: "normal", color: "green" };
-  const ratio = (seatedPax / maxSeats) * 100;
-  if (ratio > 100) {
-    return { ratio, status: "overbooked", color: "red" };
-  }
-  if (ratio > 80) {
-    return { ratio, status: "warning", color: "amber" };
-  }
-  return { ratio, status: "normal", color: "green" };
-}
+import { evaluateSeatingCapacity } from "@/lib/utils/seating-meter";
 
 describe("Seating Capacity Meter Evaluator", () => {
   it("should return normal green state when capacity is <= 80%", () => {
