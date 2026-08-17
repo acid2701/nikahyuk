@@ -13,6 +13,7 @@ import {
   Users,
   UserCheck,
   TrendingUp,
+  HeartHandshake,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,6 +25,11 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
       title: "Overview Platform",
       href: "/admin",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Keuangan & Donasi KlikQRIS",
+      href: "/admin/payments",
+      icon: HeartHandshake,
     },
     {
       title: "Analitik SaaS & Penggunaan",

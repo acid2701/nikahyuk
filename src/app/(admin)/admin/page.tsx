@@ -3,7 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Database, HardDrive, Calendar, ShieldCheck } from "lucide-react";
+import { Database, HardDrive, Calendar, ShieldCheck, HeartHandshake } from "lucide-react";
+import { HealthMonitorCard } from "@/components/admin/health-monitor-card";
 
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
@@ -38,6 +39,8 @@ export default async function AdminOverviewPage() {
           Ringkasan kesehatan infrastruktur, statistik ruang kerja SaaS, dan status Cloudflare R2.
         </p>
       </div>
+
+      <HealthMonitorCard />
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-border/70">

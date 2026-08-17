@@ -22,7 +22,7 @@ import {
   UserRowItem,
 } from "@/actions/admin-user-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Users, Search, ShieldCheck, ShieldAlert, UserX, UserCheck, Loader2 } from "lucide-react";
+import { Users, Search, ShieldCheck, ShieldAlert, UserX, UserCheck, Loader2, ExternalLink } from "lucide-react";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = React.useState<UserRowItem[]>([]);
@@ -249,72 +249,89 @@ export default function AdminUsersPage() {
                       </TableCell>
 
                       <TableCell className="text-right">
-                        {!isSuperadmin && (
-                          <div className="flex items-center justify-end space-x-1">
-                            {u.role === "user" ? (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setConfirmTarget({
-                                    type: "role",
-                                    userId: u.id,
-                                    email: u.email,
-                                    newRole: "admin",
-                                  })
-                                }
-                                className="h-7 text-xs gap-1 text-primary border-primary/30"
-                              >
-                                <ShieldCheck className="h-3.5 w-3.5" />
-                                Jadikan Admin
-                              </Button>
-                            ) : (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  setConfirmTarget({
-                                    type: "role",
-                                    userId: u.id,
-                                    email: u.email,
-                                    newRole: "user",
-                                  })
-                                }
-                                className="h-7 text-xs gap-1"
-                              >
-                                Turunkan ke User
-                              </Button>
-                            )}
+                        <div className="flex items-center justify-end space-x-1">
+                          <Button
+                            asChild
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
+                            title="Inspeksi Workspace Pengantin"
+                          >
+                            <a href={`/dashboard`} target="_blank" rel="noreferrer">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Inspect
+                            </a>
+                          </Button>
 
-                            <Button
-                              variant={u.isSuspended ? "outline" : "ghost"}
-                              size="sm"
-                              onClick={() =>
-                                setConfirmTarget({
-                                  type: "suspend",
-                                  userId: u.id,
-                                  email: u.email,
-                                  suspend: !u.isSuspended,
-                                })
-                              }
-                              className={`h-7 text-xs gap-1 ${
-                                u.isSuspended ? "text-emerald-600 border-emerald-500/30" : "text-destructive hover:bg-destructive/10"
-                              }`}
-                            >
-                              {u.isSuspended ? (
-                                <>
-                                  <UserCheck className="h-3.5 w-3.5" />
-                                  Aktifkan
-                                </>
+                          {!isSuperadmin && (
+                            <>
+                              {u.role === "user" ? (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setConfirmTarget({
+                                      type: "role",
+                                      userId: u.id,
+                                      email: u.email,
+                                      newRole: "admin",
+                                    })
+                                  }
+                                  className="h-7 text-xs gap-1 text-primary border-primary/30"
+                                >
+                                  <ShieldCheck className="h-3.5 w-3.5" />
+                                  Jadikan Admin
+                                </Button>
                               ) : (
-                                <>
-                                  <UserX className="h-3.5 w-3.5" />
-                                  Tangguhkan
-                                </>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setConfirmTarget({
+                                      type: "role",
+                                      userId: u.id,
+                                      email: u.email,
+                                      newRole: "user",
+                                    })
+                                  }
+                                  className="h-7 text-xs gap-1"
+                                >
+                                  Turunkan ke User
+                                </Button>
                               )}
-                            </Button>
-                          </div>
-                        )}
+
+                              <Button
+                                variant={u.isSuspended ? "outline" : "ghost"}
+                                size="sm"
+                                onClick={() =>
+                                  setConfirmTarget({
+                                    type: "suspend",
+                                    userId: u.id,
+                                    email: u.email,
+                                    suspend: !u.isSuspended,
+                                  })
+                                }
+                                className={`h-7 text-xs gap-1 ${
+                                  u.isSuspended
+                                    ? "text-emerald-600 border-emerald-500/30"
+                                    : "text-destructive hover:bg-destructive/10"
+                                }`}
+                              >
+                                {u.isSuspended ? (
+                                  <>
+                                    <UserCheck className="h-3.5 w-3.5" />
+                                    Aktifkan
+                                  </>
+                                ) : (
+                                  <>
+                                    <UserX className="h-3.5 w-3.5" />
+                                    Tangguhkan
+                                  </>
+                                )}
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
