@@ -419,6 +419,8 @@ Task: Build Complete Budgeting & Milestones Module
    - src/app/(dashboard)/dashboard/[weddingId]/budget/page.tsx: KPI cards (Total Budget, Paid, Remaining, Overdue), side filter tabs (Groom/Bride/Joint), and budget item list.
 
 Verify strict budget isolation between Groom and Bride expenses.
+
+
 🟢 Prompt Fase 5: Vendor Directory, Direct WhatsApp & S3 Physical Cleanup
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/schema.md, and docs/sdd.md.

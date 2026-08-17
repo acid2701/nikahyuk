@@ -1,11 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetFormModal } from "@/components/modules/budget/budget-form-modal";
 import { BudgetPresetDialog } from "@/components/modules/budget/budget-preset-dialog";
-import { MilestoneTimeline } from "@/components/modules/budget/milestone-timeline";
+import { BudgetListManager } from "@/components/modules/budget/budget-list-manager";
 import { evaluatePaymentDueDate } from "@/lib/utils/due-date-evaluator";
-import { DollarSign, AlertCircle, CheckCircle, Wallet, ArrowRightLeft } from "lucide-react";
+import { AlertCircle, CheckCircle, Wallet, ArrowRightLeft } from "lucide-react";
 
 export default async function BudgetPage(props: {
   params: Promise<any>;
@@ -21,7 +20,7 @@ export default async function BudgetPage(props: {
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
-    .order("event_date", { ascending: true });
+    .order("created_at", { ascending: true });
 
   const activeEvent =
     events?.find((e) => e.id === urlEventId) || events?.[0];
@@ -146,71 +145,7 @@ export default async function BudgetPage(props: {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        {budgetItems.length === 0 ? (
-          <Card className="border-dashed p-8 text-center space-y-3">
-            <DollarSign className="h-10 w-10 text-muted-foreground mx-auto" />
-            <div>
-              <p className="text-sm font-medium text-foreground">
-                Belum Ada Pos Anggaran untuk Acara Ini
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Klik &apos;Seeder Presets Anggaran&apos; atau &apos;Tambah Pos Anggaran&apos; di atas.
-              </p>
-            </div>
-          </Card>
-        ) : (
-          budgetItems.map((item) => {
-            const milestones = item.payment_milestones || [];
-            return (
-              <Card key={item.id} className="border-border/80">
-                <CardHeader className="pb-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <CardTitle className="text-base font-semibold">
-                          {item.item_name}
-                        </CardTitle>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] uppercase font-semibold"
-                        >
-                          {item.target_payer === "groom"
-                            ? "Pihak Pria"
-                            : item.target_payer === "bride"
-                            ? "Pihak Wanita"
-                            : "Bersama"}
-                        </Badge>
-                      </div>
-                      {item.notes && (
-                        <CardDescription className="text-xs mt-1">
-                          Catatan: {item.notes}
-                        </CardDescription>
-                      )}
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-xs text-muted-foreground">Target Anggaran</p>
-                      <p className="font-mono font-bold text-base text-foreground">
-                        Rp {Number(item.estimated_cost).toLocaleString("id-ID")}
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="border-t border-border/50 pt-3">
-                  <h4 className="text-xs font-semibold text-muted-foreground mb-2">
-                    Riwayat Termin Pembayaran ({milestones.length} Termin):
-                  </h4>
-                  <MilestoneTimeline
-                    weddingId={weddingId}
-                    milestones={milestones as any}
-                  />
-                </CardContent>
-              </Card>
-            );
-          })
-        )}
-      </div>
+      <BudgetListManager weddingId={weddingId} initialItems={budgetItems} />
     </div>
   );
 }

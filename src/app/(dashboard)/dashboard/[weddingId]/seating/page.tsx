@@ -15,7 +15,7 @@ export default async function SeatingPage(props: {
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
-    .order("event_date", { ascending: true });
+    .order("created_at", { ascending: true });
 
   const activeEvent =
     events?.find((e) => e.id === urlEventId) || events?.[0];

@@ -33,7 +33,7 @@ export default async function WeddingDashboardLayout(props: {
     .from("wedding_events")
     .select("id, event_name, event_date, event_side")
     .eq("wedding_id", weddingId)
-    .order("event_date", { ascending: true });
+    .order("created_at", { ascending: true });
 
   const events: SubEventOption[] = (eventsData || []).map((e) => ({
     id: e.id,
