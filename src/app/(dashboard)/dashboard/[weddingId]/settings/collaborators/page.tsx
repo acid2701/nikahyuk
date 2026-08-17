@@ -22,10 +22,10 @@ export default async function CollaboratorsPage(props: {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight">
-            Manajemen Akses & Kolaborator (RBAC)
+            Kolaborator
           </h1>
           <p className="text-sm text-muted-foreground">
-            Kelola hak akses Wedding Organizer (WO), panitia keluarga, dan delegasi modul.
+            Kelola hak akses Pasangan, Wedding Organizer (WO), panitia keluarga, dan delegasi modul.
           </p>
         </div>
         <CollaboratorInviteModal weddingId={weddingId} />

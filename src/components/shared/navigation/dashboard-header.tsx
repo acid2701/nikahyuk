@@ -42,6 +42,7 @@ const BREADCRUMB_LABELS: Record<string, string> = {
   settings: "Pengaturan",
   collaborators: "Kolaborator",
   profile: "Profil Acara",
+  "user-profile": "Profil Saya",
   share: "Berbagi Link",
   tokens: "Token Publik",
   "export-delete": "Ekspor & Hapus",
@@ -157,6 +158,19 @@ export function DashboardHeader({
                 {userEmail}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() =>
+                  router.push(
+                    weddingId
+                      ? `/dashboard/${weddingId}/settings/user-profile`
+                      : "/dashboard/profile"
+                  )
+                }
+                className="text-xs font-medium cursor-pointer"
+              >
+                <User className="h-3.5 w-3.5 mr-2 text-primary" />
+                Profil Akun Saya
+              </DropdownMenuItem>
               {weddingId && (
                 <DropdownMenuItem
                   onClick={() => router.push(`/dashboard/${weddingId}/settings/profile`)}

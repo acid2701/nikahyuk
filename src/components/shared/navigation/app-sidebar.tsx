@@ -90,7 +90,12 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       icon: User,
     },
     {
-      title: "Kolaborator (RBAC)",
+      title: "Profil Saya (Akun)",
+      href: `${baseUrl}/settings/user-profile`,
+      icon: User,
+    },
+    {
+      title: "Kolaborator",
       href: `${baseUrl}/settings/collaborators`,
       icon: Settings,
     },
