@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { EventSwitcher, SubEventOption } from "./event-switcher";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
 import Link from "next/link";
 
@@ -105,7 +106,7 @@ export function DashboardHeader({
 
   return (
     <header className="border-b border-border bg-card shrink-0">
-      {/* Top Bar: Couple Name + Event Switcher + User Profile */}
+      {/* Top Bar: Couple Name + Event Switcher + Theme Toggle + User Profile */}
       <div className="h-14 px-6 flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div>
@@ -130,6 +131,8 @@ export function DashboardHeader({
         </div>
 
         <div className="flex items-center space-x-3">
+          <ThemeToggle />
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
