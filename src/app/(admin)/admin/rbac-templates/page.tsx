@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
+import { ShieldCheck, Loader2 } from "lucide-react";
 
 interface RolePermission {
   budget: boolean;
@@ -38,21 +39,65 @@ export default function RbacTemplatesPage() {
     gift_log: false,
   });
 
+  const [fetching, setFetching] = React.useState(true);
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    async function loadConfig() {
+      try {
+        const res = await fetch("/api/admin/settings");
+        if (res.ok) {
+          const json = await res.json();
+          const rows = json.data || [];
+          const rbacRow = rows.find((r: any) => r.key === "rbac_templates");
+
+          if (rbacRow && rbacRow.value) {
+            const val = rbacRow.value;
+            if (val.wo) setWoPerms(val.wo);
+            if (val.family) setFamilyPerms(val.family);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal memuat template RBAC:", err);
+      } finally {
+        setFetching(false);
+      }
+    }
+    loadConfig();
+  }, []);
 
   async function handleSaveTemplates() {
     setLoading(true);
     try {
+      const payload = {
+        wo: woPerms,
+        family: familyPerms,
+      };
+
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          key: "rbac_templates",
+          value: payload,
+        }),
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json();
+        throw new Error(errJson.error || "Gagal menyimpan ke database");
+      }
+
       toast({
         title: "Template RBAC Disimpan",
-        description: "Standar hak akses default global berhasil diperbarui.",
+        description: "Standar hak akses default global berhasil tersimpan permanen di database.",
         variant: "success",
       });
-    } catch {
+    } catch (err) {
       toast({
         title: "Gagal Menyimpan",
-        description: "Terjadi kesalahan saat memperbarui template.",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan saat memperbarui template.",
         variant: "destructive",
       });
     } finally {
@@ -60,10 +105,22 @@ export default function RbacTemplatesPage() {
     }
   }
 
+  if (fetching) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 space-y-3 border border-dashed rounded-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm font-medium text-muted-foreground">
+          Memuat template hak akses dari database...
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-bold tracking-tight font-serif flex items-center gap-2">
+          <ShieldCheck className="h-6 w-6 text-emerald-500" />
           Master Template Hak Akses (RBAC Defaults)
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -72,16 +129,16 @@ export default function RbacTemplatesPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-border/70">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">
+        <Card className="border-border/80 shadow-xs">
+          <CardHeader className="bg-muted/30">
+            <CardTitle className="text-base font-semibold">
               Default Izin: Wedding Organizer (WO)
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Izin bawaan saat pasangan mengundang tim WO.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Modul Anggaran (Budget)</p>
@@ -137,23 +194,23 @@ export default function RbacTemplatesPage() {
               />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button onClick={handleSaveTemplates} className="w-full" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan Template WO"}
+          <CardFooter className="border-t border-border pt-4">
+            <Button onClick={handleSaveTemplates} className="w-full font-semibold" disabled={loading}>
+              {loading ? "Menyimpan ke Database..." : "Simpan Template WO"}
             </Button>
           </CardFooter>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">
+        <Card className="border-border/80 shadow-xs">
+          <CardHeader className="bg-muted/30">
+            <CardTitle className="text-base font-semibold">
               Default Izin: Panitia Keluarga
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs">
               Izin bawaan untuk keluarga dan penerima tamu.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 pt-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium">Modul Anggaran (Budget)</p>
@@ -209,9 +266,9 @@ export default function RbacTemplatesPage() {
               />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button onClick={handleSaveTemplates} variant="secondary" className="w-full" disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan Template Keluarga"}
+          <CardFooter className="border-t border-border pt-4">
+            <Button onClick={handleSaveTemplates} variant="secondary" className="w-full font-semibold" disabled={loading}>
+              {loading ? "Menyimpan ke Database..." : "Simpan Template Keluarga"}
             </Button>
           </CardFooter>
         </Card>
