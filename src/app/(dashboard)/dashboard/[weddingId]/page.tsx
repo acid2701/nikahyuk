@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, Sparkles, MapPin } from "lucide-react";
+import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, Sparkles, MapPin, Gift, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -89,6 +89,20 @@ export default async function WeddingOverviewPage(props: {
     .from("vendors")
     .select("*", { count: "exact", head: true })
     .eq("wedding_id", weddingId);
+
+  const { data: giftsData } = activeEvent
+    ? await supabase
+        .from("gifts_log")
+        .select("amount, gift_type")
+        .eq("event_id", activeEvent.id)
+    : { data: [] };
+
+  let totalGiftsCash = 0;
+  let totalGiftsItems = 0;
+  (giftsData || []).forEach((g: any) => {
+    if (g.gift_type === "cash") totalGiftsCash += g.amount || 0;
+    else totalGiftsItems++;
+  });
 
   return (
     <div className="space-y-6">
@@ -361,6 +375,26 @@ export default async function WeddingOverviewPage(props: {
                 <div className="text-left">
                   <p className="font-semibold text-xs">Master Guest Pool</p>
                   <p className="text-[10px] text-muted-foreground font-normal">RSVP & WA Blast</p>
+                </div>
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" className="justify-start h-12">
+              <Link href={`/dashboard/${weddingId}/gifts`}>
+                <Gift className="h-4 w-4 mr-2 text-purple-600" />
+                <div className="text-left">
+                  <p className="font-semibold text-xs">Log Kado & Angpao</p>
+                  <p className="text-[10px] text-muted-foreground font-normal">Pria / Wanita Side</p>
+                </div>
+              </Link>
+            </Button>
+
+            <Button asChild variant="outline" className="justify-start h-12">
+              <Link href={`/dashboard/${weddingId}/share`}>
+                <Share2 className="h-4 w-4 mr-2 text-indigo-600" />
+                <div className="text-left">
+                  <p className="font-semibold text-xs">Berbagi Link (Share)</p>
+                  <p className="text-[10px] text-muted-foreground font-normal">PWA Kru Lapangan</p>
                 </div>
               </Link>
             </Button>

@@ -811,31 +811,37 @@ export interface Database {
           id: string;
           event_id: string;
           guest_id: string | null;
+          giver_name: string;
           gift_type: GiftTypeEnum;
-          cash_amount: number;
+          amount: number;
           item_description: string | null;
-          received_by: EventSideEnum;
-          received_at: string;
+          giver_side: EventSideEnum;
+          notes: string | null;
+          created_at: string;
         };
         Insert: {
           id?: string;
           event_id: string;
           guest_id?: string | null;
+          giver_name: string;
           gift_type?: GiftTypeEnum;
-          cash_amount?: number;
+          amount?: number;
           item_description?: string | null;
-          received_by?: EventSideEnum;
-          received_at?: string;
+          giver_side?: EventSideEnum;
+          notes?: string | null;
+          created_at?: string;
         };
         Update: {
           id?: string;
           event_id?: string;
           guest_id?: string | null;
+          giver_name?: string;
           gift_type?: GiftTypeEnum;
-          cash_amount?: number;
+          amount?: number;
           item_description?: string | null;
-          received_by?: EventSideEnum;
-          received_at?: string;
+          giver_side?: EventSideEnum;
+          notes?: string | null;
+          created_at?: string;
         };
         Relationships: [
           {

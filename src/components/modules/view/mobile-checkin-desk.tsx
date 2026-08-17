@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useRealtimeCheckin } from "@/hooks/use-realtime-checkin";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { createClient } from "@/lib/supabase/client";
 import { Search, UserCheck, Gift, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -51,6 +52,7 @@ export function MobileCheckinDesk({
   const [loading, setLoading] = React.useState(false);
 
   const { toast } = useToast();
+  const { isOnline, pendingSyncCount } = useOfflineSync(eventId);
   const realtimeUpdate = useRealtimeCheckin(eventId);
 
   React.useEffect(() => {
@@ -87,6 +89,39 @@ export function MobileCheckinDesk({
   async function handleToggleCheckin(item: MobileCheckinItem) {
     const isCheckedIn = item.attendanceStatus === "checked_in";
     const newStatus = isCheckedIn ? "attending" : "checked_in";
+    const timestamp = newStatus === "checked_in" ? new Date().toISOString() : null;
+
+    // Optimistic UI Update
+    setAssignments((prev) =>
+      prev.map((a) =>
+        a.assignmentId === item.assignmentId
+          ? { ...a, attendanceStatus: newStatus }
+          : a
+      )
+    );
+
+    if (!navigator.onLine) {
+      try {
+        const { offlineDB } = await import("@/lib/db/dexie-offline");
+        await offlineDB.mutationQueue.add({
+          actionType: "CHECKIN",
+          payload: {
+            assignmentId: item.assignmentId,
+            attendanceStatus: newStatus,
+            checkinTimestamp: timestamp,
+          },
+          timestamp: Date.now(),
+        });
+        toast({
+          title: "Check-in Disimpan Offline",
+          description: "Perubahan akan disinkronkan saat koneksi pulih.",
+          variant: "warning",
+        });
+      } catch (err) {
+        console.error("Dexie save error", err);
+      }
+      return;
+    }
 
     try {
       const supabase = createClient();
@@ -94,7 +129,7 @@ export function MobileCheckinDesk({
         .from("event_guest_assignments")
         .update({
           attendance_status: newStatus,
-          checkin_timestamp: newStatus === "checked_in" ? new Date().toISOString() : null,
+          checkin_timestamp: timestamp,
         })
         .eq("id", item.assignmentId);
 
@@ -115,16 +150,48 @@ export function MobileCheckinDesk({
   }
 
   async function handleToggleSouvenir(item: MobileCheckinItem) {
+    const nextState = !item.souvenirReceived;
+
+    setAssignments((prev) =>
+      prev.map((a) =>
+        a.assignmentId === item.assignmentId
+          ? { ...a, souvenirReceived: nextState }
+          : a
+      )
+    );
+
+    if (!navigator.onLine) {
+      try {
+        const { offlineDB } = await import("@/lib/db/dexie-offline");
+        await offlineDB.mutationQueue.add({
+          actionType: "SOUVENIR",
+          payload: {
+            assignmentId: item.assignmentId,
+            souvenirReceived: nextState,
+          },
+          timestamp: Date.now(),
+        });
+        toast({
+          title: "Suvenir Disimpan Offline",
+          description: "Perubahan akan disinkronkan saat koneksi pulih.",
+          variant: "warning",
+        });
+      } catch (err) {
+        console.error("Dexie save error", err);
+      }
+      return;
+    }
+
     try {
       const supabase = createClient();
       await supabase
         .from("event_guest_assignments")
-        .update({ souvenir_received: !item.souvenirReceived })
+        .update({ souvenir_received: nextState })
         .eq("id", item.assignmentId);
 
       toast({
         title: "Status Suvenir Diperbarui",
-        description: `Suvenir untuk '${item.fullName}' ${!item.souvenirReceived ? "DISERAHKAN" : "DITAMPUNG"}.`,
+        description: `Suvenir untuk '${item.fullName}' ${nextState ? "DISERAHKAN" : "DITAMPUNG"}.`,
         variant: "success",
       });
 
