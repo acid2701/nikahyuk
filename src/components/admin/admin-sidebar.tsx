@@ -14,6 +14,7 @@ import {
   UserCheck,
   TrendingUp,
   HeartHandshake,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -65,6 +66,11 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
       title: "Cross-Tenant Audit Logs",
       href: "/admin/audit-logs",
       icon: History,
+    },
+    {
+      title: "Pengaturan App & Branding",
+      href: "/admin/app-settings",
+      icon: Settings,
     },
   ];
 
