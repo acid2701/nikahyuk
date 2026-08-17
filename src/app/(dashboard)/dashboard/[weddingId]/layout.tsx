@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
@@ -44,15 +45,19 @@ export default async function WeddingDashboardLayout(props: {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <AppSidebar weddingId={weddingId} />
+      <Suspense fallback={<div className="w-64 border-r border-border bg-card h-full min-h-screen" />}>
+        <AppSidebar weddingId={weddingId} />
+      </Suspense>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <DashboardHeader
-          weddingId={weddingId}
-          groomName={wedding.groom_name}
-          brideName={wedding.bride_name}
-          userEmail={user.email || "user@nikahyuk.com"}
-          events={events}
-        />
+        <Suspense fallback={<header className="h-14 border-b border-border bg-card" />}>
+          <DashboardHeader
+            weddingId={weddingId}
+            groomName={wedding.groom_name}
+            brideName={wedding.bride_name}
+            userEmail={user.email || "user@nikahyuk.com"}
+            events={events}
+          />
+        </Suspense>
         <main className="flex-1 overflow-y-auto p-6">{props.children}</main>
       </div>
     </div>

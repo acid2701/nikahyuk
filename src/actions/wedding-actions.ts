@@ -91,19 +91,62 @@ export async function inviteCollaboratorAction(
     gift_log: false,
   };
 
-  const { data: collaborator, error } = await supabase
-    .from("wedding_collaborators")
-    .insert({
-      wedding_id: weddingId,
-      user_id: user.id,
-      role: role,
-      custom_permissions: defaultPerms as any,
-    })
-    .select()
-    .single();
+  let targetUserId = user.id;
 
-  if (error) {
-    throw new Error(error.message);
+  if (email.trim().toLowerCase() !== user.email?.trim().toLowerCase()) {
+    const { data: matchedLog } = await supabase
+      .from("audit_logs")
+      .select("user_id")
+      .ilike("user_display_name", email.trim())
+      .not("user_id", "is", null)
+      .limit(1)
+      .maybeSingle();
+
+    if (matchedLog?.user_id) {
+      targetUserId = matchedLog.user_id;
+    }
+  }
+
+  // Check if collaborator already exists for this wedding
+  const { data: existingCollab } = await supabase
+    .from("wedding_collaborators")
+    .select("id")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", targetUserId)
+    .maybeSingle();
+
+  let collaborator;
+  if (existingCollab) {
+    const { data: updated, error: updateErr } = await supabase
+      .from("wedding_collaborators")
+      .update({
+        role,
+        custom_permissions: defaultPerms as any,
+      })
+      .eq("id", existingCollab.id)
+      .select()
+      .single();
+
+    if (updateErr) {
+      throw new Error(updateErr.message);
+    }
+    collaborator = updated;
+  } else {
+    const { data: inserted, error: insertErr } = await supabase
+      .from("wedding_collaborators")
+      .insert({
+        wedding_id: weddingId,
+        user_id: targetUserId,
+        role: role,
+        custom_permissions: defaultPerms as any,
+      })
+      .select()
+      .single();
+
+    if (insertErr) {
+      throw new Error(insertErr.message);
+    }
+    collaborator = inserted;
   }
 
   await recordAuditLog({
@@ -111,7 +154,7 @@ export async function inviteCollaboratorAction(
     userId: user.id,
     userDisplayName: user.email || "Owner",
     moduleName: "Collaborators",
-    actionType: "CREATE",
+    actionType: existingCollab ? "UPDATE" : "CREATE",
     changeDiff: { email, role, permissions: defaultPerms },
   });
 
@@ -156,5 +199,92 @@ export async function updateCollaboratorPermissionsAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
+  return data;
+}
+
+export async function updateWeddingProfileAction(
+  weddingId: string,
+  updates: {
+    groomName?: string;
+    brideName?: string;
+    weddingSlug?: string;
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const updatePayload: {
+    groom_name?: string;
+    bride_name?: string;
+    wedding_slug?: string;
+  } = {};
+  if (updates.groomName !== undefined) {
+    updatePayload.groom_name = updates.groomName;
+  }
+  if (updates.brideName !== undefined) {
+    updatePayload.bride_name = updates.brideName;
+  }
+  if (updates.weddingSlug !== undefined) {
+    const slugCleaned = updates.weddingSlug
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    if (slugCleaned.length < 3) {
+      throw new Error("Slug harus minimal 3 karakter alfanumerik.");
+    }
+
+    const { data: existingSlug } = await supabase
+      .from("weddings")
+      .select("id")
+      .eq("wedding_slug", slugCleaned)
+      .neq("id", weddingId)
+      .maybeSingle();
+
+    if (existingSlug) {
+      throw new Error(`Slug '${slugCleaned}' sudah digunakan workspace lain. Silakan pilih slug unik.`);
+    }
+
+    updatePayload.wedding_slug = slugCleaned;
+  }
+
+  if (
+    !updatePayload.groom_name &&
+    !updatePayload.bride_name &&
+    !updatePayload.wedding_slug
+  ) {
+    throw new Error("Tidak ada perubahan yang dikirim.");
+  }
+
+  const { data, error } = await supabase
+    .from("weddings")
+    .update(updatePayload)
+    .eq("id", weddingId)
+    .select()
+    .single();
+
+
+  if (error || !data) {
+    throw new Error(error?.message || "Gagal memperbarui profil pernikahan.");
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Owner",
+    moduleName: "Wedding Profile",
+    actionType: "UPDATE",
+    changeDiff: updates,
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/settings/profile`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return data;
 }

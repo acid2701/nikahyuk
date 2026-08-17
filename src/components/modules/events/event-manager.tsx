@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createEventAction, updateEventAction, deleteEventAction } from "@/actions/event-actions";
+import { createEventAction, updateEventAction } from "@/actions/event-actions";
 import { EventPresetDialog } from "@/components/modules/events/event-preset-dialog";
+import { DeleteEventModal } from "@/components/modules/events/delete-event-modal";
 import { useToast } from "@/components/ui/use-toast";
 import { Calendar, Plus, Trash2, Edit, MapPin, Clock } from "lucide-react";
 import {
@@ -40,7 +41,9 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
   const [events, setEvents] = React.useState<EventItem[]>(initialEvents);
   const [openModal, setOpenModal] = React.useState(false);
   const [openEditModal, setOpenEditModal] = React.useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [editingEvent, setEditingEvent] = React.useState<EventItem | null>(null);
+  const [deletingEvent, setDeletingEvent] = React.useState<EventItem | null>(null);
 
   // Form states for Create/Edit
   const [eventName, setEventName] = React.useState("");
@@ -152,25 +155,9 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
     }
   }
 
-  async function handleDeleteEvent(eventId: string, name: string) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus sub-event '${name}'?`)) {
-      return;
-    }
-
-    try {
-      await deleteEventAction(eventId, weddingId);
-      toast({
-        title: "Sub-Event Dihapus",
-        description: `Acara '${name}' telah dihapus.`,
-        variant: "success",
-      });
-    } catch (err) {
-      toast({
-        title: "Gagal Menghapus Sub-Event",
-        description: err instanceof Error ? err.message : "Internal error",
-        variant: "destructive",
-      });
-    }
+  function handleOpenDelete(eventItem: EventItem) {
+    setDeletingEvent(eventItem);
+    setOpenDeleteModal(true);
   }
 
   return (
@@ -435,8 +422,9 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDeleteEvent(ev.id, ev.event_name)}
-                      className="h-8 w-8 text-destructive"
+                      onClick={() => handleOpenDelete(ev)}
+                      className="h-8 w-8 text-destructive hover:bg-rose-100 hover:text-rose-700 dark:hover:bg-rose-950/50"
+                      title="Hapus Sub-Event"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -474,6 +462,16 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
             </Card>
           ))}
         </div>
+      )}
+
+      {deletingEvent && (
+        <DeleteEventModal
+          open={openDeleteModal}
+          onOpenChange={setOpenDeleteModal}
+          eventId={deletingEvent.id}
+          eventName={deletingEvent.event_name}
+          weddingId={weddingId}
+        />
       )}
     </div>
   );

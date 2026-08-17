@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
 import { Plus, Heart } from "lucide-react";
+import { CreateWeddingModal } from "@/components/modules/settings/create-wedding-modal";
 
 export default async function DashboardSelectorPage() {
   const supabase = await createClient();
@@ -64,14 +65,19 @@ export default async function DashboardSelectorPage() {
               <p className="text-sm text-muted-foreground">
                 Anda belum memiliki ruang kerja pernikahan.
               </p>
-              <Button asChild>
-                <Link href="/dashboard/new">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Buat Workspace Baru
-                </Link>
-              </Button>
             </Card>
           )}
+        </div>
+
+        <div className="flex justify-center pt-2">
+          <CreateWeddingModal
+            trigger={
+              <Button size="lg" className="gap-2 px-6 h-11 text-sm font-semibold shadow-md">
+                <Plus className="h-4 w-4" />
+                Buat Acara Baru
+              </Button>
+            }
+          />
         </div>
       </div>
     </div>

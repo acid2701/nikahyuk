@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
+  Calendar,
   Clock,
   DollarSign,
   Briefcase,
@@ -13,6 +14,7 @@ import {
   Gift,
   ShieldAlert,
   Settings,
+  User,
   QrCode,
   HeartHandshake,
   CheckSquare,
@@ -26,6 +28,8 @@ export interface AppSidebarProps {
 
 export function AppSidebar({ weddingId, className }: AppSidebarProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const eventId = searchParams.get("eventId");
 
   const baseUrl = weddingId ? `/dashboard/${weddingId}` : "/dashboard";
 
@@ -34,6 +38,11 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       title: "Ringkasan",
       href: baseUrl,
       icon: LayoutDashboard,
+    },
+    {
+      title: "Sub-Events Hub",
+      href: `${baseUrl}/events`,
+      icon: Calendar,
     },
     {
       title: "Checklist Persiapan",
@@ -76,7 +85,12 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       icon: ShieldAlert,
     },
     {
-      title: "Pengaturan & Akses",
+      title: "Profil Pernikahan",
+      href: `${baseUrl}/settings/profile`,
+      icon: User,
+    },
+    {
+      title: "Kolaborator (RBAC)",
       href: `${baseUrl}/settings/collaborators`,
       icon: Settings,
     },
@@ -108,10 +122,12 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
               (item.href !== baseUrl && pathname.startsWith(item.href));
             const Icon = item.icon;
 
+            const fullHref = eventId ? `${item.href}?eventId=${eventId}` : item.href;
+
             return (
               <Link
                 key={item.title}
-                href={item.href}
+                href={fullHref}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                   isActive

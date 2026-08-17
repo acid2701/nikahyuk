@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CollaboratorPermissionForm } from "@/components/modules/settings/collaborator-permission-form";
+import { CollaboratorInviteModal } from "@/components/modules/settings/collaborator-invite-modal";
 import { CustomPermissions } from "@/types/database.types";
 import { Users, ShieldCheck } from "lucide-react";
 
@@ -18,13 +19,16 @@ export default async function CollaboratorsPage(props: {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
-          Manajemen Akses & Kolaborator (RBAC)
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola hak akses Wedding Organizer (WO), panitia keluarga, dan delegasi modul.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-serif text-2xl font-bold tracking-tight">
+            Manajemen Akses & Kolaborator (RBAC)
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Kelola hak akses Wedding Organizer (WO), panitia keluarga, dan delegasi modul.
+          </p>
+        </div>
+        <CollaboratorInviteModal weddingId={weddingId} />
       </div>
 
       <div className="space-y-4">
@@ -37,6 +41,13 @@ export default async function CollaboratorsPage(props: {
               guest: true,
               gift_log: false,
             }) as CustomPermissions;
+
+            const roleLabel =
+              c.role === "wo"
+                ? "Wedding Organizer"
+                : c.role === "partner"
+                ? "Partner"
+                : "Panitia Keluarga";
 
             return (
               <Card key={c.id} className="border-border/80">
@@ -59,7 +70,7 @@ export default async function CollaboratorsPage(props: {
                       </div>
                     </div>
                     <Badge variant={c.role === "wo" ? "default" : "secondary"}>
-                      {c.role === "wo" ? "Wedding Organizer" : "Panitia Keluarga"}
+                      {roleLabel}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -81,7 +92,7 @@ export default async function CollaboratorsPage(props: {
                 Belum Ada Kolaborator Tambahan
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Anda adalah pemilik utama (Owner) ruang kerja pernikahan ini dengan akses Penuh (Full CRUD).
+                Anda adalah pemilik utama (Owner) ruang kerja pernikahan ini. Klik &quot;Undang Kolaborator&quot; untuk menambahkan WO atau panitia keluarga.
               </p>
             </div>
           </Card>
