@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestTableView } from "@/components/modules/guests/guest-table-view";
@@ -15,7 +16,7 @@ export default async function GuestsPage(props: {
 
   const { data: events } = await supabase
     .from("wedding_events")
-    .select("id, event_name")
+    .select("id, event_name, location_name, location_maps_url")
     .eq("wedding_id", weddingId)
     .order("created_at", { ascending: true });
 
@@ -25,7 +26,7 @@ export default async function GuestsPage(props: {
 
   const { data: guestsData } = await supabase
     .from("guests")
-    .select("*, event_guest_assignments(*)")
+    .select("*, event_guest_assignments(*, event_tables(table_number_or_name))")
     .eq("wedding_id", weddingId)
     .order("created_at", { ascending: false });
 
@@ -58,6 +59,21 @@ export default async function GuestsPage(props: {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center space-x-2 border-b border-border pb-3">
+        <Link
+          href={`/dashboard/${weddingId}/guests${activeEventId ? `?eventId=${activeEventId}` : ""}`}
+          className="px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-primary-foreground shadow-xs"
+        >
+          Master Tamu & RSVP
+        </Link>
+        <Link
+          href={`/dashboard/${weddingId}/seating${activeEventId ? `?eventId=${activeEventId}` : ""}`}
+          className="px-3 py-1.5 text-xs font-medium rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          Penataan Tempat Duduk (Seating)
+        </Link>
+      </div>
+
       <div>
         <h1 className="font-serif text-2xl font-bold tracking-tight">
           Master Guest Pool & RSVP Tracker
@@ -135,7 +151,12 @@ export default async function GuestsPage(props: {
         </Card>
       </div>
 
-      <GuestTableView weddingId={weddingId} eventId={activeEventId} initialGuests={guests as any} />
+      <GuestTableView
+        weddingId={weddingId}
+        eventId={activeEventId}
+        initialGuests={guests as any}
+        activeEventLocation={activeEvent?.location_maps_url || activeEvent?.location_name || null}
+      />
     </div>
   );
 }

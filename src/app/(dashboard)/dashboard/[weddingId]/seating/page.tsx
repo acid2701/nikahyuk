@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SeatingManager } from "@/components/modules/seating/seating-manager";
 
@@ -61,6 +62,21 @@ export default async function SeatingPage(props: {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center space-x-2 border-b border-border pb-3">
+        <Link
+          href={`/dashboard/${weddingId}/guests${activeEventId ? `?eventId=${activeEventId}` : ""}`}
+          className="px-3 py-1.5 text-xs font-medium rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+        >
+          Master Tamu & RSVP
+        </Link>
+        <Link
+          href={`/dashboard/${weddingId}/seating${activeEventId ? `?eventId=${activeEventId}` : ""}`}
+          className="px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-primary-foreground shadow-xs"
+        >
+          Penataan Tempat Duduk (Seating)
+        </Link>
+      </div>
+
       <div>
         <h1 className="font-serif text-2xl font-bold tracking-tight">
           Penataan Tempat Duduk & Meteran Kapasitas (Seating Allocation)

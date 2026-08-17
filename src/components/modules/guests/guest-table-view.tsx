@@ -4,13 +4,30 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
 import { PhoneInput } from "@/components/shared/whatsapp/phone-input";
+import { WAButton } from "@/components/shared/whatsapp/wa-button";
 import { WABlastModal } from "@/components/shared/whatsapp/wa-blast-modal";
 import { GuestCSVParser } from "@/components/modules/guests/guest-csv-parser";
-import { createGuestAction, updateGuestRSVPAction, deleteGuestAction } from "@/actions/guest-actions";
+import { ConfirmDeleteDialog } from "@/components/shared/modal/confirm-delete-dialog";
+import { DataTablePagination } from "@/components/shared/pagination/data-table-pagination";
+import {
+  createGuestAction,
+  updateGuestAction,
+  updateGuestRSVPAction,
+  deleteGuestAction,
+} from "@/actions/guest-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Search, Trash2 } from "lucide-react";
+import { Plus, Search, Trash2, Edit, Users } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +50,9 @@ export interface GuestItemRow {
     actual_pax: number;
     attendance_status: "pending" | "attending" | "declined" | "checked_in";
     table_id?: string | null;
+    event_tables?: {
+      table_number_or_name: string;
+    } | null;
   }[];
 }
 
@@ -40,18 +60,35 @@ export interface GuestTableViewProps {
   weddingId: string;
   eventId?: string | null;
   initialGuests: GuestItemRow[];
+  activeEventLocation?: string | null;
 }
 
-export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTableViewProps) {
+export function GuestTableView({
+  weddingId,
+  eventId,
+  initialGuests,
+  activeEventLocation,
+}: GuestTableViewProps) {
   const [guests, setGuests] = React.useState<GuestItemRow[]>(initialGuests);
   const [search, setSearch] = React.useState("");
   const [openModal, setOpenModal] = React.useState(false);
+  const [openEditModal, setOpenEditModal] = React.useState(false);
+  const [editingGuest, setEditingGuest] = React.useState<GuestItemRow | null>(null);
 
+  // Pagination states
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
+
+  // Form states
   const [fullName, setFullName] = React.useState("");
   const [contactNumber, setContactNumber] = React.useState("");
   const [defaultPax, setDefaultPax] = React.useState("1");
   const [notes, setNotes] = React.useState("");
   const [loading, setLoading] = React.useState(false);
+
+  // Confirm Delete Modal State
+  const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const { toast } = useToast();
 
@@ -59,8 +96,33 @@ export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTable
     setGuests(initialGuests);
   }, [initialGuests]);
 
+  function resetForm() {
+    setFullName("");
+    setContactNumber("");
+    setDefaultPax("1");
+    setNotes("");
+  }
+
+  function handleOpenEdit(guest: GuestItemRow) {
+    setEditingGuest(guest);
+    setFullName(guest.full_name || "");
+    setContactNumber(guest.sanitized_phone || "");
+    setDefaultPax(String(guest.default_pax || 1));
+    setNotes(guest.notes || "");
+    setOpenEditModal(true);
+  }
+
   const filteredGuests = guests.filter((g) =>
-    g.full_name.toLowerCase().includes(search.toLowerCase())
+    g.full_name.toLowerCase().includes(search.toLowerCase()) ||
+    (g.notes && g.notes.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  // Pagination calculation
+  const totalItems = filteredGuests.length;
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const paginatedGuests = filteredGuests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   async function handleCreateGuest(e: React.FormEvent) {
@@ -84,13 +146,44 @@ export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTable
       });
 
       setOpenModal(false);
-      setFullName("");
-      setContactNumber("");
-      setDefaultPax("1");
-      setNotes("");
+      resetForm();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Tamu",
+        description: err instanceof Error ? err.message : "Internal error",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleUpdateGuest(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editingGuest) return;
+
+    setLoading(true);
+
+    try {
+      await updateGuestAction(editingGuest.id, weddingId, {
+        fullName,
+        contactNumber,
+        defaultPax: Number(defaultPax) || 1,
+        notes,
+      });
+
+      toast({
+        title: "Data Tamu Diperbarui",
+        description: `Perubahan data tamu '${fullName}' tersimpan.`,
+        variant: "success",
+      });
+
+      setOpenEditModal(false);
+      setEditingGuest(null);
+      resetForm();
+    } catch (err) {
+      toast({
+        title: "Gagal Memperbarui Tamu",
         description: err instanceof Error ? err.message : "Internal error",
         variant: "destructive",
       });
@@ -116,37 +209,53 @@ export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTable
     }
   }
 
-  async function handleDeleteGuest(guestId: string, name: string) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus data tamu '${name}'?`)) {
-      return;
-    }
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
 
     try {
-      await deleteGuestAction(guestId, weddingId);
+      await deleteGuestAction(deleteTarget.id, weddingId);
       toast({
         title: "Tamu Dihapus",
-        description: `Data tamu '${name}' berhasil dihapus.`,
+        description: `Data tamu '${deleteTarget.name}' berhasil dihapus.`,
         variant: "success",
       });
+      setDeleteTarget(null);
     } catch (err) {
       toast({
         title: "Gagal Menghapus Tamu",
         description: err instanceof Error ? err.message : "Internal error",
         variant: "destructive",
       });
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
   return (
     <div className="space-y-4">
+      {/* Reusable Confirm Delete Modal */}
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Data Tamu?"
+        description="Tindakan ini akan menghapus data tamu dan status RSVP terkait secara permanen."
+        itemName={deleteTarget?.name}
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+      />
+
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
-            placeholder="Cari nama tamu..."
+            placeholder="Cari nama atau catatan tamu..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }}
             className="pl-9 h-9 text-xs"
           />
         </div>
@@ -156,7 +265,7 @@ export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTable
 
           <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-2 h-9 text-xs">
+              <Button size="sm" onClick={resetForm} className="gap-2 h-9 text-xs">
                 <Plus className="h-4 w-4" />
                 Tambah Tamu Baru
               </Button>
@@ -223,90 +332,208 @@ export function GuestTableView({ weddingId, eventId, initialGuests }: GuestTable
               </form>
             </DialogContent>
           </Dialog>
+
+          {/* EDIT GUEST MODAL */}
+          <Dialog open={openEditModal} onOpenChange={setOpenEditModal}>
+            <DialogContent className="max-w-md">
+              <form onSubmit={handleUpdateGuest}>
+                <DialogHeader>
+                  <DialogTitle className="font-serif text-xl">Edit Data Tamu</DialogTitle>
+                  <DialogDescription>
+                    Perbarui nama lengkap, nomor WhatsApp, alokasi pax, atau catatan khusus.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-3 py-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Nama Lengkap Tamu</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Bapak Ahmad Subagyo"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Nomor WhatsApp</label>
+                    <PhoneInput
+                      value={contactNumber}
+                      onChange={setContactNumber}
+                      placeholder="081234567890"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Jumlah Alokasi (Pax)</label>
+                    <Input
+                      type="number"
+                      value={defaultPax}
+                      onChange={(e) => setDefaultPax(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Catatan Khusus</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Dosen Pembimbing / Keluarga Inti"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button type="button" variant="outline" onClick={() => setOpenEditModal(false)}>
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={loading}>
+                    {loading ? "Menyimpan..." : "Simpan Perubahan"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden bg-card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs text-left">
-            <thead className="bg-muted/50 border-b border-border font-semibold text-muted-foreground uppercase text-[10px] tracking-wider">
-              <tr>
-                <th className="p-3">Nama Tamu</th>
-                <th className="p-3">Nomor WA</th>
-                <th className="p-3">Pax</th>
-                <th className="p-3">Status RSVP</th>
-                <th className="p-3 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/60">
-              {filteredGuests.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="p-6 text-center text-muted-foreground">
-                    Tidak ada data tamu ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filteredGuests.map((g) => {
-                  const assignment = g.assignments && g.assignments.length > 0 ? g.assignments[0] : null;
-                  const rsvpStatus = assignment ? assignment.attendance_status : "pending";
+      {/* HTML TABLE VIEW WITH NO., NUMBERING & PAGINATION */}
+      {filteredGuests.length === 0 ? (
+        <Card className="border-dashed p-8 text-center space-y-3">
+          <Users className="h-10 w-10 text-muted-foreground mx-auto" />
+          <div>
+            <p className="text-sm font-medium text-foreground">Tidak Ada Data Tamu Ditemukan</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Klik &apos;Tambah Tamu Baru&apos; atau &apos;Impor CSV Massal&apos; untuk mencatat daftar tamu Anda.
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <Card className="border-border/80 shadow-xs overflow-hidden">
+          <Table>
+            <TableHeader className="bg-muted/60">
+              <TableRow>
+                <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
+                <TableHead className="text-xs font-semibold">Nama Tamu & Catatan</TableHead>
+                <TableHead className="text-xs font-semibold">Kontak WA</TableHead>
+                <TableHead className="text-xs font-semibold text-center">Pax</TableHead>
+                <TableHead className="text-xs font-semibold">Status RSVP</TableHead>
+                <TableHead className="text-xs font-semibold text-right">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedGuests.map((g, index) => {
+                const globalIndex = (currentPage - 1) * pageSize + index + 1;
+                const assignment = g.assignments && g.assignments.length > 0 ? g.assignments[0] : null;
+                const rsvpStatus = assignment ? assignment.attendance_status : "pending";
 
-                  return (
-                    <tr key={g.id} className="hover:bg-muted/20">
-                      <td className="p-3 font-semibold text-foreground">
-                        {g.full_name}
-                        {g.notes && <p className="text-[10px] text-muted-foreground font-normal">{g.notes}</p>}
-                      </td>
-                      <td className="p-3 font-mono text-muted-foreground">
-                        {g.sanitized_phone ? `+${g.sanitized_phone}` : "-"}
-                      </td>
-                      <td className="p-3 font-mono font-semibold">
-                        {g.default_pax} Pax
-                      </td>
-                      <td className="p-3">
-                        {assignment ? (
-                          <Select
-                            value={rsvpStatus}
-                            onValueChange={(val: any) =>
-                              handleUpdateRSVP(assignment.id, val, assignment.actual_pax)
-                            }
-                          >
-                            <SelectTrigger className="h-7 text-[11px] w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="attending">Hadir (Attending)</SelectItem>
-                              <SelectItem value="declined">Halangan (Declined)</SelectItem>
-                              <SelectItem value="checked_in">Sudah Check-In</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          <Badge variant="outline" className="text-[10px]">
-                            Pending
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="p-3 text-right space-x-2">
+                return (
+                  <TableRow key={g.id} className="hover:bg-muted/30">
+                    {/* Numbering Cell */}
+                    <TableCell className="text-center font-mono font-semibold text-xs text-muted-foreground">
+                      {globalIndex}
+                    </TableCell>
+
+                    {/* Guest Name & Notes */}
+                    <TableCell className="text-xs">
+                      <p className="font-serif font-bold text-sm text-foreground">{g.full_name}</p>
+                      {g.notes && <p className="text-[11px] text-muted-foreground">{g.notes}</p>}
+                    </TableCell>
+
+                    {/* WhatsApp Contact Phone Number */}
+                    <TableCell className="text-xs font-mono text-muted-foreground">
+                      {g.sanitized_phone ? `+${g.sanitized_phone}` : "-"}
+                    </TableCell>
+
+                    {/* Default Pax */}
+                    <TableCell className="text-center font-mono font-semibold text-xs">
+                      {g.default_pax} Pax
+                    </TableCell>
+
+                    {/* RSVP Status Selector */}
+                    <TableCell className="text-xs">
+                      {assignment ? (
+                        <Select
+                          value={rsvpStatus}
+                          onValueChange={(val: any) =>
+                            handleUpdateRSVP(assignment.id, val, assignment.actual_pax)
+                          }
+                        >
+                          <SelectTrigger className="h-7 text-[11px] w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="attending">Hadir (Attending)</SelectItem>
+                            <SelectItem value="declined">Halangan (Declined)</SelectItem>
+                            <SelectItem value="checked_in">Sudah Check-In</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge variant="outline" className="text-[10px]">
+                          Pending
+                        </Badge>
+                      )}
+                    </TableCell>
+
+                    {/* Action Buttons */}
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end space-x-1">
                         {g.sanitized_phone && (
-                          <WABlastModal guestName={g.full_name} phone={g.sanitized_phone} />
+                          <WABlastModal
+                            guestName={g.full_name}
+                            phone={g.sanitized_phone}
+                            tableName={
+                              (assignment as any)?.event_tables?.table_number_or_name || "Belum Diatur"
+                            }
+                            locationMapsUrl={activeEventLocation}
+                          />
                         )}
+
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteGuest(g.id, g.full_name)}
-                          className="h-7 w-7 text-destructive"
+                          onClick={() => handleOpenEdit(g)}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                          title="Edit Data Tamu"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          <Edit className="h-4 w-4" />
                         </Button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setDeleteTarget({ id: g.id, name: g.full_name })}
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          title="Hapus Data Tamu"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+
+          {/* SCALABLE PAGINATION FOOTER */}
+          <DataTablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={(newSize) => {
+              setPageSize(newSize);
+              setCurrentPage(1);
+            }}
+          />
+        </Card>
+      )}
     </div>
   );
 }

@@ -50,6 +50,52 @@ export async function createSeatingTableAction(input: CreateSeatingTableInput) {
   return table;
 }
 
+export async function updateSeatingTableAction(
+  tableId: string,
+  weddingId: string,
+  updates: {
+    tableName?: string;
+    maxSeats?: number;
+    notes?: string | null;
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data: table, error } = await supabase
+    .from("event_tables")
+    .update({
+      ...(updates.tableName !== undefined && { table_number_or_name: updates.tableName }),
+      ...(updates.maxSeats !== undefined && { max_seats: updates.maxSeats }),
+      ...(updates.notes !== undefined && { notes: updates.notes || null }),
+    })
+    .eq("id", tableId)
+    .select()
+    .single();
+
+  if (error || !table) {
+    throw new Error(error?.message || "Gagal memperbarui data meja.");
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Seating Tables",
+    actionType: "UPDATE",
+    changeDiff: { tableId, updates },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/seating`);
+  return table;
+}
+
 export async function assignGuestToTableAction(
   assignmentId: string,
   tableId: string | null,

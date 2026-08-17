@@ -9,6 +9,7 @@ import {
   DollarSign,
   Briefcase,
   Users,
+  LayoutGrid,
   Gift,
   ShieldAlert,
   Settings,
@@ -55,9 +56,14 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       icon: Briefcase,
     },
     {
-      title: "Tamu & Meja",
+      title: "Master Tamu & RSVP",
       href: `${baseUrl}/guests`,
       icon: Users,
+    },
+    {
+      title: "Penataan Tempat Duduk",
+      href: `${baseUrl}/seating`,
+      icon: LayoutGrid,
     },
     {
       title: "Log Kado & Angpao",

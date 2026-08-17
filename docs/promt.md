@@ -456,6 +456,7 @@ Task: Build Guest Management, Seating Allocation & WhatsApp Blast
    - src/app/(dashboard)/dashboard/[weddingId]/seating/page.tsx: Visual seating layout cards with capacity meter (Green <=80%, Amber 100%, Red Pulsing >100% Overbooked).
 
 Test bulk CSV import and verify table overbooking visual indicator.
+
 🟢 Prompt Fase 7: Live Rundown, Audio Cues & 1-Click Shift Timeline Engine
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/DESIGN.md.

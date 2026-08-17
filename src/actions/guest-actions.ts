@@ -67,6 +67,61 @@ export async function createGuestAction(input: CreateGuestInput) {
   return guest;
 }
 
+export async function updateGuestAction(
+  guestId: string,
+  weddingId: string,
+  updates: {
+    fullName?: string;
+    contactNumber?: string | null;
+    defaultPax?: number;
+    notes?: string | null;
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const sanitized = updates.contactNumber
+    ? sanitizePhoneNumber(updates.contactNumber)
+    : updates.contactNumber === ""
+    ? null
+    : undefined;
+
+  const { data: guest, error } = await supabase
+    .from("guests")
+    .update({
+      ...(updates.fullName !== undefined && { full_name: updates.fullName }),
+      ...(sanitized !== undefined && { sanitized_phone: sanitized }),
+      ...(updates.defaultPax !== undefined && { default_pax: updates.defaultPax || 1 }),
+      ...(updates.notes !== undefined && { notes: updates.notes || null }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", guestId)
+    .select()
+    .single();
+
+  if (error || !guest) {
+    throw new Error(error?.message || "Gagal memperbarui data tamu.");
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Guests",
+    actionType: "UPDATE",
+    changeDiff: { guestId, updates },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/guests`);
+  return guest;
+}
+
 export async function bulkImportGuestsAction(
   weddingId: string,
   eventId: string | null,

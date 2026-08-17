@@ -24,9 +24,12 @@ export interface WABlastModalProps {
 export function WABlastModal({
   guestName,
   phone,
-  tableName = "Meja Undangan",
-  locationMapsUrl = "https://maps.google.com",
+  tableName,
+  locationMapsUrl,
 }: WABlastModalProps) {
+  const displayTable = tableName || "Belum Diatur";
+  const displayLocation = locationMapsUrl || "Lokasi Belum Ditentukan";
+
   const [open, setOpen] = React.useState(false);
   const [template, setTemplate] = React.useState(
     "Kepada Yth. Bpk/Ibu/Saudara/i {nama_tamu},\n\nTanpa mengurangi rasa hormat, kami mengundang Anda untuk hadir di acara pernikahan kami.\n\nNomor Meja: {nomor_meja}\nLokasi: {lokasi_maps}\n\nTerima kasih."
@@ -63,8 +66,9 @@ export function WABlastModal({
           </div>
 
           <div className="p-2 rounded bg-muted/40 text-[11px] text-muted-foreground space-y-0.5">
-            <p><strong>Penerima:</strong> {guestName} ({phone})</p>
-            <p><strong>Meja:</strong> {tableName || "Tanpa Meja"}</p>
+            <p><strong>Penerima:</strong> {guestName} (+{phone})</p>
+            <p><strong>Nomor Meja:</strong> {displayTable}</p>
+            <p><strong>Lokasi Acara:</strong> {displayLocation}</p>
           </div>
         </div>
 
@@ -77,8 +81,8 @@ export function WABlastModal({
             templateString={template}
             variables={{
               nama_tamu: guestName,
-              nomor_meja: tableName || "-",
-              lokasi_maps: locationMapsUrl || "-",
+              nomor_meja: displayTable,
+              lokasi_maps: displayLocation,
             }}
             label="Buka WhatsApp Chat"
             variant="default"
