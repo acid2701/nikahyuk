@@ -22,11 +22,11 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  const isSuperadmin =
-    user.app_metadata?.role === "superadmin" ||
-    user.user_metadata?.role === "superadmin";
+  const userRole = user.app_metadata?.role || user.user_metadata?.role;
+  const isAdminOrSuperadmin =
+    userRole === "superadmin" || userRole === "admin";
 
-  if (!isSuperadmin) {
+  if (!isAdminOrSuperadmin) {
     redirect("/dashboard");
   }
 

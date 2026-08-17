@@ -12,6 +12,7 @@ import {
   Crown,
   Users,
   UserCheck,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -23,6 +24,11 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
       title: "Overview Platform",
       href: "/admin",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Analitik SaaS & Penggunaan",
+      href: "/admin/analytics",
+      icon: TrendingUp,
     },
     {
       title: "User Pendaftar Platform",
