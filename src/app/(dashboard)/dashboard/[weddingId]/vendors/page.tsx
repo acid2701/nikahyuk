@@ -21,7 +21,7 @@ export default async function VendorsPage(props: { params: Promise<any> }) {
             Vendor Directory & Hub Kontrak
           </h1>
           <p className="text-sm text-muted-foreground">
-            Kelola mitra vendor, simpan dokumen kontrak di Cloudflare R2, dan hubungi via WhatsApp Direct.
+            Kelola mitra vendor, simpan dokumen kontrak, dan hubungi via WhatsApp.
           </p>
         </div>
       </div>

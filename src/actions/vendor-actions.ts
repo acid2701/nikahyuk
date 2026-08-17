@@ -59,6 +59,63 @@ export async function createVendorAction(input: CreateVendorInput) {
   return vendor;
 }
 
+export async function updateVendorAction(
+  vendorId: string,
+  weddingId: string,
+  updates: {
+    vendorName?: string;
+    category?: string;
+    picName?: string | null;
+    contactNumber?: string | null;
+    contractValue?: number;
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const sanitized = updates.contactNumber
+    ? sanitizePhoneNumber(updates.contactNumber)
+    : updates.contactNumber === ""
+    ? null
+    : undefined;
+
+  const { data: vendor, error } = await supabase
+    .from("vendors")
+    .update({
+      ...(updates.vendorName !== undefined && { vendor_name: updates.vendorName }),
+      ...(updates.category !== undefined && { category: updates.category }),
+      ...(updates.picName !== undefined && { pic_name: updates.picName || null }),
+      ...(sanitized !== undefined && { sanitized_phone: sanitized }),
+      ...(updates.contractValue !== undefined && { contract_value: updates.contractValue || 0 }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", vendorId)
+    .select()
+    .single();
+
+  if (error || !vendor) {
+    throw new Error(error?.message || "Gagal memperbarui vendor.");
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Vendors",
+    actionType: "UPDATE",
+    changeDiff: { vendorId, updates },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/vendors`);
+  return vendor;
+}
+
 export async function addVendorDocumentAction(
   vendorId: string,
   weddingId: string,

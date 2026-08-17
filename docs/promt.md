@@ -439,6 +439,7 @@ Task: Build Vendor Directory & Contract Management
    - src/app/(dashboard)/dashboard/[weddingId]/vendors/page.tsx: Vendor cards categorized by service, contract attachments viewer, and budget linkage.
 
 Verify that deleting a vendor contract physically deletes the corresponding object from Cloudflare R2.
+
 🟢 Prompt Fase 6: Master Guest Pool, Seating Allocation & WhatsApp Blast Engine
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/erd.md, and docs/wireframe.md.
