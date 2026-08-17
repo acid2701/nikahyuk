@@ -5,9 +5,10 @@ import { DueDateBadge } from "@/components/shared/badges/due-date-badge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MediaUploaderDropzone, UploadedFileMeta } from "@/components/shared/media-uploader/dropzone";
+import { ReceiptPreviewModal, PaymentAttachmentItem } from "@/components/modules/budget/receipt-preview-modal";
 import { payMilestoneAction } from "@/actions/budget-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Check, Upload, Calendar } from "lucide-react";
+import { Check, Upload, Calendar, FileText } from "lucide-react";
 
 export interface MilestoneItem {
   id: string;
@@ -17,6 +18,7 @@ export interface MilestoneItem {
   paid_date?: string | null;
   payment_status: "unpaid" | "paid";
   paid_by: "groom" | "bride" | "joint";
+  payment_attachments?: PaymentAttachmentItem[];
 }
 
 export interface MilestoneTimelineProps {
@@ -26,6 +28,10 @@ export interface MilestoneTimelineProps {
 
 export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelineProps) {
   const [activeUploadId, setActiveUploadId] = React.useState<string | null>(null);
+  const [previewMilestone, setPreviewMilestone] = React.useState<{
+    name: string;
+    attachments: PaymentAttachmentItem[];
+  } | null>(null);
   const [loadingId, setLoadingId] = React.useState<string | null>(null);
   const { toast } = useToast();
 
@@ -110,6 +116,23 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
             </div>
 
             <div className="flex items-center space-x-2">
+              {m.payment_attachments && m.payment_attachments.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() =>
+                    setPreviewMilestone({
+                      name: m.milestone_name,
+                      attachments: m.payment_attachments || [],
+                    })
+                  }
+                  className="h-8 text-xs gap-1 border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                >
+                  <FileText className="h-3.5 w-3.5" />
+                  Lihat Resi ({m.payment_attachments.length})
+                </Button>
+              )}
+
               <Button
                 size="sm"
                 variant={m.payment_status === "paid" ? "secondary" : "default"}
@@ -130,7 +153,7 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
                 className="h-8 text-xs gap-1"
               >
                 <Upload className="h-3.5 w-3.5" />
-                Bukti Transfer
+                Unggah Resi
               </Button>
             </div>
 
@@ -146,6 +169,15 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
             )}
           </div>
         ))
+      )}
+
+      {previewMilestone && (
+        <ReceiptPreviewModal
+          open={Boolean(previewMilestone)}
+          onOpenChange={(open) => !open && setPreviewMilestone(null)}
+          milestoneName={previewMilestone.name}
+          attachments={previewMilestone.attachments}
+        />
       )}
     </div>
   );

@@ -31,7 +31,7 @@ export default async function BudgetPage(props: {
   if (eventIds.length > 0) {
     const { data: items } = await supabase
       .from("budget_items")
-      .select("*, payment_milestones(*)")
+      .select("*, payment_milestones(*, payment_attachments(*))")
       .in("event_id", eventIds)
       .order("created_at", { ascending: false });
     budgetItems = items || [];

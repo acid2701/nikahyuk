@@ -168,6 +168,7 @@ export async function updateBudgetItemAction(
     estimatedCost?: number;
     targetPayer?: "groom" | "bride" | "joint";
     notes?: string | null;
+    milestones?: any[];
   }
 ) {
   const supabase = await createClient();
@@ -203,6 +204,35 @@ export async function updateBudgetItemAction(
 
   if (error || !item) {
     throw new Error(error?.message || "Gagal memperbarui pos anggaran.");
+  }
+
+  if (updates.milestones !== undefined) {
+    // Refresh milestones for this budget item
+    await supabase
+      .from("payment_milestones")
+      .delete()
+      .eq("budget_item_id", itemId);
+
+    if (updates.milestones.length > 0) {
+      const milestoneRows = updates.milestones.map((m) => ({
+        budget_item_id: itemId,
+        milestone_name: m.milestoneName || m.milestone_name,
+        amount: Number(m.amount) || 0,
+        due_date: m.dueDate || m.due_date || null,
+        paid_date: m.paidDate || m.paid_date || (m.paymentStatus === "paid" || m.payment_status === "paid" ? new Date().toISOString().split("T")[0] : null),
+        alert_days_before: m.alertDaysBefore || m.alert_days_before || 7,
+        payment_status: m.paymentStatus || m.payment_status || "unpaid",
+        paid_by: m.paidBy || m.paid_by || updates.targetPayer || "joint",
+      }));
+
+      const { error: msErr } = await supabase
+        .from("payment_milestones")
+        .insert(milestoneRows);
+
+      if (msErr) {
+        console.error("Failed to update payment milestones:", msErr);
+      }
+    }
   }
 
   await recordAuditLog({

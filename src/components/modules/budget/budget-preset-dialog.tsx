@@ -59,9 +59,9 @@ export function BudgetPresetDialog({
         const dpCost = Math.round(itemCost * 0.3);
         const pelunasanCost = itemCost - dpCost;
 
-        const today = new Date();
-        const dpDueDate = new Date(today.setDate(today.getDate() + 7)).toISOString().split("T")[0];
-        const finalDueDate = new Date(today.setDate(today.getDate() + 30)).toISOString().split("T")[0];
+        const now = Date.now();
+        const dpDueDate = new Date(now + 7 * 86400000).toISOString().split("T")[0];
+        const finalDueDate = new Date(now + 30 * 86400000).toISOString().split("T")[0];
 
         await createBudgetItemWithMilestonesAction({
           weddingId,
