@@ -254,125 +254,186 @@ Jalankan prompt Fase 0 terlebih dahulu di Antigravity untuk mengawali scaffoldin
 lanjutan
 
 
-Prompt Fase 0 (Verifikasi Scaffolding & Root Layout)
+Master Roadmap Lengkap: 3 Persona & 100% Seluruh Halaman
+Berikut adalah struktur halaman yang wajib ada agar aplikasi tidak bolong:
+
+Plaintext
+1. PUBLIC & AUTH
+   ├── / (Landing Page & Session Redirection)
+   ├── /login (Login Email/Pass + Google OAuth)
+   ├── /register (Registrasi Calon Pengantin)
+   └── /auth-callback (OAuth Callback Handler)
+
+2. USER MEMPELAI / EVENT CREW (DASHBOARD)
+   ├── /dashboard (Workspace Selector / Create New Wedding)
+   └── /dashboard/[weddingId]
+       ├── / (Executive Overview, H-Day Countdown, Quick Stats)
+       ├── /events (Multi-Event Manager: Lamaran, Akad, Resepsi)
+       ├── /budget (Multi-Milestones, Payer Isolation, Proof Upload)
+       ├── /vendors (Vendor Hub, Contracts in R2, WhatsApp Direct)
+       ├── /guests (Guest Pool, Bulk CSV, RSVP Tracker, WA Blast)
+       ├── /seating (Seating Chart, Table Overbooking Meter)
+       ├── /rundown (Live Timeline, Audio/Lighting Cues, Shift Engine)
+       ├── /gifts (Internal Cash & Physical Gift Log)
+       ├── /share (Token Generator, PIN Setter, Granular Toggles)
+       ├── /audit-logs (Timeline Riwayat Perubahan)
+       └── /settings
+           ├── /profile (Data Pengantin & Wedding Slug)
+           └── /collaborators (Hak Akses WO / Keluarga)
+
+3. FIELD CREW PWA (PUBLIC TOKEN VIEW)
+   └── /view/[token]
+       ├── / (Lockscreen PIN Gate & Crew Hub)
+       ├── /checkin (Meja Registrasi Realtime & Walk-in Guest)
+       ├── /rundown (Mobile Live Rundown Checklist)
+       └── /guests (Buku Tamu Cepat & Lookup Meja)
+
+4. SUPERADMIN PLATFORM
+   └── /admin
+       ├── / (Platform Overview & Storage Health)
+       ├── /storage-config (Cloudflare R2 Dynamic Engine)
+       ├── /rbac-templates (Global Role Presets)
+       ├── /backups (Encrypted Database Snapshots)
+       └── /audit-logs (Cross-Tenant System Audit Trail)
+MASTER PROMPT SUITE RESMI & LENGKAP (FASE 0 – 10)
+Berikut adalah revisi prompt final yang mencakup 100% seluruh halaman Superadmin, Pengantin, dan Mobile Crew View:
+
+🟢 Prompt Fase 0: Scaffolding, Design Tokens & Base Primitives
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md and docs/DESIGN.md.
 
-Task: Finalize Base Foundation & Root Layout
-1. Verify Dependencies & UI Primitives:
-   - Ensure all shadcn primitives exist in src/components/ui/ (button, input, dialog, dropdown-menu, table, badge, card, toast, use-toast, tabs, select, switch).
-   - Verify vitest.config.ts is working.
+Task: Complete Phase 0 from DEVELOPMENT_PLAN.md:
+1. Verify and install all required production and testing dependencies:
+   npm i @supabase/supabase-js @supabase/ssr @aws-sdk/client-s3 @aws-sdk/s3-request-presigner @tanstack/react-table dexie lucide-react react-hook-form @hookform/resolvers zod bcryptjs browser-image-compression @react-pdf/renderer archiver csv-stringify
+   npm i -D vitest @vitejs/plugin-react jsdom @types/bcryptjs @types/archiver
 
-2. Root Theme & Layout (src/app/layout.tsx & src/app/page.tsx):
-   - Configure src/app/layout.tsx with Google Fonts: 'Playfair Display' (serif display) and 'Plus Jakarta Sans' (sans body). Include the Toaster provider.
-   - Update src/app/globals.css with HSL color tokens from docs/DESIGN.md.
-   - Implement src/app/page.tsx: Check active session; if authenticated, redirect to /dashboard; if not, redirect to /login.
+2. Design Tokens & Base Styling (Strictly follow docs/DESIGN.md):
+   - Update src/app/globals.css with HSL CSS variables (:root and .dark) for Warm Porcelain, Champagne Gold, Rose Bronze, Muted Slate, and semantic status colors.
+   - Configure tailwind.config.ts with colors, radius (--radius: 0.625rem), and font families (Playfair Display for serif display, Plus Jakarta Sans for body).
+   - Configure src/app/layout.tsx to load Google Fonts with Toaster provider.
+   - Implement src/app/page.tsx: Check session; redirect authenticated users to /dashboard, otherwise to /login.
 
-Run 'npm run build' and ensure zero compile errors.
-Prompt Fase 1 (Supabase SSR Auth, Middleware & Session Context)
+3. Base UI Primitives (src/components/ui/):
+   - Ensure all primitives exist: button.tsx, input.tsx, dialog.tsx, dropdown-menu.tsx, table.tsx, badge.tsx, card.tsx, toast.tsx, use-toast.ts, tabs.tsx, select.tsx, switch.tsx, progress.tsx.
+
+4. Testing Setup:
+   - Configure vitest.config.ts with jsdom environment and @/* path resolution.
+
+Run 'npm run build' and verify zero compile errors.
+🟢 Prompt Fase 1: Supabase SSR Clients, Types & Complete Auth Flow
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/schema.md, and docs/api-spec.md.
 
-Task: Implement Supabase SSR Auth & Route Protection
-1. SSR Helpers in src/lib/supabase/:
-   - client.ts: createBrowserClient.
-   - server.ts: createServerClient with next/headers cookies() handling.
-   - middleware.ts: getUser() session refresh helper.
-   - src/middleware.ts: Protect '/dashboard/:path*', '/admin/:path*', and '/view/:path*'. Superadmin check on user.app_metadata.role === 'superadmin'.
+Task: Execute Phase 1 from DEVELOPMENT_PLAN.md:
+1. Supabase SSR Helpers (in src/lib/supabase/):
+   - client.ts: Browser client via createBrowserClient.
+   - server.ts: Server client via createServerClient with next/headers cookies() for RSC and Server Actions.
+   - middleware.ts: Session refresh helper using supabase.auth.getUser().
+   - src/middleware.ts: Route guards for '/dashboard/:path*', '/admin/:path*', and '/view/:path*'.
+     * Unauthenticated users -> redirect to /login.
+     * Superadmin check -> verify user.app_metadata.role === 'superadmin' for /admin routes.
 
-2. Strict TypeScript Definitions:
-   - src/types/database.types.ts: Complete types for all 23 database tables, enums (user_role_enum, event_side_enum, attendance_status_enum, payment_status_enum, cue_type_enum, gift_type_enum, action_type_enum), and JSONB structures.
+2. TypeScript Database Types:
+   - src/types/database.types.ts: Complete strict typings for all 23 database tables, enums (user_role_enum, event_side_enum, attendance_status_enum, payment_status_enum, cue_type_enum, gift_type_enum, action_type_enum), and JSONB payloads.
 
-3. Authentication UI & Handlers:
+3. Authentication Module:
    - src/app/(auth)/layout.tsx: Elegant split layout with brand slogan and decorative background.
-   - src/app/(auth)/login/page.tsx: Email/Password login + Google OAuth button with error alerts.
-   - src/app/(auth)/register/page.tsx: Registration with instant auto-redirect.
+   - src/app/(auth)/login/page.tsx: Email/Password login form + Google OAuth redirect with error alerts.
+   - src/app/(auth)/register/page.tsx: Bride/Groom registration form with instant workspace bootstrap.
    - src/app/(auth)/auth-callback/route.ts: Exchange OAuth code for session token.
 
-Verify login and registration flows in the browser.
-Prompt Fase 2 (Dynamic Superadmin Panel & Cloudflare R2 Engine)
+Run 'npx tsc --noEmit' and test login/register flows.
+🟢 Prompt Fase 2: Dynamic Superadmin Panel & Cloudflare R2 Engine
 Plaintext
-Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/architecture.md, and docs/sdd.md.
+Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/architecture.md, docs/sdd.md, and docs/wireframe.md.
 
-Task: Build Dynamic Storage Engine & Admin Panel
+Task: Complete Full Superadmin Panel & Dynamic Storage Engine
 1. Dynamic Config & S3Client Singleton:
-   - src/lib/cloudflare-r2/dynamic-config.ts: In-memory cached S3Client reading credentials from PostgreSQL 'system_settings' table (fallback to safe mock if unconfigured). Cache invalidator function included.
+   - src/lib/cloudflare-r2/dynamic-config.ts: Fetch & in-memory cache R2 credentials (ACCOUNT_ID, ACCESS_KEY, SECRET_KEY, BUCKET_NAME) and storage limits from 'system_settings'. Include cache invalidation helper.
    - src/lib/cloudflare-r2/presign-helper.ts: Presigned PUT URL generator (300s expiry).
-   - src/lib/cloudflare-r2/cleanup-helper.ts: Direct R2 DeleteObjectCommand handler.
+   - src/lib/cloudflare-r2/cleanup-helper.ts: Physical DeleteObjectCommand handler.
 
-2. Superadmin API & UI:
-   - src/app/api/admin/settings/route.ts (GET & PUT handlers for R2 credentials & file size limits).
+2. Superadmin API Route Handlers:
+   - src/app/api/admin/settings/route.ts (GET & PUT handlers for R2 credentials and storage rules).
    - src/app/api/storage/presign/route.ts & src/app/api/storage/delete/route.ts.
-   - src/app/(admin)/layout.tsx & src/app/(admin)/admin/storage-config/page.tsx (Form to input R2 Account ID, Access Key, Secret Key, and Bucket Name).
-   - src/app/(admin)/admin/rbac-templates/page.tsx (Global default role permissions editor).
-   - src/components/shared/media-uploader/dropzone.tsx (Client-side WebP compression via browser-image-compression + direct R2 upload).
 
-Verify superadmin can save credentials and dropzone compresses images before upload.
-Prompt Fase 3 (Multi-Event Workspace, Top Bar Switcher & Dynamic RBAC)
+3. Superadmin Layout & Complete Views:
+   - src/app/(admin)/layout.tsx: Superadmin shell with dedicated Admin Sidebar & Header.
+   - src/app/(admin)/admin/page.tsx: Platform Overview Dashboard (KPIs: Total Weddings, Active Sub-Events, Storage Usage in MB, S3 Health Check status).
+   - src/app/(admin)/admin/storage-config/page.tsx: UI form for R2 credentials and file size/format limits.
+   - src/app/(admin)/admin/rbac-templates/page.tsx: Global default role permissions editor.
+   - src/app/(admin)/admin/audit-logs/page.tsx: Global cross-tenant audit log viewer.
+   - src/components/shared/media-uploader/dropzone.tsx: Client-side WebP compressor using browser-image-compression with direct-to-R2 upload progress bar.
+
+Verify that Cloudflare R2 credentials are dynamically fetched from the database, never from process.env.
+🟢 Prompt Fase 3: Workspace Hub, Multi-Event Manager & Collaborative RBAC
 Plaintext
-Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/erd.md, and docs/DESIGN.md.
+Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/erd.md, docs/wireframe.md, and docs/DESIGN.md.
 
-Task: Implement Multi-Event Workspace & Navigation
+Task: Build Master Workspace, Sub-Events Hub & Navigation
 1. Core Actions & Audit Logger:
    - src/lib/audit/logger.ts: recordAuditLog(weddingId, actionType, moduleName, diff).
-   - src/actions/wedding-actions.ts: Create wedding workspace (auto slug generation), invite collaborator, and update custom permissions.
-   - src/actions/event-actions.ts: CRUD sub-events (Lamaran, Pengajian, Siraman, Midodareni, Akad, Resepsi) with event_side assignment.
+   - src/actions/wedding-actions.ts: Create wedding (auto-slug), invite collaborator, and update custom permissions.
+   - src/actions/event-actions.ts: CRUD sub-events (Lamaran, Pengajian, Siraman, Midodareni, Akad, Resepsi Pria/Wanita) with side ownership and Google Maps URLs.
 
 2. Navigation & Layout Components:
-   - src/components/shared/navigation/event-switcher.tsx: Dropdown selector in top header to switch active sub-event context.
-   - src/components/shared/navigation/app-sidebar.tsx: Responsive desktop/mobile sidebar with KlikQRIS donation card.
-   - src/components/shared/navigation/dashboard-header.tsx: Breadcrumbs, quick event switch, user avatar menu.
-   - src/app/(dashboard)/layout.tsx: Shell layout with sidebar, header, and active wedding context provider.
-   - src/app/(dashboard)/dashboard/page.tsx: Workspace selector + 'Buat Acara Baru' onboarding modal.
+   - src/components/shared/navigation/event-switcher.tsx: Universal top-bar dropdown to switch sub-event context.
+   - src/components/shared/navigation/app-sidebar.tsx: Responsive sidebar with KlikQRIS donation card at footer.
+   - src/components/shared/navigation/dashboard-header.tsx: Breadcrumbs, quick event switch, and user profile menu.
+   - src/app/(dashboard)/layout.tsx: Main dashboard shell layout.
+   - src/app/(dashboard)/dashboard/page.tsx: Workspace selector + 'Buat Acara Baru' modal.
 
-3. Collaborators & Starter Presets:
-   - src/app/(dashboard)/dashboard/[weddingId]/settings/collaborators/page.tsx (Granular permission switch toggles).
-   - src/types/presets.types.ts & src/components/modules/rundown/rundown-preset-dialog.tsx (Inject customizable default rundown/budget templates).
+3. Bride/Groom Executive Overview & Sub-Event Views:
+   - src/app/(dashboard)/dashboard/[weddingId]/page.tsx: Executive Overview Dashboard (H-Day Countdown, Quick Budget Bar, RSVP Summary, Next Rundown Preview).
+   - src/app/(dashboard)/dashboard/[weddingId]/events/page.tsx: Sub-Event list, schedule, venue maps, and event-side tag manager.
+   - src/app/(dashboard)/dashboard/[weddingId]/settings/collaborators/page.tsx: Collaborator management with granular permission switches.
+   - src/app/(dashboard)/dashboard/[weddingId]/settings/profile/page.tsx: Wedding details, slug editor, and couple profile.
+   - src/types/presets.types.ts & src/components/modules/rundown/rundown-preset-dialog.tsx: Starter template injector.
 
-Ensure switching sub-events in the header updates the active state globally.
-Prompt Fase 4 (Financial Hub, Multi-Milestone Installments & Due-Date Tracker)
+Verify that switching sub-events in the top bar updates data context globally.
+🟢 Prompt Fase 4: Financial Core (Multiple Milestones & Due-Date Tracker)
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/DESIGN.md.
 
 Task: Build Complete Budgeting & Milestones Module
-1. Domain Logic & Unit Tests:
-   - src/lib/utils/due-date-evaluator.ts: evaluatePaymentDueDate(status, dueDate, alertDaysBefore) logic from sdd.md.
-   - tests/unit/due-date-evaluator.test.ts: Vitest tests for PAID, OVERDUE (H+X), WARNING (H-X), and NEUTRAL states. Run 'npm run test'.
+1. Financial Domain Logic & Unit Testing:
+   - src/lib/utils/due-date-evaluator.ts: Implement evaluatePaymentDueDate(status, dueDate, alertDaysBefore) per sdd.md.
+   - tests/unit/due-date-evaluator.test.ts: Vitest test suite for PAID, OVERDUE (H+X), WARNING (H-X), and NEUTRAL states. Run 'npm run test'.
 
-2. Server Actions:
+2. Budget Schemas & Server Actions:
    - src/types/budget.types.ts: Zod schemas for budget items and multiple payment milestones.
-   - src/actions/budget-actions.ts: createBudgetItemWithMilestonesAction, payMilestoneAction, and updateBudgetItemAction with revalidatePath.
+   - src/actions/budget-actions.ts: createBudgetItemWithMilestonesAction, payMilestoneAction, and updateBudgetItemAction with audit logging and revalidatePath.
 
-3. Budgeting UI:
-   - src/components/shared/badges/due-date-badge.tsx: Semantic status badge from DESIGN.md.
-   - src/components/modules/budget/milestone-timeline.tsx: Installment progress, payer side indicator (Groom/Bride/Joint), receipt upload modal.
+3. Financial UI Components:
+   - src/components/shared/badges/due-date-badge.tsx: Semantic status badge using HSL design tokens.
+   - src/components/modules/budget/milestone-timeline.tsx: Milestone history with payer tags (Groom/Bride/Joint) and R2 receipt preview modal.
    - src/components/modules/budget/budget-form-modal.tsx: Dynamic installment adder form.
-   - src/app/(dashboard)/dashboard/[weddingId]/budget/page.tsx: KPI cards (Total Budget, Paid, Remaining, Overdue), side filter tabs, and budget item list.
+   - src/app/(dashboard)/dashboard/[weddingId]/budget/page.tsx: KPI cards (Total Budget, Paid, Remaining, Overdue), side filter tabs (Groom/Bride/Joint), and budget item list.
 
-Verify that Groom and Bride expenses calculate separately and total up accurately.
-Prompt Fase 5 (Vendor Directory, Direct WhatsApp & S3 Physical Cleanup)
+Verify strict budget isolation between Groom and Bride expenses.
+🟢 Prompt Fase 5: Vendor Directory, Direct WhatsApp & S3 Physical Cleanup
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/schema.md, and docs/sdd.md.
 
-Task: Build Vendor Directory & Contract Hub
-1. WhatsApp Sanitizer & Unit Tests:
-   - src/lib/utils/wa-sanitizer.ts: sanitizePhoneNumber('08...' -> '628...') and buildWhatsAppDirectLink.
+Task: Build Vendor Directory & Contract Management
+1. WhatsApp Sanitizer & Unit Testing:
+   - src/lib/utils/wa-sanitizer.ts: Implement sanitizePhoneNumber('08...' -> '628...') and buildWhatsAppDirectLink.
    - tests/unit/wa-sanitizer.test.ts: Vitest unit tests for phone formatting and URL encoding. Run 'npm run test'.
 
 2. Vendor Server Actions:
-   - src/actions/vendor-actions.ts: CRUD vendors, attach contracts via Presigned URL, and delete vendor with direct physical file deletion on Cloudflare R2.
+   - src/actions/vendor-actions.ts: CRUD vendors, upload contracts via Presigned URL, and delete vendor with direct physical file deletion on Cloudflare R2.
 
 3. Vendor UI Components:
    - src/components/shared/whatsapp/phone-input.tsx: Phone input with automatic Indonesian prefix.
    - src/components/shared/whatsapp/wa-button.tsx: 1-click WhatsApp redirect button.
    - src/app/(dashboard)/dashboard/[weddingId]/vendors/page.tsx: Vendor cards categorized by service, contract attachments viewer, and budget linkage.
 
-Test adding a vendor with contract upload and verify physical R2 deletion on delete.
-Prompt Fase 6 (Master Guest Pool, Seating Allocation & WhatsApp Blast Engine)
+Verify that deleting a vendor contract physically deletes the corresponding object from Cloudflare R2.
+🟢 Prompt Fase 6: Master Guest Pool, Seating Allocation & WhatsApp Blast Engine
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/erd.md, and docs/wireframe.md.
 
-Task: Build Guest Management, Seating Chart & WhatsApp Blast
+Task: Build Guest Management, Seating Allocation & WhatsApp Blast
 1. Guest & Seating Server Actions:
    - src/actions/guest-actions.ts: Master guest CRUD, client-side CSV bulk parser, and sub-event assignment.
    - src/actions/seating-actions.ts: Table management, seat assignments, and seat capacity meter.
@@ -383,13 +444,13 @@ Task: Build Guest Management, Seating Chart & WhatsApp Blast
    - src/components/shared/whatsapp/wa-blast-modal.tsx: Template message builder replacing {nama_tamu}, {nomor_meja}, {lokasi_maps}.
    - src/app/(dashboard)/dashboard/[weddingId]/seating/page.tsx: Visual seating layout cards with capacity meter (Green <=80%, Amber 100%, Red Pulsing >100% Overbooked).
 
-Verify bulk CSV import and table overbooking visual indicator.
-Prompt Fase 7 (Live Rundown, Technical Cues & 1-Click Shift Timeline)
+Test bulk CSV import and verify table overbooking visual indicator.
+🟢 Prompt Fase 7: Live Rundown, Audio Cues & 1-Click Shift Timeline Engine
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/DESIGN.md.
 
 Task: Build Live Rundown & Shift Timeline Engine
-1. Shift Timeline Math & Unit Tests:
+1. Shift Timeline Math & Unit Testing:
    - src/lib/utils/timeline-math.ts: calculateTimelineShift(items, startIndex, deltaMinutes) handling minute math across midnight.
    - tests/unit/timeline-math.test.ts: Vitest unit tests for +15m, +30m, -10m adjustments. Run 'npm run test'.
 
@@ -404,26 +465,31 @@ Task: Build Live Rundown & Shift Timeline Engine
    - src/app/(dashboard)/dashboard/[weddingId]/rundown/page.tsx: Interactive rundown workspace.
 
 Verify that shifting an item recalculates subsequent items without affecting previous items.
-Prompt Fase 8 (Mobile Public Token View, PIN Security & Realtime Check-in Desk)
+🟢 Prompt Fase 8: Shareable Token Manager, PIN Security & Mobile Public PWA
 Plaintext
-Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/api-spec.md.
+Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, docs/api-spec.md, and docs/wireframe.md.
 
-Task: Build Public Field Crew Mobile PWA & Realtime Check-in
-1. PIN Security & Rate Limiter:
+Task: Build Shareable Token Hub & Field Crew Mobile PWA View
+1. Shareable Token Management (Dashboard):
+   - src/actions/token-actions.ts: Generate shareable token, hash 4-6 digit PIN with bcrypt, set expiration date, and configure granular module access.
+   - src/app/(dashboard)/dashboard/[weddingId]/share/page.tsx: Link manager UI with 1-click copy, QR code generator, PIN reset, and module toggles.
+
+2. PIN Security & Rate Limiter:
    - src/lib/utils/rate-limiter.ts: In-memory IP tracking (lockout after 5 failed attempts for 15 minutes).
    - tests/unit/rate-limiter.test.ts: Vitest tests for rate limit thresholds. Run 'npm run test'.
-   - src/app/api/token/verify/route.ts: Verify bcrypt PIN and issue signed token_session cookie.
+   - src/app/api/token/verify/route.ts: Verify PIN, check rate limiter, and issue signed 'token_session' cookie.
 
-2. Realtime Subscriptions & Mobile UI:
+3. Realtime Subscriptions & Field Crew Mobile PWA Views:
    - src/hooks/use-realtime-checkin.ts: Supabase WebSocket subscription on 'event_guest_assignments'.
    - src/hooks/use-realtime-rundown.ts: Supabase WebSocket subscription on 'rundowns'.
    - src/app/view/[token]/layout.tsx: Mobile PWA layout with PIN lockscreen gate (min 44px touch targets).
-   - src/app/view/[token]/page.tsx: Mobile field crew hub.
+   - src/app/view/[token]/page.tsx: Mobile field crew hub with quick navigation.
    - src/app/view/[token]/checkin/page.tsx: Realtime check-in desk, anti double-claim souvenir tracker, and '+ Tamu Walk-in' modal.
    - src/app/view/[token]/rundown/page.tsx: Mobile live rundown checklist.
+   - src/app/view/[token]/guests/page.tsx: Mobile guest lookup with seating numbers for door greeters.
 
-Verify check-in updates synchronize across two separate browser windows in under 250ms.
-Prompt Fase 9 (Offline Resiliency Dexie.js, Gift Logs & Self-Service ZIP Exporter)
+Verify real-time check-in synchronization between two separate browser windows in under 250ms.
+🟢 Prompt Fase 9: Offline Resiliency (Dexie.js), Gift Logs & Self-Service ZIP Exporter
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md, docs/sdd.md, and docs/api-spec.md.
 
@@ -432,16 +498,16 @@ Task: Build Offline Resiliency, Gifts Log & Data Lifecycle
    - src/lib/db/dexie-offline.ts: Dexie.js schema for offline checkins and mutationQueue.
    - src/hooks/use-offline-sync.ts: Online event listener flushing mutation queue via Last-Write-Wins.
 
-2. Gifts Log & Audit Trail:
+2. Gifts Log & Audit Trail Pages:
    - src/app/(dashboard)/dashboard/[weddingId]/gifts/page.tsx: Cash & physical gift logger with Groom/Bride side attribution.
    - src/app/(dashboard)/dashboard/[weddingId]/audit-logs/page.tsx: Audit history timeline.
 
 3. Data Lifecycle Route Handlers:
    - src/app/api/user/export-archive/route.ts: Stream a complete .zip archive containing /csv/ tables and /documents/ fetched from Cloudflare R2 using archiver.
-   - src/app/api/user/delete-account/route.ts: GDPR permanent deletion of all wedding data and physical R2 files.
+   - src/app/api/user/delete-account/route.ts: Permanent GDPR self-deletion for workspace and R2 storage.
 
-Simulate offline mode in DevTools, toggle check-in, reconnect, and verify auto-sync to Supabase.
-Prompt Fase 10 (Production Build Verification & Server Deployment Setup)
+Simulate offline mode in DevTools, perform a check-in, reconnect, and verify automated mutation flushing.
+🟢 Prompt Fase 10: Production Build Verification & Server Deployment Setup
 Plaintext
 Act as a Senior Fullstack Engineer following AGENT_RULES.md and docs/deployment-guide.md.
 
@@ -450,11 +516,26 @@ Task: Final Quality Audit & Production Deployment Setup
    - ecosystem.config.js: PM2 cluster mode configuration matching deployment-guide.md.
    - .env.example: Complete reference environment configuration.
 
-2. Automated Encrypted Backup:
+2. Automated Encrypted Backup Engine:
    - src/app/api/admin/backup/trigger/route.ts: Database dump stream, gzip compression, AES-256-CBC encryption via BACKUP_ENCRYPTION_SECRET, and upload to R2 /backups/.
+   - src/app/api/admin/backup/restore/route.ts: Backup decryption and verification helper.
    - src/app/(admin)/admin/backups/page.tsx: Backup history table with manual trigger button.
 
-3. Final Verification:
-   - Run 'npm run test' (Ensure 100% pass rate).
+3. Final Comprehensive Verification:
+   - Run 'npm run test' (Ensure 100% test pass rate across all unit test suites).
    - Run 'npx tsc --noEmit' (Zero TypeScript errors).
    - Run 'npm run build' (Clean production build).
+
+Provide the final aaPanel Nginx WebSocket reverse proxy configuration snippet.
+Sekarang seluruh alur Superadmin, Mempelai Dashboard, dan Mobile Field Crew sudah 100% lengkap dan saling terhubung. Anda dapat langsung menjalankan prompt tersebut secara berurutan di Antigravity.
+
+
+
+Tips Tambahan Supabase Realtime (Hanya butuh 10 Detik)
+Agar fitur sinkronisasi langsung (Realtime WebSocket CDC) di Fase 8 berjalan tanpa hambatan:
+
+Buka Supabase Dashboard > Database > Replication (atau jalankan di SQL Editor):
+
+SQL
+ALTER PUBLICATION supabase_realtime ADD TABLE event_guest_assignments, rundowns;
+(Perintah ini mengaktifkan siaran WebSocket untuk perubahan data tamu check-in dan rundown ke layar mobile panitia).
