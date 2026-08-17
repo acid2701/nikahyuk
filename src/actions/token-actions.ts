@@ -108,3 +108,75 @@ export async function toggleShareTokenActiveAction(
   revalidatePath(`/dashboard/${weddingId}/share`);
   return tokenRecord;
 }
+
+export async function resetShareTokenPINAction(
+  tokenId: string,
+  weddingId: string,
+  newPin: string | null
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const pinHash = newPin ? await bcrypt.hash(newPin, 10) : null;
+
+  const { data: tokenRecord, error } = await supabase
+    .from("shareable_tokens")
+    .update({ pin_hash: pinHash })
+    .eq("id", tokenId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Shareable Tokens",
+    actionType: "UPDATE",
+    changeDiff: { tokenId, hasPin: Boolean(newPin) },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/share`);
+  return tokenRecord;
+}
+
+export async function deleteShareTokenAction(tokenId: string, weddingId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { error } = await supabase
+    .from("shareable_tokens")
+    .delete()
+    .eq("id", tokenId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Shareable Tokens",
+    actionType: "DELETE",
+    changeDiff: { tokenId },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/share`);
+  return { success: true };
+}

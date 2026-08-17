@@ -6,9 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
-import { createShareTokenAction, toggleShareTokenActiveAction } from "@/actions/token-actions";
+import { ConfirmDeleteDialog } from "@/components/shared/modal/confirm-delete-dialog";
+import {
+  createShareTokenAction,
+  toggleShareTokenActiveAction,
+  resetShareTokenPINAction,
+  deleteShareTokenAction,
+} from "@/actions/token-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Share2, Copy, Check, Lock, Plus } from "lucide-react";
+import { Share2, Copy, Check, Lock, Plus, QrCode, KeyRound, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -38,11 +44,23 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
   const [tokens, setTokens] = React.useState<ShareTokenItem[]>(initialTokens);
   const [openModal, setOpenModal] = React.useState(false);
 
+  // Form states
   const [pin, setPin] = React.useState("");
   const [expiresDays, setExpiresDays] = React.useState("30");
   const [canCheckin, setCanCheckin] = React.useState(true);
   const [canViewRundown, setCanViewRundown] = React.useState(true);
   const [canViewGuests, setCanViewGuests] = React.useState(true);
+
+  // QR Modal state
+  const [qrToken, setQrToken] = React.useState<{ hash: string; title: string } | null>(null);
+
+  // Reset PIN Modal state
+  const [resetPinToken, setResetPinToken] = React.useState<ShareTokenItem | null>(null);
+  const [newPin, setNewPin] = React.useState("");
+
+  // Delete Modal state
+  const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const [copiedId, setCopiedId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(false);
@@ -107,6 +125,55 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
     }
   }
 
+  async function handleResetPin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!resetPinToken) return;
+
+    setLoading(true);
+
+    try {
+      await resetShareTokenPINAction(resetPinToken.id, weddingId, newPin.trim() || null);
+      toast({
+        title: "PIN Berhasil Diperbarui",
+        description: newPin.trim() ? "PIN keamanan baru telah disimpan." : "PIN keamanan telah dihapus.",
+        variant: "success",
+      });
+      setResetPinToken(null);
+      setNewPin("");
+    } catch (err) {
+      toast({
+        title: "Gagal Memperbarui PIN",
+        description: err instanceof Error ? err.message : "Internal error",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+
+    try {
+      await deleteShareTokenAction(deleteTarget.id, weddingId);
+      toast({
+        title: "Tautan Akses Dihapus",
+        description: "Tautan publik telah dihapus secara permanen.",
+        variant: "success",
+      });
+      setDeleteTarget(null);
+    } catch (err) {
+      toast({
+        title: "Gagal Menghapus Tautan",
+        description: err instanceof Error ? err.message : "Internal error",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   function handleCopyUrl(tokenHash: string, id: string) {
     const fullUrl = `${origin}/view/${tokenHash}`;
     navigator.clipboard.writeText(fullUrl);
@@ -121,6 +188,91 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
 
   return (
     <div className="space-y-6">
+      {/* Confirm Delete Dialog */}
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Tautan Akses Publik?"
+        description="Tindakan ini akan menghapus tautan akses PWA. Panitia yang menggunakan tautan ini tidak akan dapat mengakses portal lagi."
+        itemName={deleteTarget?.name}
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+      />
+
+      {/* QR Code Dialog */}
+      {qrToken && (
+        <Dialog open={Boolean(qrToken)} onOpenChange={(open) => !open && setQrToken(null)}>
+          <DialogContent className="max-w-xs text-center">
+            <DialogHeader>
+              <DialogTitle className="font-serif text-lg">Pindai QR Code Akses PWA</DialogTitle>
+              <DialogDescription className="text-xs">
+                Kru lapangan dapat memindai QR code ini menggunakan kamera HP untuk langsung membuka portal.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4 flex flex-col items-center space-y-3">
+              <div className="p-3 bg-white rounded-xl shadow-md border border-border">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                    `${origin}/view/${qrToken.hash}`
+                  )}`}
+                  alt="QR Code Akses PWA"
+                  className="w-48 h-48"
+                />
+              </div>
+              <p className="font-mono text-xs text-muted-foreground break-all">
+                /view/{qrToken.hash}
+              </p>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" size="sm" onClick={() => setQrToken(null)} className="w-full">
+                Tutup
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Reset PIN Dialog */}
+      {resetPinToken && (
+        <Dialog open={Boolean(resetPinToken)} onOpenChange={(open) => !open && setResetPinToken(null)}>
+          <DialogContent className="max-w-xs">
+            <form onSubmit={handleResetPin}>
+              <DialogHeader>
+                <DialogTitle className="font-serif text-lg flex items-center gap-1.5">
+                  <KeyRound className="h-4 w-4 text-primary" /> Reset PIN Keamanan
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Masukkan PIN 4-6 digit baru, atau kosongkan untuk menghapus PIN pengaman.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="py-3 space-y-2">
+                <Input
+                  type="password"
+                  maxLength={6}
+                  placeholder="PIN Baru 4-6 Digit..."
+                  value={newPin}
+                  onChange={(e) => setNewPin(e.target.value)}
+                  className="text-center font-mono text-sm tracking-widest"
+                />
+              </div>
+
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setResetPinToken(null)}>
+                  Batal
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Menyimpan..." : "Simpan PIN"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
+
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card">
         <div>
           <h2 className="font-serif text-lg font-bold">Token Akses Kru Lapangan (Public PWA)</h2>
@@ -239,10 +391,21 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
                       </CardTitle>
                     </div>
 
-                    <Switch
-                      checked={t.is_active}
-                      onCheckedChange={() => handleToggleActive(t.id, t.is_active)}
-                    />
+                    <div className="flex items-center space-x-1">
+                      <Switch
+                        checked={t.is_active}
+                        onCheckedChange={() => handleToggleActive(t.id, t.is_active)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteTarget({ id: t.id, name: `/view/${t.token_hash}` })}
+                        className="h-7 w-7 text-destructive hover:bg-destructive/10"
+                        title="Hapus Tautan Akses"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
 
@@ -278,6 +441,28 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
                           <Copy className="h-3.5 w-3.5" /> Salin URL
                         </>
                       )}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-end space-x-2 pt-1 border-t border-border/40">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setResetPinToken(t)}
+                      className="h-7 text-xs gap-1"
+                    >
+                      <KeyRound className="h-3 w-3 text-amber-500" />
+                      {t.pin_hash ? "Edit PIN" : "+ Pasang PIN"}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQrToken({ hash: t.token_hash, title: `/view/${t.token_hash}` })}
+                      className="h-7 text-xs gap-1"
+                    >
+                      <QrCode className="h-3 w-3 text-primary" />
+                      QR Code
                     </Button>
                   </div>
                 </CardContent>

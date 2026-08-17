@@ -9,12 +9,27 @@ export default async function ViewTokenPage(props: { params: Promise<any> }) {
 
   const { data: tokenRecord } = await supabase
     .from("shareable_tokens")
-    .select("*, weddings(groom_name, bride_name)")
+    .select("*, weddings(groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name)")
     .eq("token_hash", token)
     .single();
 
   const groomName = tokenRecord?.weddings?.groom_name || "Mempelai Pria";
   const brideName = tokenRecord?.weddings?.bride_name || "Mempelai Wanita";
+
+  const groomParents = [
+    tokenRecord?.weddings?.groom_father_name,
+    tokenRecord?.weddings?.groom_mother_name,
+  ]
+    .filter(Boolean)
+    .join(" & ");
+
+  const brideParents = [
+    tokenRecord?.weddings?.bride_father_name,
+    tokenRecord?.weddings?.bride_mother_name,
+  ]
+    .filter(Boolean)
+    .join(" & ");
+
   const moduleAccess = (tokenRecord?.module_access as any) || {
     canCheckin: true,
     canViewRundown: true,
@@ -30,7 +45,15 @@ export default async function ViewTokenPage(props: { params: Promise<any> }) {
         <h1 className="font-serif text-2xl font-bold tracking-tight">
           {groomName} & {brideName}
         </h1>
-        <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+
+        {(groomParents || brideParents) && (
+          <div className="text-[11px] text-muted-foreground space-y-0.5 pt-0.5">
+            {groomParents && <p>Pria: <span className="font-medium text-foreground">{groomParents}</span></p>}
+            {brideParents && <p>Wanita: <span className="font-medium text-foreground">{brideParents}</span></p>}
+          </div>
+        )}
+
+        <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 pt-1">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" /> Portal Panitia & Kru Lapangan
         </p>
       </div>

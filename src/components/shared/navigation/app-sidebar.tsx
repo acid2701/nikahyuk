@@ -18,6 +18,7 @@ import {
   QrCode,
   HeartHandshake,
   CheckSquare,
+  Share2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,6 +74,11 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
       title: "Penataan Tempat Duduk",
       href: `${baseUrl}/seating`,
       icon: LayoutGrid,
+    },
+    {
+      title: "Berbagi Link (Share)",
+      href: `${baseUrl}/share`,
+      icon: Share2,
     },
     {
       title: "Log Kado & Angpao",
