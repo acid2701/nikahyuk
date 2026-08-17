@@ -10,6 +10,8 @@ import {
   History,
   ArrowLeft,
   Crown,
+  Users,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -23,12 +25,22 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
       icon: LayoutDashboard,
     },
     {
+      title: "User Pendaftar Platform",
+      href: "/admin/users",
+      icon: Users,
+    },
+    {
+      title: "Akses Staf Admin (RBAC)",
+      href: "/admin/staff-permissions",
+      icon: UserCheck,
+    },
+    {
       title: "Konfigurasi Storage R2",
       href: "/admin/storage-config",
       icon: HardDrive,
     },
     {
-      title: "Template Role (RBAC)",
+      title: "Template Role Defaults",
       href: "/admin/rbac-templates",
       icon: ShieldCheck,
     },
