@@ -14,13 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { RUNDOWN_PRESETS, RundownPreset } from "@/types/presets.types";
 import { useToast } from "@/components/ui/use-toast";
+import { createRundownItemAction } from "@/actions/rundown-actions";
 
 export interface RundownPresetDialogProps {
+  weddingId: string;
   eventId: string;
-  onApplyPreset: (preset: RundownPreset) => Promise<void>;
+  onApplyPreset?: (preset: RundownPreset) => Promise<void>;
 }
 
 export function RundownPresetDialog({
+  weddingId,
   eventId,
   onApplyPreset,
 }: RundownPresetDialogProps) {
@@ -37,7 +40,21 @@ export function RundownPresetDialog({
   async function handleConfirmApply() {
     setLoading(true);
     try {
-      await onApplyPreset(activePreset);
+      if (onApplyPreset) {
+        await onApplyPreset(activePreset);
+      } else {
+        for (const item of activePreset.items) {
+          await createRundownItemAction({
+            weddingId,
+            eventId,
+            timeStart: item.time_start,
+            timeEnd: item.time_end,
+            activityTitle: item.activity_title,
+            picName: item.pic_name,
+          });
+        }
+      }
+
       toast({
         title: "Preset Berhasil Diterapkan",
         description: `Template '${activePreset.name}' berhasil dimasukkan ke rundown.`,
