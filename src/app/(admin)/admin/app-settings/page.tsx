@@ -11,8 +11,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight } from "lucide-react";
+import { MediaUploaderDropzone, UploadedFileMeta } from "@/components/shared/media-uploader/dropzone";
+import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon } from "lucide-react";
 
 export default function AdminAppSettingsPage() {
   const [appName, setAppName] = React.useState("NikahYuk");
@@ -59,6 +61,26 @@ export default function AdminAppSettingsPage() {
     loadBranding();
   }, [loadBranding]);
 
+  function handleLogoUploaded(meta: UploadedFileMeta) {
+    const finalUrl = meta.public_url || `/api/storage/presign?key=${encodeURIComponent(meta.r2_file_key)}`;
+    setLogoUrl(finalUrl);
+    toast({
+      title: "Logo Icon Diunggah ke R2!",
+      description: `File '${meta.file_name}' tersimpan di Cloudflare R2 bucket.`,
+      variant: "success",
+    });
+  }
+
+  function handleFaviconUploaded(meta: UploadedFileMeta) {
+    const finalUrl = meta.public_url || `/api/storage/presign?key=${encodeURIComponent(meta.r2_file_key)}`;
+    setFaviconUrl(finalUrl);
+    toast({
+      title: "Favicon Diunggah ke R2!",
+      description: `Favicon '${meta.file_name}' tersimpan di Cloudflare R2 bucket.`,
+      variant: "success",
+    });
+  }
+
   async function handleSaveBranding(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -83,8 +105,8 @@ export default function AdminAppSettingsPage() {
 
       if (res.ok) {
         toast({
-          title: "Branding & Landing Page Disimpan",
-          description: "Nama aplikasi, logo, dan konten landing page diperbarui di seluruh platform.",
+          title: "Branding & Asset R2 Disimpan",
+          description: "Pengaturan logo icon R2 & landing page diperbarui di seluruh platform.",
           variant: "success",
         });
       } else {
@@ -111,10 +133,10 @@ export default function AdminAppSettingsPage() {
       <div>
         <h1 className="font-serif text-2xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-6 w-6 text-primary" />
-          Pengaturan Aplikasi & Landing Page
+          Pengaturan Aplikasi & Branding Asset R2
         </h1>
         <p className="text-sm text-muted-foreground">
-          Atur Nama Aplikasi, Logo Icon, Favicon, Tagline, dan Konten Landing Page secara dinamis.
+          Unggah Logo Icon & Favicon langsung ke Cloudflare R2 Bucket dan atur konten Landing Page secara dinamis.
         </p>
       </div>
 
@@ -122,56 +144,116 @@ export default function AdminAppSettingsPage() {
         <Card className="border-border/70">
           <CardHeader>
             <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-amber-500" /> Identitas Branding Utama
+              <Sparkles className="h-5 w-5 text-amber-500" /> Identitas App & Unggah Asset ke Cloudflare R2
             </CardTitle>
             <CardDescription>
-              Nama aplikasi, tagline, dan aset logo icon yang tampil di sidebar & navbar.
+              Nama aplikasi, tagline, serta dropzone pengunggahan berkas Logo & Favicon langsung ke S3 R2.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Nama Aplikasi (App Name)</label>
-              <Input
-                type="text"
-                placeholder="NikahYuk"
-                value={appName}
-                onChange={(e) => setAppName(e.target.value)}
-                required
-              />
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Nama Aplikasi (App Name)</label>
+                <Input
+                  type="text"
+                  placeholder="NikahYuk"
+                  value={appName}
+                  onChange={(e) => setAppName(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">Tagline Sub-Judul</label>
+                <Input
+                  type="text"
+                  placeholder="Wedding & Event Companion"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Tagline Sub-Judul</label>
-              <Input
-                type="text"
-                placeholder="Wedding & Event Companion"
-                value={tagline}
-                onChange={(e) => setTagline(e.target.value)}
-                required
-              />
-            </div>
+            {/* R2 DROPZONES FOR LOGO AND FAVICON */}
+            <div className="grid gap-6 md:grid-cols-2 border-t border-border pt-4">
+              {/* Logo Upload Card */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <ImageIcon className="h-4 w-4 text-primary" /> Upload Logo Icon ke R2
+                  </label>
+                  {logoUrl && (
+                    <Badge variant="success" className="text-[10px] gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> Logo Active
+                    </Badge>
+                  )}
+                </div>
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">URL Logo Icon (.png / .svg)</label>
-              <Input
-                type="text"
-                placeholder="https://pub-cdn.nikahyuk.com/logo.png"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Kosongkan untuk menggunakan ikon bawaan Heart.
-              </p>
-            </div>
+                <MediaUploaderDropzone
+                  weddingId="system"
+                  folder="documents"
+                  allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
+                  onUploadSuccess={handleLogoUploaded}
+                  onUploadError={(msg) =>
+                    toast({
+                      title: "Gagal Upload Logo",
+                      description: msg,
+                      variant: "destructive",
+                    })
+                  }
+                />
 
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">URL Favicon (.ico / .png)</label>
-              <Input
-                type="text"
-                placeholder="https://pub-cdn.nikahyuk.com/favicon.ico"
-                value={faviconUrl}
-                onChange={(e) => setFaviconUrl(e.target.value)}
-              />
+                {logoUrl && (
+                  <div className="p-3 bg-muted/40 rounded-lg border border-border flex items-center space-x-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={logoUrl} alt="Logo Preview" className="h-10 w-10 object-contain p-1 bg-white rounded border" />
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">Asset Logo Terpasang</p>
+                      <p className="text-[10px] text-muted-foreground font-mono truncate">{logoUrl}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Favicon Upload Card */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <UploadCloud className="h-4 w-4 text-purple-500" /> Upload Favicon ke R2
+                  </label>
+                  {faviconUrl && (
+                    <Badge variant="success" className="text-[10px] gap-1">
+                      <CheckCircle2 className="h-3 w-3" /> Favicon Active
+                    </Badge>
+                  )}
+                </div>
+
+                <MediaUploaderDropzone
+                  weddingId="system"
+                  folder="documents"
+                  allowedMimeTypes={["image/jpeg", "image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]}
+                  onUploadSuccess={handleFaviconUploaded}
+                  onUploadError={(msg) =>
+                    toast({
+                      title: "Gagal Upload Favicon",
+                      description: msg,
+                      variant: "destructive",
+                    })
+                  }
+                />
+
+                {faviconUrl && (
+                  <div className="p-3 bg-muted/40 rounded-lg border border-border flex items-center space-x-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={faviconUrl} alt="Favicon Preview" className="h-8 w-8 object-contain p-1 bg-white rounded border" />
+                    <div className="space-y-0.5 flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">Asset Favicon Terpasang</p>
+                      <p className="text-[10px] text-muted-foreground font-mono truncate">{faviconUrl}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </CardContent>
         </Card>

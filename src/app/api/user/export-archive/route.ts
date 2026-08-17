@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-// @ts-ignore
-import archiver from "archiver";
+import * as archiverModule from "archiver";
 import { stringify } from "csv-stringify/sync";
 import { PassThrough } from "stream";
+
+const archiver = (archiverModule as any).default || archiverModule;
 
 export async function GET(req: NextRequest) {
   try {
