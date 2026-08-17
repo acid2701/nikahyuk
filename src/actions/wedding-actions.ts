@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { recordAuditLog } from "@/lib/audit/logger";
-import { UserRoleEnum, CustomPermissions } from "@/types/database.types";
+import { UserRoleEnum, CustomPermissions, Database } from "@/types/database.types";
 
 export async function createWeddingAction(formData: FormData) {
   const supabase = await createClient();
@@ -208,6 +208,10 @@ export async function updateWeddingProfileAction(
     groomName?: string;
     brideName?: string;
     weddingSlug?: string;
+    groomFatherName?: string | null;
+    groomMotherName?: string | null;
+    brideFatherName?: string | null;
+    brideMotherName?: string | null;
   }
 ) {
   const supabase = await createClient();
@@ -219,17 +223,14 @@ export async function updateWeddingProfileAction(
     throw new Error("Unauthorized");
   }
 
-  const updatePayload: {
-    groom_name?: string;
-    bride_name?: string;
-    wedding_slug?: string;
-  } = {};
-  if (updates.groomName !== undefined) {
-    updatePayload.groom_name = updates.groomName;
-  }
-  if (updates.brideName !== undefined) {
-    updatePayload.bride_name = updates.brideName;
-  }
+  const updatePayload: Database["public"]["Tables"]["weddings"]["Update"] = {};
+  if (updates.groomName !== undefined) updatePayload.groom_name = updates.groomName;
+  if (updates.brideName !== undefined) updatePayload.bride_name = updates.brideName;
+  if (updates.groomFatherName !== undefined) updatePayload.groom_father_name = updates.groomFatherName || null;
+  if (updates.groomMotherName !== undefined) updatePayload.groom_mother_name = updates.groomMotherName || null;
+  if (updates.brideFatherName !== undefined) updatePayload.bride_father_name = updates.brideFatherName || null;
+  if (updates.brideMotherName !== undefined) updatePayload.bride_mother_name = updates.brideMotherName || null;
+
   if (updates.weddingSlug !== undefined) {
     const slugCleaned = updates.weddingSlug
       .toLowerCase()
@@ -255,11 +256,7 @@ export async function updateWeddingProfileAction(
     updatePayload.wedding_slug = slugCleaned;
   }
 
-  if (
-    !updatePayload.groom_name &&
-    !updatePayload.bride_name &&
-    !updatePayload.wedding_slug
-  ) {
+  if (Object.keys(updatePayload).length === 0) {
     throw new Error("Tidak ada perubahan yang dikirim.");
   }
 
@@ -269,7 +266,6 @@ export async function updateWeddingProfileAction(
     .eq("id", weddingId)
     .select()
     .single();
-
 
   if (error || !data) {
     throw new Error(error?.message || "Gagal memperbarui profil pernikahan.");

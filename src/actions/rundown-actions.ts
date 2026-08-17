@@ -204,3 +204,72 @@ export async function deleteRundownItemAction(rundownId: string, weddingId: stri
   revalidatePath(`/dashboard/${weddingId}/rundown`);
   return { success: true };
 }
+
+export async function updateRundownItemAction(
+  rundownId: string,
+  weddingId: string,
+  updates: {
+    timeStart?: string;
+    timeEnd?: string;
+    activityTitle?: string;
+    picName?: string | null;
+    location?: string | null;
+    contingencyPlan?: string | null;
+    isInternalOnly?: boolean;
+    cues?: { cueType: "sound" | "lighting" | "multimedia" | "music"; instruction: string }[];
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data: item, error } = await supabase
+    .from("rundowns")
+    .update({
+      ...(updates.timeStart !== undefined && { time_start: updates.timeStart }),
+      ...(updates.timeEnd !== undefined && { time_end: updates.timeEnd }),
+      ...(updates.activityTitle !== undefined && { activity_title: updates.activityTitle }),
+      ...(updates.picName !== undefined && { pic_name: updates.picName || null }),
+      ...(updates.location !== undefined && { location: updates.location || null }),
+      ...(updates.contingencyPlan !== undefined && { contingency_plan: updates.contingencyPlan || null }),
+      ...(updates.isInternalOnly !== undefined && { is_internal_only: updates.isInternalOnly }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", rundownId)
+    .select()
+    .single();
+
+  if (error || !item) {
+    throw new Error(error?.message || "Gagal memperbarui item rundown.");
+  }
+
+  if (updates.cues !== undefined) {
+    await supabase.from("rundown_cues").delete().eq("rundown_id", rundownId);
+
+    if (updates.cues.length > 0) {
+      const cueRows = updates.cues.map((c) => ({
+        rundown_id: rundownId,
+        cue_type: c.cueType,
+        instruction: c.instruction,
+      }));
+      await supabase.from("rundown_cues").insert(cueRows);
+    }
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Rundowns",
+    actionType: "UPDATE",
+    changeDiff: { rundownId, updates },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/rundown`);
+  return item;
+}

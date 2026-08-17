@@ -3,15 +3,22 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CueBadge } from "@/components/shared/badges/cue-badge";
-import { TimelineShiftModal } from "@/components/modules/rundown/timeline-shift-modal";
+import { RundownItemCard } from "@/components/modules/rundown/rundown-item-card";
+import { AudioCuesDrawer } from "@/components/modules/rundown/audio-cues-drawer";
+import { EditRundownItemModal } from "@/components/modules/rundown/edit-rundown-modal";
+import { RundownPDFPrintButton } from "@/components/shared/pdf/rundown-pdf-template";
 import { RundownPresetDialog } from "@/components/modules/rundown/rundown-preset-dialog";
-import { createRundownItemAction, toggleRundownItemCompleteAction, deleteRundownItemAction } from "@/actions/rundown-actions";
+import { ConfirmDeleteDialog } from "@/components/shared/modal/confirm-delete-dialog";
+import {
+  createRundownItemAction,
+  toggleRundownItemCompleteAction,
+  deleteRundownItemAction,
+} from "@/actions/rundown-actions";
 import { useToast } from "@/components/ui/use-toast";
 import { CueTypeEnum } from "@/types/database.types";
-import { Plus, Trash2, Clock, MapPin, UserCheck, CheckSquare, Square, Volume2 } from "lucide-react";
+import { Plus, Clock, Volume2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -45,12 +52,29 @@ export interface RundownItem {
 export interface RundownManagerProps {
   weddingId: string;
   eventId: string;
+  eventName?: string;
+  weddingDetails?: {
+    groomName?: string;
+    brideName?: string;
+    groomFatherName?: string | null;
+    groomMotherName?: string | null;
+    brideFatherName?: string | null;
+    brideMotherName?: string | null;
+  };
   initialRundowns: RundownItem[];
 }
 
-export function RundownManager({ weddingId, eventId, initialRundowns }: RundownManagerProps) {
+export function RundownManager({
+  weddingId,
+  eventId,
+  eventName = "Sub-Event",
+  weddingDetails,
+  initialRundowns,
+}: RundownManagerProps) {
   const [rundowns, setRundowns] = React.useState<RundownItem[]>(initialRundowns);
   const [openModal, setOpenModal] = React.useState(false);
+  const [openEditModal, setOpenEditModal] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState<RundownItem | null>(null);
 
   const [activityTitle, setActivityTitle] = React.useState("");
   const [timeStart, setTimeStart] = React.useState("08:00");
@@ -62,11 +86,31 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
   const [cueInstruction, setCueInstruction] = React.useState("");
 
   const [loading, setLoading] = React.useState(false);
+
+  // Confirm Delete Modal State
+  const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
+
   const { toast } = useToast();
 
   React.useEffect(() => {
     setRundowns(initialRundowns);
   }, [initialRundowns]);
+
+  function resetForm() {
+    setActivityTitle("");
+    setTimeStart("08:00");
+    setTimeEnd("08:30");
+    setPicName("");
+    setLocation("");
+    setContingencyPlan("");
+    setCueInstruction("");
+  }
+
+  function handleOpenEdit(item: RundownItem) {
+    setEditingItem(item);
+    setOpenEditModal(true);
+  }
 
   async function handleCreateItem(e: React.FormEvent) {
     e.preventDefault();
@@ -93,11 +137,7 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
       });
 
       setOpenModal(false);
-      setActivityTitle("");
-      setPicName("");
-      setLocation("");
-      setContingencyPlan("");
-      setCueInstruction("");
+      resetForm();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Agenda",
@@ -126,22 +166,26 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
     }
   }
 
-  async function handleDeleteItem(rId: string, title: string) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus agenda '${title}'?`)) return;
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
 
     try {
-      await deleteRundownItemAction(rId, weddingId);
+      await deleteRundownItemAction(deleteTarget.id, weddingId);
       toast({
         title: "Agenda Dihapus",
-        description: `Agenda '${title}' telah dihapus.`,
+        description: `Agenda '${deleteTarget.name}' telah dihapus dari rundown.`,
         variant: "success",
       });
+      setDeleteTarget(null);
     } catch (err) {
       toast({
         title: "Gagal Menghapus Agenda",
         description: err instanceof Error ? err.message : "Internal error",
         variant: "destructive",
       });
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -150,6 +194,17 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
 
   return (
     <div className="space-y-6">
+      {/* Reusable Confirm Delete Modal */}
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Agenda Rundown?"
+        description="Tindakan ini akan menghapus agenda dari susunan acara live."
+        itemName={deleteTarget?.name}
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+      />
+
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card">
         <div className="space-y-1 w-full sm:w-auto">
           <div className="flex items-center space-x-2">
@@ -166,12 +221,18 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap items-center space-x-2 w-full sm:w-auto justify-end gap-y-2">
+          <AudioCuesDrawer rundowns={rundowns} />
+          <RundownPDFPrintButton
+            eventName={eventName}
+            weddingDetails={weddingDetails}
+            rundowns={rundowns as any}
+          />
           <RundownPresetDialog weddingId={weddingId} eventId={eventId} />
 
           <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-2 h-9 text-xs">
+              <Button size="sm" onClick={resetForm} className="gap-2 h-9 text-xs">
                 <Plus className="h-4 w-4" />
                 Tambah Agenda Rundown
               </Button>
@@ -241,6 +302,16 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
                     </div>
                   </div>
 
+                  <div className="space-y-1">
+                    <label className="text-xs font-medium">Contingency Plan (Plan B)</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Pindahkan ke Foyer indoor jika hujan deras"
+                      value={contingencyPlan}
+                      onChange={(e) => setContingencyPlan(e.target.value)}
+                    />
+                  </div>
+
                   <div className="border-t border-border pt-2 space-y-2">
                     <label className="text-xs font-semibold text-foreground flex items-center gap-1">
                       <Volume2 className="h-3.5 w-3.5 text-primary" />
@@ -297,93 +368,27 @@ export function RundownManager({ weddingId, eventId, initialRundowns }: RundownM
         </Card>
       ) : (
         <div className="space-y-3">
-          {rundowns.map((r) => {
-            const cues = r.rundown_cues || [];
-            return (
-              <Card
-                key={r.id}
-                className={`border-border/80 transition-colors ${
-                  r.is_completed ? "bg-muted/30 border-muted" : "bg-card"
-                }`}
-              >
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-start space-x-3">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleToggleComplete(r.id, r.is_completed)}
-                      className="h-7 w-7 shrink-0 text-primary mt-0.5"
-                    >
-                      {r.is_completed ? (
-                        <CheckSquare className="h-5 w-5 text-emerald-500" />
-                      ) : (
-                        <Square className="h-5 w-5 text-muted-foreground" />
-                      )}
-                    </Button>
-
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-mono font-bold text-sm text-primary">
-                          {r.time_start} - {r.time_end}
-                        </span>
-                        <h3
-                          className={`font-semibold text-sm ${
-                            r.is_completed ? "line-through text-muted-foreground" : "text-foreground"
-                          }`}
-                        >
-                          {r.activity_title}
-                        </h3>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        {r.pic_name && (
-                          <span className="flex items-center gap-1">
-                            <UserCheck className="h-3 w-3" /> PIC: {r.pic_name}
-                          </span>
-                        )}
-                        {r.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="h-3 w-3" /> {r.location}
-                          </span>
-                        )}
-                      </div>
-
-                      {cues.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                          {cues.map((c) => (
-                            <CueBadge
-                              key={c.id}
-                              cueType={c.cue_type}
-                              instruction={c.instruction}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2 justify-end">
-                    <TimelineShiftModal
-                      eventId={eventId}
-                      weddingId={weddingId}
-                      targetRundownId={r.id}
-                      targetActivityTitle={r.activity_title}
-                    />
-
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteItem(r.id, r.activity_title)}
-                      className="h-8 w-8 text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+          {rundowns.map((r) => (
+            <RundownItemCard
+              key={r.id}
+              item={r}
+              weddingId={weddingId}
+              eventId={eventId}
+              onToggleComplete={handleToggleComplete}
+              onEdit={handleOpenEdit}
+              onDelete={(id, title) => setDeleteTarget({ id, name: title })}
+            />
+          ))}
         </div>
+      )}
+
+      {editingItem && (
+        <EditRundownItemModal
+          open={openEditModal}
+          onOpenChange={setOpenEditModal}
+          weddingId={weddingId}
+          item={editingItem}
+        />
       )}
     </div>
   );

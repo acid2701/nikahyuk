@@ -32,6 +32,10 @@ export default async function WeddingProfileSettingsPage(props: { params: Promis
         groomName={wedding.groom_name}
         brideName={wedding.bride_name}
         weddingSlug={wedding.wedding_slug}
+        groomFatherName={wedding.groom_father_name}
+        groomMotherName={wedding.groom_mother_name}
+        brideFatherName={wedding.bride_father_name}
+        brideMotherName={wedding.bride_mother_name}
       />
 
       <div className="p-3 rounded-lg border border-border bg-card/40 space-y-1 max-w-sm">

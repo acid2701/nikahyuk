@@ -7,13 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Save, Pencil, X } from "lucide-react";
+import { Save, Pencil, X, Users } from "lucide-react";
 
 export interface WeddingProfileFormProps {
   weddingId: string;
   groomName: string;
   brideName: string;
   weddingSlug: string;
+  groomFatherName?: string | null;
+  groomMotherName?: string | null;
+  brideFatherName?: string | null;
+  brideMotherName?: string | null;
 }
 
 export function WeddingProfileForm({
@@ -21,11 +25,21 @@ export function WeddingProfileForm({
   groomName: initialGroomName,
   brideName: initialBrideName,
   weddingSlug: initialSlug,
+  groomFatherName: initialGroomFather = "",
+  groomMotherName: initialGroomMother = "",
+  brideFatherName: initialBrideFather = "",
+  brideMotherName: initialBrideMother = "",
 }: WeddingProfileFormProps) {
   const [editing, setEditing] = React.useState(false);
   const [groomName, setGroomName] = React.useState(initialGroomName);
   const [brideName, setBrideName] = React.useState(initialBrideName);
   const [weddingSlug, setWeddingSlug] = React.useState(initialSlug);
+
+  const [groomFatherName, setGroomFatherName] = React.useState(initialGroomFather || "");
+  const [groomMotherName, setGroomMotherName] = React.useState(initialGroomMother || "");
+  const [brideFatherName, setBrideFatherName] = React.useState(initialBrideFather || "");
+  const [brideMotherName, setBrideMotherName] = React.useState(initialBrideMother || "");
+
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
@@ -34,19 +48,27 @@ export function WeddingProfileForm({
     setGroomName(initialGroomName);
     setBrideName(initialBrideName);
     setWeddingSlug(initialSlug);
+    setGroomFatherName(initialGroomFather || "");
+    setGroomMotherName(initialGroomMother || "");
+    setBrideFatherName(initialBrideFather || "");
+    setBrideMotherName(initialBrideMother || "");
     setEditing(false);
   }
 
   const hasChanges =
     groomName !== initialGroomName ||
     brideName !== initialBrideName ||
-    weddingSlug !== initialSlug;
+    weddingSlug !== initialSlug ||
+    groomFatherName !== (initialGroomFather || "") ||
+    groomMotherName !== (initialGroomMother || "") ||
+    brideFatherName !== (initialBrideFather || "") ||
+    brideMotherName !== (initialBrideMother || "");
 
   async function handleSave() {
     if (!groomName.trim() || !brideName.trim() || !weddingSlug.trim()) {
       toast({
         title: "Perhatian",
-        description: "Semua kolom wajib diisi dan tidak boleh kosong.",
+        description: "Nama pengantin dan slug acara tidak boleh kosong.",
         variant: "warning",
       });
       return;
@@ -54,16 +76,19 @@ export function WeddingProfileForm({
 
     setLoading(true);
     try {
-      const updates: Record<string, string> = {};
-      if (groomName !== initialGroomName) updates.groomName = groomName.trim();
-      if (brideName !== initialBrideName) updates.brideName = brideName.trim();
-      if (weddingSlug !== initialSlug) updates.weddingSlug = weddingSlug.trim();
-
-      await updateWeddingProfileAction(weddingId, updates);
+      await updateWeddingProfileAction(weddingId, {
+        groomName: groomName.trim(),
+        brideName: brideName.trim(),
+        weddingSlug: weddingSlug.trim(),
+        groomFatherName: groomFatherName.trim() || null,
+        groomMotherName: groomMotherName.trim() || null,
+        brideFatherName: brideFatherName.trim() || null,
+        brideMotherName: brideMotherName.trim() || null,
+      });
 
       toast({
         title: "Profil Berhasil Diperbarui",
-        description: "Data pasangan dan slug acara telah disimpan.",
+        description: "Data pengantin, nama orang tua, dan slug acara telah disimpan.",
         variant: "success",
       });
 
@@ -85,11 +110,12 @@ export function WeddingProfileForm({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-serif">
-              Detail Pasangan Pengantin
+            <CardTitle className="text-lg font-serif flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" />
+              Detail Mempelai & Orang Tua Pengantin
             </CardTitle>
             <CardDescription className="text-xs">
-              Informasi identitas utama dan URL slug workspace pernikahan.
+              Informasi identitas pengantin, nama orang tua kandung, dan URL slug workspace.
             </CardDescription>
           </div>
           {!editing ? (
@@ -127,54 +153,115 @@ export function WeddingProfileForm({
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5">
-            <label
-              htmlFor="profile-groom-name"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-            >
-              Pengantin Pria (Groom)
-            </label>
-            {editing ? (
-              <Input
-                id="profile-groom-name"
-                value={groomName}
-                onChange={(e) => setGroomName(e.target.value)}
-                disabled={loading}
-                placeholder="Nama Pengantin Pria"
-              />
-            ) : (
-              <p className="font-bold text-base text-foreground p-2 rounded-md border border-transparent bg-card/40">
-                {groomName || "Belum diisi"}
-              </p>
-            )}
-          </div>
+      <CardContent className="space-y-6">
+        {/* GROOM SECTION */}
+        <div className="space-y-3 p-3 rounded-lg border border-border/70 bg-card/40">
+          <h4 className="text-xs font-bold text-primary uppercase tracking-wider">
+            1. Pihak Pengantin Pria (Groom)
+          </h4>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground">Nama Pengantin Pria</label>
+              {editing ? (
+                <Input
+                  value={groomName}
+                  onChange={(e) => setGroomName(e.target.value)}
+                  disabled={loading}
+                  placeholder="Nama Pengantin Pria"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="font-bold text-sm text-foreground">{groomName || "Belum diisi"}</p>
+              )}
+            </div>
 
-          <div className="space-y-1.5">
-            <label
-              htmlFor="profile-bride-name"
-              className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"
-            >
-              Pengantin Wanita (Bride)
-            </label>
-            {editing ? (
-              <Input
-                id="profile-bride-name"
-                value={brideName}
-                onChange={(e) => setBrideName(e.target.value)}
-                disabled={loading}
-                placeholder="Nama Pengantin Wanita"
-              />
-            ) : (
-              <p className="font-bold text-base text-foreground p-2 rounded-md border border-transparent bg-card/40">
-                {brideName || "Belum diisi"}
-              </p>
-            )}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Nama Ayah Pria</label>
+              {editing ? (
+                <Input
+                  value={groomFatherName}
+                  onChange={(e) => setGroomFatherName(e.target.value)}
+                  disabled={loading}
+                  placeholder="e.g. Bpk. H. Ahmad Subagyo"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="text-xs text-foreground font-medium">{groomFatherName || "-"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Nama Ibu Pria</label>
+              {editing ? (
+                <Input
+                  value={groomMotherName}
+                  onChange={(e) => setGroomMotherName(e.target.value)}
+                  disabled={loading}
+                  placeholder="e.g. Ibu Hj. Endang Rahayu"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="text-xs text-foreground font-medium">{groomMotherName || "-"}</p>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="space-y-1.5">
+        {/* BRIDE SECTION */}
+        <div className="space-y-3 p-3 rounded-lg border border-border/70 bg-card/40">
+          <h4 className="text-xs font-bold text-pink-600 dark:text-pink-400 uppercase tracking-wider">
+            2. Pihak Pengantin Wanita (Bride)
+          </h4>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground">Nama Pengantin Wanita</label>
+              {editing ? (
+                <Input
+                  value={brideName}
+                  onChange={(e) => setBrideName(e.target.value)}
+                  disabled={loading}
+                  placeholder="Nama Pengantin Wanita"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="font-bold text-sm text-foreground">{brideName || "Belum diisi"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Nama Ayah Wanita</label>
+              {editing ? (
+                <Input
+                  value={brideFatherName}
+                  onChange={(e) => setBrideFatherName(e.target.value)}
+                  disabled={loading}
+                  placeholder="e.g. Bpk. Drs. Bambang Suryono"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="text-xs text-foreground font-medium">{brideFatherName || "-"}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Nama Ibu Wanita</label>
+              {editing ? (
+                <Input
+                  value={brideMotherName}
+                  onChange={(e) => setBrideMotherName(e.target.value)}
+                  disabled={loading}
+                  placeholder="e.g. Ibu Hj. Siti Nurjanah"
+                  className="h-9 text-xs"
+                />
+              ) : (
+                <p className="text-xs text-foreground font-medium">{brideMotherName || "-"}</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* SLUG SECTION */}
+        <div className="space-y-1.5 pt-2 border-t border-border">
           <label
             htmlFor="profile-slug"
             className="text-xs font-semibold text-muted-foreground uppercase tracking-wider"

@@ -118,6 +118,10 @@ export interface Database {
           groom_name: string;
           bride_name: string;
           wedding_slug: string;
+          groom_father_name?: string | null;
+          groom_mother_name?: string | null;
+          bride_father_name?: string | null;
+          bride_mother_name?: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -127,6 +131,10 @@ export interface Database {
           groom_name: string;
           bride_name: string;
           wedding_slug: string;
+          groom_father_name?: string | null;
+          groom_mother_name?: string | null;
+          bride_father_name?: string | null;
+          bride_mother_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -136,6 +144,10 @@ export interface Database {
           groom_name?: string;
           bride_name?: string;
           wedding_slug?: string;
+          groom_father_name?: string | null;
+          groom_mother_name?: string | null;
+          bride_father_name?: string | null;
+          bride_mother_name?: string | null;
           created_at?: string;
           updated_at?: string;
         };

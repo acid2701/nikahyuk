@@ -32,6 +32,12 @@ export default async function RundownPage(props: {
     );
   }
 
+  const { data: wedding } = await supabase
+    .from("weddings")
+    .select("groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name")
+    .eq("id", weddingId)
+    .single();
+
   const { data: rundownsData } = await supabase
     .from("rundowns")
     .select("*, rundown_cues(*)")
@@ -54,6 +60,15 @@ export default async function RundownPage(props: {
       <RundownManager
         weddingId={weddingId}
         eventId={activeEventId}
+        eventName={activeEvent?.event_name || "Sub-Event"}
+        weddingDetails={{
+          groomName: wedding?.groom_name,
+          brideName: wedding?.bride_name,
+          groomFatherName: wedding?.groom_father_name,
+          groomMotherName: wedding?.groom_mother_name,
+          brideFatherName: wedding?.bride_father_name,
+          brideMotherName: wedding?.bride_mother_name,
+        }}
         initialRundowns={rundowns as any}
       />
     </div>
