@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MilestoneTimeline } from "@/components/modules/budget/milestone-timeline";
-import { deleteBudgetItemAction } from "@/actions/budget-actions";
-import { useToast } from "@/components/ui/use-toast";
-import { DollarSign, Trash2, User, Users, Heart } from "lucide-react";
+import { DeleteBudgetItemModal } from "@/components/modules/budget/delete-budget-modal";
+import { EditBudgetItemModal } from "@/components/modules/budget/edit-budget-modal";
+import { DollarSign, Trash2, Edit, User, Users, Heart } from "lucide-react";
 
 export interface BudgetItemData {
   id: string;
@@ -27,7 +27,10 @@ export interface BudgetListManagerProps {
 export function BudgetListManager({ weddingId, initialItems }: BudgetListManagerProps) {
   const [items, setItems] = React.useState<BudgetItemData[]>(initialItems);
   const [sideFilter, setSideFilter] = React.useState<"all" | "groom" | "bride" | "joint">("all");
-  const { toast } = useToast();
+  const [openEditModal, setOpenEditModal] = React.useState(false);
+  const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
+  const [editingItem, setEditingItem] = React.useState<BudgetItemData | null>(null);
+  const [deletingItem, setDeletingItem] = React.useState<BudgetItemData | null>(null);
 
   React.useEffect(() => {
     setItems(initialItems);
@@ -51,26 +54,14 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
     .filter((i) => i.target_payer === "joint")
     .reduce((acc, i) => acc + Number(i.estimated_cost || 0), 0);
 
-  async function handleDeleteItem(itemId: string, itemName: string) {
-    if (!confirm(`Apakah Anda yakin ingin menghapus pos anggaran '${itemName}'?`)) {
-      return;
-    }
+  function handleOpenEdit(item: BudgetItemData) {
+    setEditingItem(item);
+    setOpenEditModal(true);
+  }
 
-    try {
-      await deleteBudgetItemAction(itemId, weddingId);
-      setItems((prev) => prev.filter((i) => i.id !== itemId));
-      toast({
-        title: "Pos Anggaran Dihapus",
-        description: `Pos '${itemName}' berhasil dihapus.`,
-        variant: "success",
-      });
-    } catch (err) {
-      toast({
-        title: "Gagal Menghapus Pos Anggaran",
-        description: err instanceof Error ? err.message : "Internal error",
-        variant: "destructive",
-      });
-    }
+  function handleOpenDelete(item: BudgetItemData) {
+    setDeletingItem(item);
+    setOpenDeleteModal(true);
   }
 
   return (
@@ -148,21 +139,33 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-3 text-right">
+                  <div className="flex items-center space-x-2 text-right">
                     <div>
                       <p className="text-xs text-muted-foreground">Target Anggaran</p>
                       <p className="font-mono font-bold text-base text-foreground">
                         Rp {Number(item.estimated_cost).toLocaleString("id-ID")}
                       </p>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteItem(item.id, item.item_name)}
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex items-center space-x-1 pl-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenEdit(item)}
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                        title="Edit Pos Anggaran"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenDelete(item)}
+                        className="h-8 w-8 text-destructive hover:bg-rose-100 hover:text-rose-700 dark:hover:bg-rose-950/50 shrink-0"
+                        title="Hapus Pos Anggaran"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
@@ -178,6 +181,25 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
             </Card>
           );
         })
+      )}
+
+      {editingItem && (
+        <EditBudgetItemModal
+          open={openEditModal}
+          onOpenChange={setOpenEditModal}
+          weddingId={weddingId}
+          item={editingItem}
+        />
+      )}
+
+      {deletingItem && (
+        <DeleteBudgetItemModal
+          open={openDeleteModal}
+          onOpenChange={setOpenDeleteModal}
+          itemId={deletingItem.id}
+          itemName={deletingItem.item_name}
+          weddingId={weddingId}
+        />
       )}
     </div>
   );

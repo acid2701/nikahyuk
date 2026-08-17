@@ -159,3 +159,62 @@ export async function deleteBudgetItemAction(itemId: string, weddingId: string) 
   revalidatePath(`/dashboard/${weddingId}/budget`);
   return { success: true };
 }
+
+export async function updateBudgetItemAction(
+  itemId: string,
+  weddingId: string,
+  updates: {
+    itemName?: string;
+    estimatedCost?: number;
+    targetPayer?: "groom" | "bride" | "joint";
+    notes?: string | null;
+  }
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const updatePayload: {
+    item_name?: string;
+    estimated_cost?: number;
+    target_payer?: "groom" | "bride" | "joint";
+    notes?: string | null;
+    updated_at?: string;
+  } = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (updates.itemName !== undefined) updatePayload.item_name = updates.itemName;
+  if (updates.estimatedCost !== undefined) updatePayload.estimated_cost = updates.estimatedCost;
+  if (updates.targetPayer !== undefined) updatePayload.target_payer = updates.targetPayer;
+  if (updates.notes !== undefined) updatePayload.notes = updates.notes;
+
+  const { data: item, error } = await supabase
+    .from("budget_items")
+    .update(updatePayload)
+    .eq("id", itemId)
+    .select()
+    .single();
+
+  if (error || !item) {
+    throw new Error(error?.message || "Gagal memperbarui pos anggaran.");
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Pengantin",
+    moduleName: "Budget",
+    actionType: "UPDATE",
+    changeDiff: { itemId, updates },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/budget`);
+  return item;
+}
+
