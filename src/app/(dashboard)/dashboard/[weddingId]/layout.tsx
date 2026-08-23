@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
 import { DashboardHeader } from "@/components/shared/navigation/dashboard-header";
+import { EventScopeHeader } from "@/components/layout/event-scope-header";
 import { SubEventOption } from "@/components/shared/navigation/event-switcher";
 
 export default async function WeddingDashboardLayout(props: {
@@ -43,6 +44,21 @@ export default async function WeddingDashboardLayout(props: {
     event_side: e.event_side as "groom" | "bride" | "joint",
   }));
 
+  let allowedEventIds: string[] | null = null;
+  const { data: collaborator } = await supabase
+    .from("wedding_collaborators")
+    .select("custom_permissions")
+    .eq("wedding_id", weddingId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (collaborator && collaborator.custom_permissions) {
+    const perms = collaborator.custom_permissions as any;
+    if (Array.isArray(perms.allowed_event_ids)) {
+      allowedEventIds = perms.allowed_event_ids;
+    }
+  }
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Suspense fallback={<div className="w-64 border-r border-border bg-card h-full min-h-screen" />}>
@@ -58,8 +74,18 @@ export default async function WeddingDashboardLayout(props: {
             events={events}
           />
         </Suspense>
+        {events.length > 0 && (
+          <Suspense fallback={null}>
+            <EventScopeHeader
+              weddingId={weddingId}
+              events={events}
+              allowedEventIds={allowedEventIds}
+            />
+          </Suspense>
+        )}
         <main className="flex-1 overflow-y-auto p-6">{props.children}</main>
       </div>
     </div>
   );
 }
+

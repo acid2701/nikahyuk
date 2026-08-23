@@ -1,10 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CollaboratorPermissionForm } from "@/components/modules/settings/collaborator-permission-form";
+import { Card } from "@/components/ui/card";
+import { CollaboratorCardItem } from "@/components/modules/settings/collaborator-card-item";
 import { CollaboratorInviteModal } from "@/components/modules/settings/collaborator-invite-modal";
-import { CustomPermissions } from "@/types/database.types";
-import { Users, ShieldCheck } from "lucide-react";
+import { CustomRoleManagerModal } from "@/components/modules/settings/custom-role-manager-modal";
+import { ShieldCheck } from "lucide-react";
 
 export default async function CollaboratorsPage(props: {
   params: Promise<any>;
@@ -12,78 +11,55 @@ export default async function CollaboratorsPage(props: {
   const { weddingId } = (await props.params) as { weddingId: string };
   const supabase = await createClient();
 
+  const { data: wedding } = await supabase
+    .from("weddings")
+    .select("groom_name, bride_name")
+    .eq("id", weddingId)
+    .maybeSingle();
+
+  const weddingTitle = wedding
+    ? `${wedding.groom_name} & ${wedding.bride_name}`
+    : "Pernikahan";
+
   const { data: collaborators } = await supabase
     .from("wedding_collaborators")
     .select("*")
     .eq("wedding_id", weddingId);
 
+  const { data: events } = await supabase
+    .from("wedding_events")
+    .select("id, event_name")
+    .eq("wedding_id", weddingId)
+    .order("created_at", { ascending: true });
+
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight">
-            Kolaborator
+            Kolaborator & Tim Acara
           </h1>
           <p className="text-sm text-muted-foreground">
-            Kelola hak akses Pasangan, Wedding Organizer (WO), panitia keluarga, dan delegasi modul.
+            Kelola hak akses Pasangan, Wedding Organizer (WO), panitia keluarga, dan peran kustom.
           </p>
         </div>
-        <CollaboratorInviteModal weddingId={weddingId} />
+        <div className="flex items-center space-x-2">
+          <CustomRoleManagerModal weddingId={weddingId} />
+          <CollaboratorInviteModal weddingId={weddingId} events={events || []} />
+        </div>
       </div>
 
       <div className="space-y-4">
         {collaborators && collaborators.length > 0 ? (
-          collaborators.map((c) => {
-            const perms = (c.custom_permissions || {
-              budget: false,
-              vendor: false,
-              rundown: true,
-              guest: true,
-              gift_log: false,
-            }) as CustomPermissions;
-
-            const roleLabel =
-              c.role === "wo"
-                ? "Wedding Organizer"
-                : c.role === "partner"
-                ? "Partner"
-                : "Panitia Keluarga";
-
-            return (
-              <Card key={c.id} className="border-border/80">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
-                        <Users className="h-4 w-4" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-base font-semibold">
-                          Kolaborator ID: {c.user_id.substring(0, 8)}...
-                        </CardTitle>
-                        <CardDescription className="text-xs">
-                          Role:{" "}
-                          <span className="font-semibold uppercase text-foreground">
-                            {c.role}
-                          </span>
-                        </CardDescription>
-                      </div>
-                    </div>
-                    <Badge variant={c.role === "wo" ? "default" : "secondary"}>
-                      {roleLabel}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CollaboratorPermissionForm
-                    collaboratorId={c.id}
-                    weddingId={weddingId}
-                    initialPermissions={perms}
-                  />
-                </CardContent>
-              </Card>
-            );
-          })
+          collaborators.map((c) => (
+            <CollaboratorCardItem
+              key={c.id}
+              collaborator={c}
+              weddingId={weddingId}
+              weddingTitle={weddingTitle}
+              events={events || []}
+            />
+          ))
         ) : (
           <Card className="border-dashed p-8 text-center space-y-3">
             <ShieldCheck className="h-10 w-10 text-muted-foreground mx-auto" />
@@ -92,7 +68,7 @@ export default async function CollaboratorsPage(props: {
                 Belum Ada Kolaborator Tambahan
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                Anda adalah pemilik utama (Owner) ruang kerja pernikahan ini. Klik &quot;Undang Kolaborator&quot; untuk menambahkan WO atau panitia keluarga.
+                Anda adalah pemilik utama (Owner) ruang kerja pernikahan ini. Klik &quot;Undang Kolaborator&quot; atau &quot;Kelola Peran Kustom&quot; untuk menambahkan tim acara.
               </p>
             </div>
           </Card>

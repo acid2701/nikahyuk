@@ -12,8 +12,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { HardDrive, ShieldCheck, HeartHandshake, ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-export default function StorageConfigPage() {
+export default function AdminStorageConfigPage() {
   const [accountId, setAccountId] = React.useState("");
   const [accessKeyId, setAccessKeyId] = React.useState("");
   const [secretAccessKey, setSecretAccessKey] = React.useState("");
@@ -24,24 +26,17 @@ export default function StorageConfigPage() {
   const [maxPdfSizeMb, setMaxPdfSizeMb] = React.useState(20);
   const [imageQualityRatio, setImageQualityRatio] = React.useState(0.8);
 
-  const [qrisMerchantName, setQrisMerchantName] = React.useState("NikahYuk Platform - Donasi Sukarela");
-  const [qrisImageUrl, setQrisImageUrl] = React.useState(
-    "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Donasi%20NikahYuk%20QRIS%20Tip%20Jar"
-  );
-  const [qrisNotes, setQrisNotes] = React.useState(
-    "Menerima GoPay, OVO, ShopeePay, DANA, BCA, Mandiri, BRI, BNI (QRIS Standard)"
-  );
-  const [qrisIsActive, setQrisIsActive] = React.useState(true);
-
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 
-  const loadSettings = React.useCallback(async () => {
+  const loadConfig = React.useCallback(async () => {
     try {
       const res = await fetch("/api/admin/settings");
       if (res.ok) {
         const result = await res.json();
-        const rows: Array<{ key: string; value: Record<string, unknown> }> = result.data || [];
+        const rows: Array<{ key: string; value: Record<string, unknown> }> =
+          result.data || [];
+
         const r2Row = rows.find((r) => r.key === "r2_credentials");
         if (r2Row && r2Row.value) {
           setAccountId((r2Row.value.accountId as string) || "");
@@ -50,34 +45,22 @@ export default function StorageConfigPage() {
           setBucketName((r2Row.value.bucketName as string) || "");
           setPublicCdnDomain((r2Row.value.publicCdnDomain as string) || "");
         }
-        const storageRow = rows.find((r) => r.key === "storage_rules");
-        if (storageRow && storageRow.value) {
-          setMaxImageSizeMb((storageRow.value.maxImageSizeMb as number) || 10);
-          setMaxPdfSizeMb((storageRow.value.maxPdfSizeMb as number) || 20);
-          setImageQualityRatio((storageRow.value.imageQualityRatio as number) || 0.8);
-        }
-        const qrisRow = rows.find((r) => r.key === "qris_donasi_config");
-        if (qrisRow && qrisRow.value) {
-          setQrisMerchantName((qrisRow.value.merchantName as string) || "NikahYuk Platform - Donasi Sukarela");
-          setQrisImageUrl(
-            (qrisRow.value.qrisImageUrl as string) ||
-              "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Donasi%20NikahYuk%20QRIS%20Tip%20Jar"
-          );
-          setQrisNotes(
-            (qrisRow.value.notes as string) ||
-              "Menerima GoPay, OVO, ShopeePay, DANA, BCA, Mandiri, BRI, BNI (QRIS Standard)"
-          );
-          setQrisIsActive(qrisRow.value.isActive !== false);
+
+        const rulesRow = rows.find((r) => r.key === "storage_rules");
+        if (rulesRow && rulesRow.value) {
+          setMaxImageSizeMb((rulesRow.value.maxImageSizeMb as number) || 10);
+          setMaxPdfSizeMb((rulesRow.value.maxPdfSizeMb as number) || 20);
+          setImageQualityRatio((rulesRow.value.imageQualityRatio as number) || 0.8);
         }
       }
     } catch {
-      // Failed to load initial settings
+      // Ignore error
     }
   }, []);
 
   React.useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
+    loadConfig();
+  }, [loadConfig]);
 
   async function handleSaveR2Credentials(e: React.FormEvent) {
     e.preventDefault();
@@ -100,22 +83,22 @@ export default function StorageConfigPage() {
 
       if (res.ok) {
         toast({
-          title: "Kredensial R2 Berhasil Disimpan",
-          description: "Kredensial Cloudflare R2 diperbarui di PostgreSQL system_settings.",
+          title: "Kredensial R2 Disimpan",
+          description: "Kredensial S3 Cloudflare R2 berhasil diperbarui.",
           variant: "success",
         });
       } else {
         const err = await res.json();
         toast({
           title: "Gagal Menyimpan",
-          description: err.error || "Gagal memperbarui data.",
+          description: err.error,
           variant: "destructive",
         });
       }
     } catch {
       toast({
         title: "Kesalahan Jaringan",
-        description: "Gagal menghubungkan ke server.",
+        description: "Gagal memperbarui kredensial.",
         variant: "destructive",
       });
     } finally {
@@ -127,7 +110,7 @@ export default function StorageConfigPage() {
     e.preventDefault();
     setLoading(true);
 
-    const storageValue = {
+    const rulesValue = {
       maxImageSizeMb,
       maxPdfSizeMb,
       targetImageFormat: "webp",
@@ -144,7 +127,7 @@ export default function StorageConfigPage() {
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "storage_rules", value: storageValue }),
+        body: JSON.stringify({ key: "storage_rules", value: rulesValue }),
       });
 
       if (res.ok) {
@@ -172,57 +155,15 @@ export default function StorageConfigPage() {
     }
   }
 
-  async function handleSaveQrisConfig(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
-    const qrisValue = {
-      isActive: qrisIsActive,
-      merchantName: qrisMerchantName,
-      qrisImageUrl,
-      notes: qrisNotes,
-    };
-
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "qris_donasi_config", value: qrisValue }),
-      });
-
-      if (res.ok) {
-        toast({
-          title: "Konfigurasi QRIS Donasi Disimpan",
-          description: "Pengaturan Tip Jar QRIS diperbarui dan langsung aktif di seluruh platform.",
-          variant: "success",
-        });
-      } else {
-        const err = await res.json();
-        toast({
-          title: "Gagal Menyimpan",
-          description: err.error || "Gagal menyimpan konfigurasi QRIS.",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Kesalahan Jaringan",
-        description: "Gagal menghubungkan ke server.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">
+        <h2 className="text-2xl font-serif font-bold tracking-tight flex items-center gap-2">
+          <HardDrive className="h-6 w-6 text-primary" />
           Pengaturan Storage & Infrastruktur System
         </h2>
         <p className="text-sm text-muted-foreground">
-          Kelola kredensial S3 Cloudflare R2 dan Konfigurasi KlikQRIS Tip Jar Donasi secara dinamis.
+          Kelola kredensial S3 Cloudflare R2 dan aturan kompresi media secara dinamis.
         </p>
       </div>
 
@@ -258,7 +199,7 @@ export default function StorageConfigPage() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="e.g. R2AccessKeyString123"
+                  placeholder="Kredensial S3 Access Key"
                   value={accessKeyId}
                   onChange={(e) => setAccessKeyId(e.target.value)}
                   disabled={loading}
@@ -296,15 +237,14 @@ export default function StorageConfigPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-medium text-foreground">
-                  Public CDN Domain URL
+                  Public CDN Domain (Opsional)
                 </label>
                 <Input
                   type="text"
-                  placeholder="https://pub-cdn.nikahyuk.com"
+                  placeholder="e.g. https://pub-cdn.nikahyuk.com"
                   value={publicCdnDomain}
                   onChange={(e) => setPublicCdnDomain(e.target.value)}
                   disabled={loading}
-                  required
                 />
               </div>
             </CardContent>
@@ -319,10 +259,10 @@ export default function StorageConfigPage() {
         <Card className="border-border/70">
           <CardHeader>
             <CardTitle className="text-lg font-medium">
-              Aturan Storage & Kompresi Client
+              Aturan Ukuran File & Kompresi Media
             </CardTitle>
             <CardDescription>
-              Batas ukuran berkas dan parameter kompresi WebP otomatis.
+              Atur batas maksimal berkas gambar WebP dan PDF yang diizinkan.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSaveStorageRules}>
@@ -344,7 +284,7 @@ export default function StorageConfigPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-medium text-foreground">
-                  Batas Maksimal PDF (MB)
+                  Batas Maksimal Dokumen PDF (MB)
                 </label>
                 <Input
                   type="number"
@@ -388,91 +328,24 @@ export default function StorageConfigPage() {
           </form>
         </Card>
 
-        {/* QRIS DONASI CONFIG CARD */}
-        <Card className="border-border/70 md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
-              Konfigurasi KlikQRIS Tip Jar (Donasi Sukarela)
-            </CardTitle>
-            <CardDescription>
-              Atur Nama Merchant, URL Gambar QRIS Statis, dan Catatan Pendukung Donasi Sukarela.
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSaveQrisConfig}>
-            <CardContent className="grid gap-6 md:grid-cols-2">
-              <div className="space-y-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Nama Merchant / Akun QRIS
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="NikahYuk SaaS - Donasi Sukarela"
-                    value={qrisMerchantName}
-                    onChange={(e) => setQrisMerchantName(e.target.value)}
-                    required
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Nama merchant resmi penerima donasi yang tampil di popup modal.
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">
-                    URL Gambar Statis QRIS (.png / .jpg / QR API)
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="https://pub-cdn.nikahyuk.com/qris-donasi.png"
-                    value={qrisImageUrl}
-                    onChange={(e) => setQrisImageUrl(e.target.value)}
-                    required
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Link gambar barcode QRIS yang akan dipindai oleh donatur dari HP mereka.
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground">
-                    Keterangan Metode Pembayaran / Catatan
-                  </label>
-                  <Input
-                    type="text"
-                    value={qrisNotes}
-                    onChange={(e) => setQrisNotes(e.target.value)}
-                    required
-                  />
-                </div>
+        {/* Link Banner to Dedicated Payments & Donasi Page */}
+        <Card className="border-border/70 md:col-span-2 bg-gradient-to-r from-accent/20 via-background to-primary/5">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <HeartHandshake className="h-6 w-6 text-primary shrink-0" />
+              <div>
+                <p className="font-semibold text-sm text-foreground">Pengaturan KlikQRIS Tip Jar (Donasi Sukarela)</p>
+                <p className="text-xs text-muted-foreground">
+                  Pengaturan KlikQRIS donasi, merchant name, dan rekening pencairan kini terpusat di modul Keuangan & Donasi.
+                </p>
               </div>
-
-              {/* Live Preview Box */}
-              <div className="p-4 rounded-xl bg-muted/40 border border-border flex flex-col items-center justify-center text-center space-y-2">
-                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Live Preview Barcode Tip Jar
-                </span>
-
-                <div className="p-3 bg-white rounded-lg shadow-sm border border-border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={qrisImageUrl}
-                    alt="Preview QRIS"
-                    className="w-36 h-36 object-contain"
-                  />
-                </div>
-
-                <div className="space-y-0.5">
-                  <p className="text-xs font-bold text-foreground">{qrisMerchantName}</p>
-                  <p className="text-[10px] text-muted-foreground max-w-xs">{qrisNotes}</p>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="justify-end">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Menyimpan..." : "Simpan Konfigurasi QRIS Donasi"}
-              </Button>
-            </CardFooter>
-          </form>
+            </div>
+            <Button asChild variant="outline" size="sm" className="gap-1.5 shrink-0">
+              <Link href="/admin/payments">
+                Buka Setting Donasi <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </CardContent>
         </Card>
       </div>
     </div>

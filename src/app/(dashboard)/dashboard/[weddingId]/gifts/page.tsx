@@ -1,5 +1,10 @@
 import { createClient } from "@/lib/supabase/server";
 import { GiftManager } from "@/components/modules/gifts/gift-manager";
+import {
+  getCollaboratorSecurityContext,
+  resolveEffectiveEventIds,
+} from "@/lib/auth/collaborator-security";
+import { AccessDeniedCard } from "@/components/shared/access-denied-card";
 
 export default async function GiftsPage(props: {
   params: Promise<any>;
@@ -9,6 +14,13 @@ export default async function GiftsPage(props: {
   const searchParams = (await props.searchParams) || {};
   const urlEventId = searchParams.eventId as string | undefined;
 
+  const { permissions, allowedEventIds } =
+    await getCollaboratorSecurityContext(weddingId);
+
+  if (!permissions.gift_log) {
+    return <AccessDeniedCard moduleTitle="Log Kado & Angpao" weddingId={weddingId} />;
+  }
+
   const supabase = await createClient();
 
   const { data: events } = await supabase
@@ -17,9 +29,16 @@ export default async function GiftsPage(props: {
     .eq("wedding_id", weddingId)
     .order("created_at", { ascending: true });
 
+  const { effectiveEventId } = resolveEffectiveEventIds(
+    urlEventId,
+    events || [],
+    allowedEventIds
+  );
+
   const activeEvent =
-    events?.find((e) => e.id === urlEventId) || events?.[0];
+    events?.find((e) => e.id === effectiveEventId) || events?.[0];
   const activeEventId = activeEvent?.id || null;
+
 
   if (!activeEventId) {
     return (

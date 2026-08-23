@@ -27,8 +27,14 @@ export interface CustomPermissions {
   vendor?: boolean;
   rundown?: boolean;
   guest?: boolean;
+  seating?: boolean;
+  checklist?: boolean;
   gift_log?: boolean;
+  share?: boolean;
+  allowed_event_ids?: string[];
+  role_name?: string;
 }
+
 
 export interface ModuleAccess {
   rundown?: boolean;

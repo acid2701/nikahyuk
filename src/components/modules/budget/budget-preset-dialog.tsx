@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Wallet } from "lucide-react";
+import { Sparkles, Wallet, Heart, Gift } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -13,9 +13,13 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { BUDGET_STARTER_ITEMS } from "@/types/presets.types";
+import {
+  BUDGET_STARTER_ITEMS,
+  LAMARAN_BUDGET_STARTER_ITEMS,
+} from "@/types/presets.types";
 import { createBudgetItemWithMilestonesAction } from "@/actions/budget-actions";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface BudgetPresetDialogProps {
   weddingId: string;
@@ -27,15 +31,24 @@ export function BudgetPresetDialog({
   eventId,
 }: BudgetPresetDialogProps) {
   const [open, setOpen] = React.useState(false);
+  const [presetType, setPresetType] = React.useState<"wedding" | "lamaran">("wedding");
   const [totalBudgetEst, setTotalBudgetEst] = React.useState<number>(100000000);
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    if (presetType === "lamaran") {
+      setTotalBudgetEst(15000000);
+    } else {
+      setTotalBudgetEst(100000000);
+    }
+  }, [presetType]);
 
   async function handleApplyBudgetSeeder() {
     if (!eventId) {
       toast({
         title: "Perhatian",
-        description: "Mohon pilih sub-event terlebih dahulu di topbar header.",
+        description: "Mohon pilih sub-event terlebih dahulu di bar navigasi atas.",
         variant: "warning",
       });
       return;
@@ -51,10 +64,14 @@ export function BudgetPresetDialog({
     }
 
     setLoading(true);
+    const starterItems =
+      presetType === "lamaran"
+        ? LAMARAN_BUDGET_STARTER_ITEMS
+        : BUDGET_STARTER_ITEMS;
 
     try {
       let createdCount = 0;
-      for (const starter of BUDGET_STARTER_ITEMS) {
+      for (const starter of starterItems) {
         const itemCost = Math.round((totalBudgetEst * starter.ratioPercentage) / 100);
         const dpCost = Math.round(itemCost * 0.3);
         const pelunasanCost = itemCost - dpCost;
@@ -69,7 +86,7 @@ export function BudgetPresetDialog({
           itemName: starter.itemName,
           estimatedCost: itemCost,
           targetPayer: starter.payer,
-          notes: `${starter.notes} (Starter Seeder Preset)`,
+          notes: `${starter.notes} (${presetType === "lamaran" ? "Preset Lamaran" : "Preset Nikahan"})`,
           milestones: [
             {
               milestoneName: "DP (Down Payment 30%)",
@@ -92,7 +109,9 @@ export function BudgetPresetDialog({
 
       toast({
         title: "Seeder Budget Berhasil Diterapkan!",
-        description: `Sebanyak ${createdCount} pos anggaran starter (Sewa Gedung, Catering, MUA, Foto/Video, Dekorasi, dll.) telah otomatis dibuat.`,
+        description: `Sebanyak ${createdCount} pos anggaran starter ${
+          presetType === "lamaran" ? "Lamaran" : "Pernikahan"
+        } telah otomatis dibuat.`,
         variant: "success",
       });
 
@@ -120,45 +139,72 @@ export function BudgetPresetDialog({
         <DialogHeader>
           <DialogTitle className="font-serif text-xl flex items-center gap-2">
             <Wallet className="h-5 w-5 text-emerald-600" />
-            Seeder Template Pos Pembelian Anggaran
+            Template Seeder Pos Anggaran
           </DialogTitle>
           <DialogDescription className="text-xs">
-            Otomatis menggenerasi pos anggaran utama (Gedung, Catering 45%, Dekorasi 15%, MUA 12%, Dokumentasi 10%, dll) beserta 2 termin pembayaran (DP 30% & Pelunasan 70%).
+            Pilih jenis template preset sesuai acara yang sedang dikelola (Lamaran vs Akad/Resepsi).
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-3">
+        <div className="space-y-4 py-2">
+          <Tabs
+            value={presetType}
+            onValueChange={(val) => setPresetType(val as "wedding" | "lamaran")}
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-2 w-full">
+              <TabsTrigger value="lamaran" className="text-xs gap-1.5 font-medium">
+                💍 Preset Lamaran
+              </TabsTrigger>
+              <TabsTrigger value="wedding" className="text-xs gap-1.5 font-medium">
+                💒 Preset Akad & Resepsi
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
           <div className="space-y-1">
             <label className="text-xs font-medium text-foreground">
-              Total Target Anggaran Keseluruhan (Rp)
+              Total Target Anggaran ({presetType === "lamaran" ? "Acara Lamaran" : "Pernikahan Utama"})
             </label>
             <Input
               type="number"
               value={totalBudgetEst}
               onChange={(e) => setTotalBudgetEst(Number(e.target.value))}
-              placeholder="e.g. 100000000"
+              placeholder="e.g. 15000000"
               required
             />
             <p className="text-[11px] text-muted-foreground">
-              Rp {totalBudgetEst.toLocaleString("id-ID")}
+              Estimasi: Rp {totalBudgetEst.toLocaleString("id-ID")}
             </p>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-accent/20 space-y-1.5 text-xs">
             <span className="font-semibold text-foreground block">
-              Item Pembelian yang Akan Di-generate (9 Pos Utama):
+              Pos Pembelian yang Akan Di-generate (
+              {presetType === "lamaran" ? "6 Pos Lamaran" : "9 Pos Nikahan"}):
             </span>
-            <ul className="list-disc list-inside space-y-1 text-muted-foreground text-[11px]">
-              <li>Sewa Gedung / Ballroom Utama (15%)</li>
-              <li>Paket Catering Prasmanan & Stall (30%)</li>
-              <li>Dekorasi Pelaminan & Photobooth (15%)</li>
-              <li>MUA & Make Up Touch Up (6%)</li>
-              <li>Sewa Busana Pengantin & Seragam (6%)</li>
-              <li>Foto, Video Cinematic & Album (10%)</li>
-              <li>MC & Band Music Performance (5%)</li>
-              <li>Cetak Undangan, Souvenir & Hantaran (5%)</li>
-              <li>Biaya KUA & Operational Emergency (8%)</li>
-            </ul>
+            {presetType === "lamaran" ? (
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground text-[11px]">
+                <li>Catering & Konsumsi Keluarga (35%)</li>
+                <li>Cincin Tunangan / Pengikat (25%)</li>
+                <li>Dekorasi Backdrop & Welcome Board (15%)</li>
+                <li>Kotak Seserahan & Hantaran (10%)</li>
+                <li>Busana Sarimbit & MUA Tunangan (10%)</li>
+                <li>Fotografer Liputan Acara (5%)</li>
+              </ul>
+            ) : (
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground text-[11px]">
+                <li>Sewa Gedung / Ballroom Utama (15%)</li>
+                <li>Paket Catering Prasmanan & Stall (30%)</li>
+                <li>Dekorasi Pelaminan & Photobooth (15%)</li>
+                <li>MUA & Make Up Touch Up (6%)</li>
+                <li>Sewa Busana Pengantin & Seragam (6%)</li>
+                <li>Foto, Video Cinematic & Album (10%)</li>
+                <li>MC & Band Music Performance (5%)</li>
+                <li>Cetak Undangan, Souvenir & Hantaran (5%)</li>
+                <li>Biaya KUA & Operational Emergency (8%)</li>
+              </ul>
+            )}
           </div>
         </div>
 
@@ -167,7 +213,9 @@ export function BudgetPresetDialog({
             Batal
           </Button>
           <Button onClick={handleApplyBudgetSeeder} disabled={loading}>
-            {loading ? "Generasi Pos..." : "Generate 9 Pos Anggaran"}
+            {loading
+              ? "Generasi Pos..."
+              : `Generate Preset ${presetType === "lamaran" ? "Lamaran" : "Nikahan"}`}
           </Button>
         </DialogFooter>
       </DialogContent>

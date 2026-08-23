@@ -3,6 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestTableView } from "@/components/modules/guests/guest-table-view";
 import { Users, UserCheck, UserX, Clock } from "lucide-react";
+import {
+  getCollaboratorSecurityContext,
+  resolveEffectiveEventIds,
+} from "@/lib/auth/collaborator-security";
+import { AccessDeniedCard } from "@/components/shared/access-denied-card";
 
 export default async function GuestsPage(props: {
   params: Promise<any>;
@@ -12,6 +17,13 @@ export default async function GuestsPage(props: {
   const searchParams = (await props.searchParams) || {};
   const urlEventId = searchParams.eventId as string | undefined;
 
+  const { permissions, allowedEventIds } =
+    await getCollaboratorSecurityContext(weddingId);
+
+  if (!permissions.guest) {
+    return <AccessDeniedCard moduleTitle="Master Tamu & RSVP" weddingId={weddingId} />;
+  }
+
   const supabase = await createClient();
 
   const { data: events } = await supabase
@@ -20,9 +32,16 @@ export default async function GuestsPage(props: {
     .eq("wedding_id", weddingId)
     .order("created_at", { ascending: true });
 
+  const { effectiveEventId } = resolveEffectiveEventIds(
+    urlEventId,
+    events || [],
+    allowedEventIds
+  );
+
   const activeEvent =
-    events?.find((e) => e.id === urlEventId) || events?.[0];
+    events?.find((e) => e.id === effectiveEventId) || events?.[0];
   const activeEventId = activeEvent?.id || null;
+
 
   const { data: guestsData } = await supabase
     .from("guests")

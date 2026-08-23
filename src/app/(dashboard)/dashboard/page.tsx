@@ -2,9 +2,19 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { Plus, Heart } from "lucide-react";
+import { Plus, Heart, Shield, Users, ArrowRight } from "lucide-react";
 import { CreateWeddingModal } from "@/components/modules/settings/create-wedding-modal";
+
+export interface WorkspaceItem {
+  id: string;
+  groom_name: string;
+  bride_name: string;
+  wedding_slug: string;
+  roleLabel: string;
+  isOwner: boolean;
+}
 
 export default async function DashboardSelectorPage() {
   const supabase = await createClient();
@@ -16,55 +26,118 @@ export default async function DashboardSelectorPage() {
     redirect("/login");
   }
 
-  const { data: userWeddings } = await supabase
+  // 1. Fetch Weddings Owned by User
+  const { data: ownedWeddings } = await supabase
     .from("weddings")
     .select("*")
     .eq("created_by", user.id);
 
-  if (userWeddings && userWeddings.length === 1) {
-    redirect(`/dashboard/${userWeddings[0].id}`);
+  // 2. Fetch Weddings where User is Invited as Collaborator
+  const { data: collabRows } = await supabase
+    .from("wedding_collaborators")
+    .select("*, weddings(*)")
+    .eq("user_id", user.id);
+
+  const workspacesMap = new Map<string, WorkspaceItem>();
+
+  // Add Owned Weddings
+  (ownedWeddings || []).forEach((w) => {
+    workspacesMap.set(w.id, {
+      id: w.id,
+      groom_name: w.groom_name,
+      bride_name: w.bride_name,
+      wedding_slug: w.wedding_slug,
+      roleLabel: "Owner / Pasangan",
+      isOwner: true,
+    });
+  });
+
+  // Add Collaborator Weddings
+  (collabRows || []).forEach((c: any) => {
+    if (c.weddings && !workspacesMap.has(c.weddings.id)) {
+      const perms = c.custom_permissions || {};
+      const roleName =
+        perms.role_name ||
+        (c.role === "wo"
+          ? "Wedding Organizer"
+          : c.role === "partner"
+          ? "Partner"
+          : "Panitia Keluarga");
+
+      workspacesMap.set(c.weddings.id, {
+        id: c.weddings.id,
+        groom_name: c.weddings.groom_name,
+        bride_name: c.weddings.bride_name,
+        wedding_slug: c.weddings.wedding_slug,
+        roleLabel: roleName,
+        isOwner: false,
+      });
+    }
+  });
+
+  const accessibleWorkspaces = Array.from(workspacesMap.values());
+
+  // Auto-redirect if user has exactly 1 accessible workspace
+  if (accessibleWorkspaces.length === 1) {
+    redirect(`/dashboard/${accessibleWorkspaces[0].id}`);
   }
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6">
-      <div className="max-w-2xl w-full space-y-6">
+      <div className="max-w-3xl w-full space-y-6">
         <div className="text-center space-y-2">
           <Heart className="h-10 w-10 text-primary mx-auto" />
           <h1 className="font-serif text-3xl font-bold tracking-tight">
             Pilih Workspace Pernikahan
           </h1>
           <p className="text-sm text-muted-foreground">
-            Kelola perencanaan pernikahan Anda atau buat ruang kerja baru.
+            Anda terdaftar di {accessibleWorkspaces.length} ruang kerja pernikahan. Pilih workspace yang ingin Anda akses.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          {userWeddings && userWeddings.length > 0 ? (
-            userWeddings.map((w) => (
+        <div className="grid gap-4 sm:grid-cols-2">
+          {accessibleWorkspaces.length > 0 ? (
+            accessibleWorkspaces.map((w) => (
               <Card
                 key={w.id}
-                className="hover:border-primary/50 transition-colors cursor-pointer"
+                className="hover:border-primary/50 transition-all cursor-pointer shadow-xs relative overflow-hidden"
               >
                 <CardHeader className="pb-2">
-                  <CardTitle className="font-serif text-lg">
-                    {w.groom_name} & {w.bride_name}
-                  </CardTitle>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="font-serif text-lg font-bold">
+                      {w.groom_name} & {w.bride_name}
+                    </CardTitle>
+                    <Badge
+                      variant={w.isOwner ? "default" : "secondary"}
+                      className="text-[10px] uppercase font-semibold shrink-0"
+                    >
+                      {w.roleLabel}
+                    </Badge>
+                  </div>
                   <CardDescription className="text-xs">
-                    Slug: {w.wedding_slug}
+                    Slug: <span className="font-mono">{w.wedding_slug}</span>
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <Button asChild className="w-full" size="sm">
-                    <Link href={`/dashboard/${w.id}`}>Buka Workspace</Link>
+                <CardContent className="pt-2">
+                  <Button asChild className="w-full h-9 text-xs gap-1.5 font-semibold" size="sm">
+                    <Link href={`/dashboard/${w.id}`}>
+                      Buka Workspace <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
             ))
           ) : (
-            <Card className="col-span-2 border-dashed p-6 text-center space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Anda belum memiliki ruang kerja pernikahan.
-              </p>
+            <Card className="sm:col-span-2 border-dashed p-8 text-center space-y-3">
+              <Users className="h-10 w-10 text-muted-foreground mx-auto" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  Belum Ada Workspace Pernikahan
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Anda belum memiliki ruang kerja pernikahan sendiri atau belum diundang sebagai kolaborator.
+                </p>
+              </div>
             </Card>
           )}
         </div>
@@ -74,7 +147,7 @@ export default async function DashboardSelectorPage() {
             trigger={
               <Button size="lg" className="gap-2 px-6 h-11 text-sm font-semibold shadow-md">
                 <Plus className="h-4 w-4" />
-                Buat Acara Baru
+                Buat Acara Pernikahan Baru
               </Button>
             }
           />

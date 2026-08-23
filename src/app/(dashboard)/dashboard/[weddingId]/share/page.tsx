@@ -1,9 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { ShareTokenManager } from "@/components/modules/share/share-token-manager";
+import { getCollaboratorSecurityContext } from "@/lib/auth/collaborator-security";
+import { AccessDeniedCard } from "@/components/shared/access-denied-card";
 
 export default async function SharePage(props: { params: Promise<any> }) {
   const { weddingId } = (await props.params) as { weddingId: string };
+
+  const { permissions } = await getCollaboratorSecurityContext(weddingId);
+
+  if (!permissions.share) {
+    return <AccessDeniedCard moduleTitle="Berbagi Link (Share)" weddingId={weddingId} />;
+  }
+
   const supabase = await createClient();
+
 
   const { data: tokensData } = await supabase
     .from("shareable_tokens")

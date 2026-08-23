@@ -1,9 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import { VendorManager } from "@/components/modules/vendors/vendor-manager";
+import { getCollaboratorSecurityContext } from "@/lib/auth/collaborator-security";
+import { AccessDeniedCard } from "@/components/shared/access-denied-card";
 
 export default async function VendorsPage(props: { params: Promise<any> }) {
   const { weddingId } = (await props.params) as { weddingId: string };
+
+  const { permissions } = await getCollaboratorSecurityContext(weddingId);
+
+  if (!permissions.vendor) {
+    return <AccessDeniedCard moduleTitle="Vendor Hub & Kontrak" weddingId={weddingId} />;
+  }
+
   const supabase = await createClient();
+
 
   const { data: vendorsData } = await supabase
     .from("vendors")

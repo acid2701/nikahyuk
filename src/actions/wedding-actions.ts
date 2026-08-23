@@ -91,6 +91,7 @@ export async function inviteCollaboratorAction(
     gift_log: false,
   };
 
+  let isRegistered = false;
   let targetUserId = user.id;
 
   if (email.trim().toLowerCase() !== user.email?.trim().toLowerCase()) {
@@ -104,8 +105,18 @@ export async function inviteCollaboratorAction(
 
     if (matchedLog?.user_id) {
       targetUserId = matchedLog.user_id;
+      isRegistered = true;
     }
+  } else {
+    isRegistered = true;
   }
+
+  const finalPerms = {
+    ...defaultPerms,
+    invited_email: email.trim(),
+    is_active: isRegistered,
+  };
+
 
   // Check if collaborator already exists for this wedding
   const { data: existingCollab } = await supabase
@@ -121,7 +132,7 @@ export async function inviteCollaboratorAction(
       .from("wedding_collaborators")
       .update({
         role,
-        custom_permissions: defaultPerms as any,
+        custom_permissions: finalPerms as any,
       })
       .eq("id", existingCollab.id)
       .select()
@@ -138,10 +149,11 @@ export async function inviteCollaboratorAction(
         wedding_id: weddingId,
         user_id: targetUserId,
         role: role,
-        custom_permissions: defaultPerms as any,
+        custom_permissions: finalPerms as any,
       })
       .select()
       .single();
+
 
     if (insertErr) {
       throw new Error(insertErr.message);
@@ -201,6 +213,43 @@ export async function updateCollaboratorPermissionsAction(
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
   return data;
 }
+
+export async function removeCollaboratorAction(
+  collaboratorId: string,
+  weddingId: string
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { error } = await supabase
+    .from("wedding_collaborators")
+    .delete()
+    .eq("id", collaboratorId)
+    .eq("wedding_id", weddingId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  await recordAuditLog({
+    weddingId,
+    userId: user.id,
+    userDisplayName: user.email || "Owner",
+    moduleName: "Collaborators",
+    actionType: "DELETE",
+    changeDiff: { collaboratorId },
+  });
+
+  revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
+  return { success: true };
+}
+
 
 export async function updateWeddingProfileAction(
   weddingId: string,

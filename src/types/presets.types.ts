@@ -229,6 +229,61 @@ export const BUDGET_STARTER_ITEMS: BudgetStarterItem[] = [
   },
 ];
 
+export const LAMARAN_BUDGET_STARTER_PRESETS: BudgetPresetCategory[] = [
+  { name: "Catering & Konsumsi Keluarga", ratioPercentage: 35 },
+  { name: "Cincin Tunangan / Pengikat", ratioPercentage: 25 },
+  { name: "Dekorasi Backdrop & Photobooth", ratioPercentage: 15 },
+  { name: "Seserahan & Hantaran", ratioPercentage: 10 },
+  { name: "Busana Sarimbit & MUA", ratioPercentage: 10 },
+  { name: "Dokumentasi Foto", ratioPercentage: 5 },
+];
+
+export const LAMARAN_BUDGET_STARTER_ITEMS: BudgetStarterItem[] = [
+  {
+    categoryName: "Catering & Konsumsi Keluarga",
+    itemName: "Paket Prasmanan / Catering Lamaran Keluarga",
+    ratioPercentage: 35,
+    payer: "groom",
+    notes: "Konsumsi makan siang / makan malam keluarga besar.",
+  },
+  {
+    categoryName: "Cincin Tunangan / Pengikat",
+    itemName: "Sepasang Cincin Tunangan & Ukir Nama",
+    ratioPercentage: 25,
+    payer: "groom",
+    notes: "Cincin pengikat emas / platina untuk momen tukar cincin.",
+  },
+  {
+    categoryName: "Dekorasi Backdrop & Photobooth",
+    itemName: "Dekorasi Backdrop Lamaran Inisial & Welcome Board",
+    ratioPercentage: 15,
+    payer: "bride",
+    notes: "Dekorasi backdrop mini di rumah / venue resto.",
+  },
+  {
+    categoryName: "Seserahan & Hantaran",
+    itemName: "Kotak Hantaran & Isian Seserahan Pria ke Wanita",
+    ratioPercentage: 10,
+    payer: "groom",
+    notes: "Kotak mika / kayu hantaran beserta perlengkapan ibadah, makanan, dll.",
+  },
+  {
+    categoryName: "Busana Sarimbit & MUA",
+    itemName: "MUA Tunangan & Sewa Batik/Kebaya Sarimbit",
+    ratioPercentage: 10,
+    payer: "joint",
+    notes: "Make up artist calon pengantin wanita & seragam batik berpasangan.",
+  },
+  {
+    categoryName: "Dokumentasi Foto",
+    itemName: "Fotografer Liputan Acara Lamaran & Flashdisk File",
+    ratioPercentage: 5,
+    payer: "joint",
+    notes: "Dokumentasi foto momen perkenalan & tukar cincin.",
+  },
+];
+
+
 export interface ChecklistPresetItem {
   category: "kua" | "seserahan" | "lamaran" | "emergency";
   item_name: string;
@@ -425,3 +480,74 @@ export const PREWEDDING_SESERAHAN_PRESETS: SeserahanItemPreset[] = [
     notes: "Simbolik keberkahan dan kesuburan calon pengantin",
   },
 ];
+
+export interface DynamicRolePreset {
+  id: string;
+  name: string;
+  category: "default" | "custom";
+  description: string;
+  defaultPermissions: {
+    budget: boolean;
+    vendor: boolean;
+    rundown: boolean;
+    guest: boolean;
+    seating: boolean;
+    checklist: boolean;
+    gift_log: boolean;
+    share: boolean;
+  };
+}
+
+export const DYNAMIC_ROLE_PRESETS: DynamicRolePreset[] = [
+  {
+    id: "partner",
+    name: "Partner (Pasangan)",
+    category: "default",
+    description: "Pasangan pengantin pria/wanita dengan akses penuh ke seluruh modul.",
+    defaultPermissions: { budget: true, vendor: true, rundown: true, guest: true, seating: true, checklist: true, gift_log: true, share: true },
+  },
+  {
+    id: "wo",
+    name: "Wedding Organizer (WO)",
+    category: "default",
+    description: "Tim WO profesional pelaksana teknis acara.",
+    defaultPermissions: { budget: false, vendor: true, rundown: true, guest: true, seating: true, checklist: true, gift_log: false, share: true },
+  },
+  {
+    id: "family_committee",
+    name: "Panitia Keluarga",
+    category: "default",
+    description: "Keluarga/panitia pelaksana agenda acara.",
+    defaultPermissions: { budget: false, vendor: false, rundown: true, guest: true, seating: true, checklist: true, gift_log: false, share: false },
+  },
+  {
+    id: "foto_video",
+    name: "Tim Fotografer & Video",
+    category: "custom",
+    description: "Dokumentasi liputan foto & video cinematic.",
+    defaultPermissions: { budget: false, vendor: false, rundown: true, guest: false, seating: false, checklist: false, gift_log: false, share: false },
+  },
+  {
+    id: "desk_registrasi",
+    name: "Penerima Tamu & Desk Registrasi",
+    category: "custom",
+    description: "Panitia penerima tamu, scanner QR check-in & souvenir.",
+    defaultPermissions: { budget: false, vendor: false, rundown: true, guest: true, seating: true, checklist: false, gift_log: true, share: true },
+  },
+  {
+    id: "catering_konsumsi",
+    name: "Seksi Katering & Konsumsi",
+    category: "custom",
+    description: "Pengawas porsi prasmanan & stall makanan.",
+    defaultPermissions: { budget: false, vendor: true, rundown: true, guest: false, seating: false, checklist: true, gift_log: false, share: false },
+  },
+  {
+    id: "mc_host",
+    name: "MC & Pemandu Acara",
+    category: "custom",
+    description: "Pembawa acara prosesi & resepsi.",
+    defaultPermissions: { budget: false, vendor: false, rundown: true, guest: false, seating: false, checklist: false, gift_log: false, share: false },
+  },
+];
+
+

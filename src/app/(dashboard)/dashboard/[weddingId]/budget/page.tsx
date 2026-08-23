@@ -5,6 +5,11 @@ import { BudgetPresetDialog } from "@/components/modules/budget/budget-preset-di
 import { BudgetListManager } from "@/components/modules/budget/budget-list-manager";
 import { evaluatePaymentDueDate } from "@/lib/utils/due-date-evaluator";
 import { AlertCircle, CheckCircle, Wallet, ArrowRightLeft } from "lucide-react";
+import {
+  getCollaboratorSecurityContext,
+  resolveEffectiveEventIds,
+} from "@/lib/auth/collaborator-security";
+import { AccessDeniedCard } from "@/components/shared/access-denied-card";
 
 export default async function BudgetPage(props: {
   params: Promise<any>;
@@ -14,6 +19,13 @@ export default async function BudgetPage(props: {
   const searchParams = (await props.searchParams) || {};
   const urlEventId = searchParams.eventId as string | undefined;
 
+  const { permissions, allowedEventIds } =
+    await getCollaboratorSecurityContext(weddingId);
+
+  if (!permissions.budget) {
+    return <AccessDeniedCard moduleTitle="Anggaran & Pembayaran" weddingId={weddingId} />;
+  }
+
   const supabase = await createClient();
 
   const { data: events } = await supabase
@@ -22,12 +34,23 @@ export default async function BudgetPage(props: {
     .eq("wedding_id", weddingId)
     .order("created_at", { ascending: true });
 
+  const { effectiveEventId, effectiveEventIds } = resolveEffectiveEventIds(
+    urlEventId,
+    events || [],
+    allowedEventIds
+  );
+
   const activeEvent =
-    events?.find((e) => e.id === urlEventId) || events?.[0];
-  const activeEventId = activeEvent?.id || undefined;
-  const eventIds = activeEventId ? [activeEventId] : (events || []).map((e) => e.id);
+    effectiveEventId
+      ? events?.find((e) => e.id === effectiveEventId)
+      : null;
+
+  const activeEventId = activeEvent?.id;
+  const eventIds = effectiveEventIds;
 
   let budgetItems: any[] = [];
+
+
   if (eventIds.length > 0) {
     const { data: items } = await supabase
       .from("budget_items")
