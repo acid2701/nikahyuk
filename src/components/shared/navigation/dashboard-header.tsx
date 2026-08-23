@@ -16,7 +16,9 @@ import { Button } from "@/components/ui/button";
 import { EventSwitcher, SubEventOption } from "./event-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
+import { MobileSidebarDrawer } from "./mobile-sidebar-drawer";
 import Link from "next/link";
+
 
 export interface DashboardHeaderProps {
   weddingId?: string;
@@ -79,6 +81,7 @@ function generateBreadcrumbs(
 }
 
 export function DashboardHeader({
+
   weddingId,
   groomName = "Pengantin Pria",
   brideName = "Pengantin Wanita",
@@ -107,20 +110,21 @@ export function DashboardHeader({
 
   return (
     <header className="border-b border-border bg-card shrink-0">
-      {/* Top Bar: Couple Name + Event Switcher + Theme Toggle + User Profile */}
-      <div className="h-14 px-6 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div>
-            <h2 className="font-serif text-base font-semibold tracking-tight text-foreground leading-tight">
+      {/* Top Bar: Mobile Hamburger + Couple Name + Event Switcher + Theme Toggle + User Profile */}
+      <div className="h-14 px-3 sm:px-6 flex items-center justify-between gap-2">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
+          <MobileSidebarDrawer weddingId={weddingId} />
+          <div className="min-w-0">
+            <h2 className="font-serif text-xs sm:text-base font-semibold tracking-tight text-foreground leading-tight truncate max-w-[130px] sm:max-w-xs md:max-w-md">
               {groomName} & {brideName}
             </h2>
-            <p className="text-[10px] text-muted-foreground leading-tight">
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight truncate">
               Workspace Pernikahan
             </p>
           </div>
 
           {events.length > 0 && (
-            <div className="pl-4 border-l border-border">
+            <div className="hidden sm:block pl-3 sm:pl-4 border-l border-border shrink-0">
               <EventSwitcher
                 events={events}
                 activeEventId={activeEventId}
@@ -130,6 +134,7 @@ export function DashboardHeader({
             </div>
           )}
         </div>
+
 
         <div className="flex items-center space-x-3">
           <ThemeToggle />

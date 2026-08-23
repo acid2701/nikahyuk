@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
+import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 
 export const metadata: Metadata = {
   title: "Superadmin Control Plane - NikahYuk",
@@ -30,12 +31,15 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
+  const email = user.email || "superadmin@nikahyuk.com";
+
   return (
-    <div className="min-h-screen flex bg-background">
-      <AdminSidebar userEmail={user.email || "superadmin@nikahyuk.com"} />
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
+      <AdminMobileDrawer userEmail={email} />
+      <AdminSidebar userEmail={email} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-        <main className="p-6 max-w-6xl w-full mx-auto space-y-6">
+        <main className="p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-6">
           {children}
         </main>
       </div>

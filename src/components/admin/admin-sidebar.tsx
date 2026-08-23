@@ -18,7 +18,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function AdminSidebar({ userEmail }: { userEmail: string }) {
+export function AdminSidebar({
+  userEmail,
+  onNavigate,
+}: {
+  userEmail: string;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
 
   const navItems = [
@@ -75,7 +81,8 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
   ];
 
   return (
-    <aside className="w-64 border-r border-border bg-card flex flex-col justify-between h-screen sticky top-0 shrink-0">
+    <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col justify-between h-screen sticky top-0 shrink-0">
+
       <div className="p-4 space-y-6">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
@@ -101,12 +108,14 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={onNavigate}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                   isActive
                     ? "bg-primary text-primary-foreground font-semibold shadow-sm"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
               >
+
                 <Icon className="h-4 w-4 shrink-0" />
                 <span>{item.title}</span>
               </Link>

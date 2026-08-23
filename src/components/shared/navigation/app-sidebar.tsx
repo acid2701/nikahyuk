@@ -25,9 +25,11 @@ import { DonationQrisModal } from "@/components/shared/modal/donation-qris-modal
 export interface AppSidebarProps {
   weddingId?: string;
   className?: string;
+  onNavigate?: () => void;
 }
 
-export function AppSidebar({ weddingId, className }: AppSidebarProps) {
+export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps) {
+
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const eventId = searchParams.get("eventId");
@@ -138,6 +140,7 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
                 <Link
                   key={item.title}
                   href={fullHref}
+                  onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
                     isActive
@@ -145,6 +148,7 @@ export function AppSidebar({ weddingId, className }: AppSidebarProps) {
                       : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
+
                   <Icon className="h-4 w-4 shrink-0" />
                   <span>{item.title}</span>
                 </Link>

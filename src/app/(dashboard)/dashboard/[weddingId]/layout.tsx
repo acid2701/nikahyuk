@@ -61,8 +61,10 @@ export default async function WeddingDashboardLayout(props: {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Suspense fallback={<div className="w-64 border-r border-border bg-card h-full min-h-screen" />}>
-        <AppSidebar weddingId={weddingId} />
+      <Suspense fallback={<div className="hidden lg:block w-64 border-r border-border bg-card h-full min-h-screen" />}>
+        <div className="hidden lg:block w-64 shrink-0 h-full">
+          <AppSidebar weddingId={weddingId} />
+        </div>
       </Suspense>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Suspense fallback={<header className="h-14 border-b border-border bg-card" />}>
@@ -83,9 +85,10 @@ export default async function WeddingDashboardLayout(props: {
             />
           </Suspense>
         )}
-        <main className="flex-1 overflow-y-auto p-6">{props.children}</main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{props.children}</main>
       </div>
     </div>
   );
+
 }
 
