@@ -6,19 +6,72 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { PREWEDDING_CHECKLIST_PRESETS, PREWEDDING_SESERAHAN_PRESETS } from "@/types/presets.types";
+import {
+  PREWEDDING_CHECKLIST_PRESETS,
+  PREWEDDING_SESERAHAN_PRESETS,
+  LAMARAN_CHECKLIST_PRESETS,
+  AKAD_CHECKLIST_PRESETS,
+  RESEPSI_CHECKLIST_PRESETS,
+} from "@/types/presets.types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { CheckSquare, Square, Plus, Trash2, RotateCcw, FileText, Gift, Heart, AlertTriangle, ExternalLink, ShoppingCart, DollarSign, PackageCheck } from "lucide-react";
+import {
+  fetchChecklistItemsAction,
+  addChecklistItemAction,
+  toggleChecklistItemAction,
+  deleteChecklistItemAction,
+} from "@/actions/checklist-actions";
+import {
+  CheckSquare,
+  Square,
+  Plus,
+  Trash2,
+  RotateCcw,
+  FileText,
+  Gift,
+  Heart,
+  AlertTriangle,
+  ExternalLink,
+  Layers,
+  Download,
+  Sparkles,
+  Printer,
+  Calendar,
+  User,
+  MessageSquareQuote,
+  CheckCircle2,
+} from "lucide-react";
 
 export interface ChecklistItem {
   id: string;
+  wedding_id?: string;
+  event_id?: string;
   category: "kua" | "seserahan" | "lamaran" | "emergency";
-  box_name?: string; // e.g. "Kotak 1: Set Perlengkapan Ibadah"
+  box_name?: string | null;
   item_name: string;
-  price?: number;
-  purchase_url?: string;
-  notes?: string;
+  price?: number | null;
+  purchase_url?: string | null;
+  notes?: string | null;
+  completed_notes?: string | null;
+  completed_by?: string | null;
+  completed_at?: string | null;
+  due_date?: string | null;
+  assignee_name?: string | null;
   is_completed: boolean;
+}
+
+export interface PreweddingChecklistManagerProps {
+  weddingId: string;
+  eventId?: string;
+  eventName?: string;
 }
 
 // Helper to sort uncompleted items first to the top, completed to the bottom
@@ -29,42 +82,135 @@ function sortChecklistItems<T extends { is_completed: boolean }>(itemsList: T[])
   });
 }
 
-export function PreweddingChecklistManager({ weddingId }: { weddingId: string }) {
-  const storageKey = `nikahyuk_checklist_${weddingId}`;
+export function PreweddingChecklistManager({
+  weddingId,
+  eventId = "all",
+  eventName = "Semua Acara (Akumulasi Total)",
+}: PreweddingChecklistManagerProps) {
+  const storageKey = `nikahyuk_checklist_${weddingId}_${eventId}`;
   const { toast } = useToast();
 
   const [items, setItems] = React.useState<ChecklistItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  // Form states
   const [newItemName, setNewItemName] = React.useState("");
   const [newItemNotes, setNewItemNotes] = React.useState("");
   const [newItemPrice, setNewItemPrice] = React.useState<string>("");
   const [newItemUrl, setNewItemUrl] = React.useState("");
+  const [newItemDueDate, setNewItemDueDate] = React.useState("");
+  const [newItemAssignee, setNewItemAssignee] = React.useState("");
   const [selectedBoxName, setSelectedBoxName] = React.useState("Kotak 1: Set Perlengkapan Ibadah");
+
+  // Modals
+  const [importModalOpen, setImportModalOpen] = React.useState(false);
+  const [completionModalOpen, setCompletionModalOpen] = React.useState(false);
+  const [targetItemForCompletion, setTargetItemForCompletion] = React.useState<ChecklistItem | null>(null);
+  const [completionNoteInput, setCompletionNoteInput] = React.useState("");
 
   const [activeCategory, setActiveCategory] = React.useState<"kua" | "seserahan" | "lamaran" | "emergency">("kua");
 
-  const loadDefaultPresets = React.useCallback(() => {
-    const generalPresets = PREWEDDING_CHECKLIST_PRESETS || [];
-    const seserahanPresets = PREWEDDING_SESERAHAN_PRESETS || [];
+  // Initial Load from Supabase DB with LocalStorage Fallback
+  const loadChecklistItems = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const dbItems = await fetchChecklistItemsAction(weddingId, eventId);
+      if (dbItems && dbItems.length > 0) {
+        setItems(dbItems as ChecklistItem[]);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, JSON.stringify(dbItems));
+        }
+      } else {
+        // Fallback to local storage or load default seeder
+        if (typeof window !== "undefined") {
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setItems(parsed);
+              } else {
+                loadDefaultPresets();
+              }
+            } catch {
+              loadDefaultPresets();
+            }
+          } else {
+            loadDefaultPresets();
+          }
+        }
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setLoading(false);
+    }
+  }, [weddingId, eventId, storageKey]);
 
-    const defaultItems: ChecklistItem[] = [
-      ...generalPresets.map((p, idx) => ({
-        id: `gen_${idx}_${Date.now()}`,
+  const loadDefaultPresets = React.useCallback(() => {
+    const lowerName = eventName.toLowerCase();
+    let defaultItems: ChecklistItem[] = [];
+
+    if (lowerName.includes("lamaran") || lowerName.includes("tunangan")) {
+      defaultItems = (LAMARAN_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `lam_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        box_name: (p as any).box_name || null,
+        item_name: p.item_name,
+        price: (p as any).estimated_price || null,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else if (lowerName.includes("akad")) {
+      defaultItems = (AKAD_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `akd_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
         category: p.category,
         item_name: p.item_name,
-        notes: p.notes,
+        notes: p.notes || null,
         is_completed: false,
-      })),
-      ...seserahanPresets.map((s, idx) => ({
-        id: `ses_${idx}_${Date.now()}`,
-        category: "seserahan" as const,
-        box_name: s.box_name,
-        item_name: s.item_name,
-        price: s.estimated_price,
-        purchase_url: s.purchase_url,
-        notes: s.notes,
+      }));
+    } else if (lowerName.includes("resepsi")) {
+      defaultItems = (RESEPSI_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `rsp_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        item_name: p.item_name,
+        notes: p.notes || null,
         is_completed: false,
-      })),
-    ];
+      }));
+    } else {
+      const generalPresets = PREWEDDING_CHECKLIST_PRESETS || [];
+      const seserahanPresets = PREWEDDING_SESERAHAN_PRESETS || [];
+
+      defaultItems = [
+        ...generalPresets.map((p, idx) => ({
+          id: `gen_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: p.category,
+          item_name: p.item_name,
+          notes: p.notes || null,
+          is_completed: false,
+        })),
+        ...seserahanPresets.map((s, idx) => ({
+          id: `ses_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: "seserahan" as const,
+          box_name: s.box_name,
+          item_name: s.item_name,
+          price: s.estimated_price || null,
+          purchase_url: s.purchase_url || null,
+          notes: s.notes || null,
+          is_completed: false,
+        })),
+      ];
+    }
 
     setItems(defaultItems);
     if (typeof window !== "undefined") {
@@ -72,78 +218,214 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
     }
     toast({
       title: "Template Seeder Dimuat",
-      description: "27 item checklist dokumen KUA, lamaran, & sub-item kotak seserahan telah diisi.",
+      description: `Checklist persiapan khusus untuk '${eventName}' (${defaultItems.length} item) telah diisi.`,
       variant: "success",
     });
-  }, [storageKey, toast]);
+  }, [weddingId, eventId, storageKey, eventName, toast]);
 
   React.useEffect(() => {
-    if (typeof window === "undefined") return;
-    const saved = localStorage.getItem(storageKey);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setItems(parsed);
-        } else {
-          loadDefaultPresets();
-        }
-      } catch {
-        loadDefaultPresets();
-      }
-    } else {
-      loadDefaultPresets();
-    }
-  }, [storageKey, loadDefaultPresets]);
+    loadChecklistItems();
+  }, [loadChecklistItems]);
 
-  function saveItems(newItems: ChecklistItem[]) {
+  function saveLocalItems(newItems: ChecklistItem[]) {
     setItems(newItems);
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify(newItems));
     }
   }
 
-  function toggleItem(id: string) {
-    const updated = items.map((it) =>
-      it.id === id ? { ...it, is_completed: !it.is_completed } : it
-    );
-    saveItems(updated);
+  // Handle Checkbox Toggle
+  function handleCheckboxClick(it: ChecklistItem) {
+    if (!it.is_completed) {
+      // Prompt modal for completion notes
+      setTargetItemForCompletion(it);
+      setCompletionNoteInput(it.completed_notes || "");
+      setCompletionModalOpen(true);
+    } else {
+      // Uncheck item directly
+      setItems((prev) =>
+        prev.map((i) =>
+          i.id === it.id
+            ? {
+                ...i,
+                is_completed: false,
+                completed_notes: null,
+                completed_by: null,
+                completed_at: null,
+              }
+            : i
+        )
+      );
+      toggleChecklistItemAction({
+        id: it.id,
+        weddingId,
+        isCompleted: false,
+      });
+    }
   }
 
-  function deleteItem(id: string) {
+  // Submit Completion Note
+  async function handleConfirmCompletion() {
+    if (!targetItemForCompletion) return;
+    const nowISO = new Date().toISOString();
+    const notesText = completionNoteInput.trim() || undefined;
+
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === targetItemForCompletion.id
+          ? {
+              ...i,
+              is_completed: true,
+              completed_notes: notesText || null,
+              completed_by: "Pengguna",
+              completed_at: nowISO,
+            }
+          : i
+      )
+    );
+
+    setCompletionModalOpen(false);
+    toast({
+      title: "Item Ditandai Selesai",
+      description: `Catatan pelaksanaan untuk '${targetItemForCompletion.item_name}' telah disimpan.`,
+      variant: "success",
+    });
+
+    await toggleChecklistItemAction({
+      id: targetItemForCompletion.id,
+      weddingId,
+      isCompleted: true,
+      completedNotes: notesText,
+    });
+  }
+
+  async function handleDeleteItem(id: string) {
     const updated = items.filter((it) => it.id !== id);
-    saveItems(updated);
+    saveLocalItems(updated);
     toast({
       title: "Item Dihapus",
       description: "Item checklist berhasil dihapus.",
       variant: "warning",
     });
+    await deleteChecklistItemAction(id, weddingId);
   }
 
-  function addCustomItem(e: React.FormEvent) {
+  async function handleAddCustomItem(e: React.FormEvent) {
     e.preventDefault();
     if (!newItemName.trim()) return;
 
     const newItem: ChecklistItem = {
       id: `custom_${Date.now()}`,
+      wedding_id: weddingId,
+      event_id: eventId,
       category: activeCategory,
-      box_name: activeCategory === "seserahan" ? selectedBoxName : undefined,
+      box_name: activeCategory === "seserahan" ? selectedBoxName : null,
       item_name: newItemName.trim(),
-      price: newItemPrice ? Number(newItemPrice) : undefined,
-      purchase_url: newItemUrl.trim() || undefined,
-      notes: newItemNotes.trim() || undefined,
+      price: newItemPrice ? Number(newItemPrice) : null,
+      purchase_url: newItemUrl.trim() || null,
+      notes: newItemNotes.trim() || null,
+      due_date: newItemDueDate.trim() || null,
+      assignee_name: newItemAssignee.trim() || null,
       is_completed: false,
     };
 
-    saveItems([...items, newItem]);
+    saveLocalItems([...items, newItem]);
     setNewItemName("");
     setNewItemNotes("");
     setNewItemPrice("");
     setNewItemUrl("");
+    setNewItemDueDate("");
+    setNewItemAssignee("");
 
     toast({
       title: "Item Ditambahkan",
-      description: `Item '${newItemName}' berhasil ditambahkan ke checklist.`,
+      description: `Item '${newItem.item_name}' berhasil ditambahkan.`,
+      variant: "success",
+    });
+
+    await addChecklistItemAction({
+      wedding_id: weddingId,
+      event_id: eventId,
+      category: activeCategory,
+      box_name: activeCategory === "seserahan" ? selectedBoxName : undefined,
+      item_name: newItem.item_name,
+      price: newItem.price || undefined,
+      purchase_url: newItem.purchase_url || undefined,
+      notes: newItem.notes || undefined,
+      due_date: newItem.due_date || undefined,
+      assignee_name: newItem.assignee_name || undefined,
+    });
+  }
+
+  function importPresetTemplate(presetKey: "lamaran" | "akad" | "resepsi" | "master") {
+    let presetsToImport: ChecklistItem[] = [];
+
+    if (presetKey === "lamaran") {
+      presetsToImport = (LAMARAN_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `imp_lam_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        box_name: (p as any).box_name || null,
+        item_name: p.item_name,
+        price: (p as any).estimated_price || null,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else if (presetKey === "akad") {
+      presetsToImport = (AKAD_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `imp_akd_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        item_name: p.item_name,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else if (presetKey === "resepsi") {
+      presetsToImport = (RESEPSI_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `imp_rsp_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        item_name: p.item_name,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else {
+      const generalPresets = PREWEDDING_CHECKLIST_PRESETS || [];
+      const seserahanPresets = PREWEDDING_SESERAHAN_PRESETS || [];
+      presetsToImport = [
+        ...generalPresets.map((p, idx) => ({
+          id: `imp_gen_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: p.category,
+          item_name: p.item_name,
+          notes: p.notes || null,
+          is_completed: false,
+        })),
+        ...seserahanPresets.map((s, idx) => ({
+          id: `imp_ses_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: "seserahan" as const,
+          box_name: s.box_name,
+          item_name: s.item_name,
+          price: s.estimated_price || null,
+          purchase_url: s.purchase_url || null,
+          notes: s.notes || null,
+          is_completed: false,
+        })),
+      ];
+    }
+
+    const updated = [...items, ...presetsToImport];
+    saveLocalItems(updated);
+    setImportModalOpen(false);
+    toast({
+      title: "Template Berhasil Diimpor",
+      description: `${presetsToImport.length} item dari template telah ditambahkan ke checklist '${eventName}'.`,
       variant: "success",
     });
   }
@@ -188,25 +470,187 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
     ])
   );
 
+  const dynamicEventCategoryLabel =
+    eventName && eventName !== "Semua Acara (Akumulasi Total)"
+      ? `Checklist Persiapan ${eventName}`
+      : "Checklist Acara & Prosesi Utama";
+
+  const dynamicTabTriggerLabel =
+    eventName && eventName !== "Semua Acara (Akumulasi Total)"
+      ? eventName
+      : "Acara & Prosesi";
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 print:p-0 print:m-0">
+      {/* COMPLETION NOTE MODAL */}
+      <Dialog open={completionModalOpen} onOpenChange={setCompletionModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-serif text-lg flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" /> Selesaikan Item & Tambah Catatan
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Tambahkan catatan pelaksanaan untuk &apos;{targetItemForCompletion?.item_name}&apos; (misal: nomor berkas, tanggal diambil, atau nama pembeli):
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div>
+              <label className="text-xs font-medium text-foreground block mb-1">
+                Catatan Pelaksanaan / Eksekusi (Opsional)
+              </label>
+              <textarea
+                rows={3}
+                placeholder="e.g. Sudah diambil oleh Budi tgl 22 Aug, Nomor Berkas 451/KUA/2026..."
+                value={completionNoteInput}
+                onChange={(e) => setCompletionNoteInput(e.target.value)}
+                className="w-full text-xs p-2.5 rounded-lg border border-border bg-background focus:outline-hidden focus:ring-2 focus:ring-primary/30"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCompletionModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleConfirmCompletion}
+              className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
+            >
+              <CheckCircle2 className="h-4 w-4" /> Tandai Selesai
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* HEADER SECTION */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h1 className="font-serif text-2xl font-bold tracking-tight">
-            Checklist Persiapan Pre-Wedding, KUA & Seserahan
+            Checklist Persiapan {eventName}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Template seeder berkas KUA, rincian produk kotak seserahan, estimasi harga & link pembelian.
+            Template rincian berkas, perlengkapan, estimasi harga & link pembelian khusus acara ini.
           </p>
         </div>
 
-        <Button variant="outline" size="sm" onClick={loadDefaultPresets} className="gap-2">
-          <RotateCcw className="h-4 w-4" /> Reset Template Seeder
-        </Button>
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.print()}
+            className="gap-2 text-xs cursor-pointer"
+          >
+            <Printer className="h-4 w-4" /> Cetak / Export PDF
+          </Button>
+
+          <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2 text-xs font-semibold shadow-xs cursor-pointer">
+                <Download className="h-4 w-4" /> Ambil dari Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="font-serif text-lg flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" /> Pilih Template Preset untuk '{eventName}'
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  Pilih salah satu template preset di bawah untuk menambahkan item persiapan secara otomatis ke acara ini:
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-3 py-2">
+                <div
+                  onClick={() => importPresetTemplate("lamaran")}
+                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
+                      💍 Template Acara Lamaran & Tunangan
+                    </span>
+                    <Badge variant="outline" className="text-[10px]">8 Item</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Cincin tunangan, kain batik sarimbit, hantaran kue adat, parsel buah, teks sambutan, & sound system.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => importPresetTemplate("akad")}
+                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
+                      🕌 Template Akad Nikah Sakral & KUA
+                    </span>
+                    <Badge variant="outline" className="text-[10px]">8 Item</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Dokumen KUA (N1, N2, N4, Suket Sehat), mahar/maskawin, saksi akad, & Al-Qur'an sajadah ijab kabul.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => importPresetTemplate("resepsi")}
+                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
+                      💒 Template Resepsi Utama & Pesta
+                    </span>
+                    <Badge variant="outline" className="text-[10px]">7 Item</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Food tasting katering, souvenir & kupon, buku tamu, photo booth props, gaun/beskap, & sandal pelaminan.
+                  </p>
+                </div>
+
+                <div
+                  onClick={() => importPresetTemplate("master")}
+                  className="p-3.5 rounded-lg border border-primary/30 bg-primary/5 hover:border-primary cursor-pointer transition-all space-y-1 group"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-xs text-primary flex items-center gap-1.5">
+                      🎁 Template Master Pre-Wedding & 9 Kotak Seserahan
+                    </span>
+                    <Badge variant="default" className="text-[10px]">27 Item Lengkap</Badge>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Seluruh berkas KUA + 9 Kotak Seserahan Hias lengkap dengan rincian produk, estimasi harga & link beli.
+                  </p>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <Button variant="outline" size="sm" onClick={loadDefaultPresets} className="gap-2 text-xs cursor-pointer">
+            <RotateCcw className="h-4 w-4" /> Reset Template Seeder
+          </Button>
+        </div>
+      </div>
+
+      {/* SCOPE BANNER */}
+      <div className="p-3 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-between gap-3 text-xs print:hidden">
+        <div className="flex items-center gap-2">
+          <Layers className="h-4 w-4 text-primary" />
+          <span>
+            Scope Checklist Terisolasi:{" "}
+            <strong className="text-primary font-semibold">{eventName}</strong>
+          </span>
+        </div>
+        <Badge variant="outline" className="text-[10px] bg-background">
+          {items.length} Item Tersimpan
+        </Badge>
       </div>
 
       <Tabs value={activeCategory} onValueChange={(v: any) => setActiveCategory(v)} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/60">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/60 print:hidden">
           <TabsTrigger value="kua" className="py-2 text-xs gap-1.5 font-medium">
             <FileText className="h-4 w-4 text-blue-600" />
             Dokumen KUA
@@ -215,9 +659,9 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
             <Gift className="h-4 w-4 text-pink-600" />
             Kotak Seserahan
           </TabsTrigger>
-          <TabsTrigger value="lamaran" className="py-2 text-xs gap-1.5 font-medium">
-            <Heart className="h-4 w-4 text-amber-600" />
-            Acara Lamaran
+          <TabsTrigger value="lamaran" className="py-2 text-xs gap-1.5 font-medium min-w-0">
+            <Heart className="h-4 w-4 text-amber-600 shrink-0" />
+            <span className="truncate">{dynamicTabTriggerLabel}</span>
           </TabsTrigger>
           <TabsTrigger value="emergency" className="py-2 text-xs gap-1.5 font-medium">
             <AlertTriangle className="h-4 w-4 text-rose-600" />
@@ -225,67 +669,46 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
           </TabsTrigger>
         </TabsList>
 
-        {/* SESERAHAN TAB SPECIAL HIERARCHICAL VIEW */}
+        {/* SESERAHAN VIEW */}
         {activeCategory === "seserahan" ? (
           <div className="space-y-6">
-            {/* Finanical Overview Cards */}
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card className="border-border/70">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xs font-medium text-muted-foreground">
-                    Total Estimasi Biaya Seserahan
-                  </CardTitle>
-                  <DollarSign className="h-4 w-4 text-primary" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold font-mono">
+            <Card className="border-pink-500/20 bg-pink-500/5">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-serif text-pink-700 dark:text-pink-400 flex items-center gap-2">
+                  <Gift className="h-5 w-5" /> Ringkasan Anggaran & Status Kotak Seserahan
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Progres Pembelian: {completedCount} dari {totalCount} produk selesai ({progressPercent}%)
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-0">
+                <div className="p-3 bg-card rounded-lg border border-border">
+                  <span className="text-xs text-muted-foreground block">Total Estimasi Biaya</span>
+                  <span className="text-base font-mono font-bold text-foreground">
                     Rp {totalSeserahanBudget.toLocaleString("id-ID")}
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {seserahanItems.length} item dari {Object.keys(seserahanBoxesMap).length} Kotak Hantaran
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/70">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xs font-medium text-muted-foreground">
-                    Terbeli / Terpenuhi
-                  </CardTitle>
-                  <PackageCheck className="h-4 w-4 text-emerald-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold font-mono text-emerald-600">
+                  </span>
+                </div>
+                <div className="p-3 bg-card rounded-lg border border-border">
+                  <span className="text-xs text-muted-foreground block">Sudah Dibeli / Lunas</span>
+                  <span className="text-base font-mono font-bold text-emerald-600">
                     Rp {totalPaidSeserahan.toLocaleString("id-ID")}
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {seserahanItems.filter((i) => i.is_completed).length} item sudah dibeli
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card className="border-border/70">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-xs font-medium text-muted-foreground">
-                    Sisa Belum Dibeli
-                  </CardTitle>
-                  <ShoppingCart className="h-4 w-4 text-amber-500" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-xl font-bold font-mono text-amber-600">
+                  </span>
+                </div>
+                <div className="p-3 bg-card rounded-lg border border-border">
+                  <span className="text-xs text-muted-foreground block">Sisa Anggaran Belanja</span>
+                  <span className="text-base font-mono font-bold text-amber-600">
                     Rp {totalRemainingSeserahan.toLocaleString("id-ID")}
-                  </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    Item dalam antrean pembelian
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Form Tambah Item Seserahan Baru */}
-            <Card className="border-border/80 p-4">
-              <h3 className="text-sm font-semibold mb-2">➕ Tambah Sub-Item Ke Kotak Seserahan</h3>
-              <form onSubmit={addCustomItem} className="grid gap-3 sm:grid-cols-4">
+            {/* Form Add Seserahan Item */}
+            <Card className="p-4 border-border/80 print:hidden">
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-muted-foreground">
+                + Tambah Item Kotak Seserahan Baru
+              </h3>
+              <form onSubmit={handleAddCustomItem} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                 <div>
                   <label className="text-[11px] font-medium text-muted-foreground block mb-1">
                     Pilih Kotak Seserahan
@@ -293,7 +716,7 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
                   <select
                     value={selectedBoxName}
                     onChange={(e) => setSelectedBoxName(e.target.value)}
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-xs"
+                    className="w-full h-9 text-xs rounded-md border border-input bg-background px-3 py-1 text-foreground shadow-xs"
                   >
                     {availableBoxNames.map((bName) => (
                       <option key={bName} value={bName}>
@@ -342,7 +765,7 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
                       onChange={(e) => setNewItemUrl(e.target.value)}
                       className="h-9 text-xs flex-1"
                     />
-                    <Button type="submit" size="sm" className="h-9 px-3 shrink-0">
+                    <Button type="submit" size="sm" className="h-9 px-3 shrink-0 cursor-pointer">
                       <Plus className="h-4 w-4" />
                     </Button>
                   </div>
@@ -354,7 +777,7 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
             <div className="space-y-4">
               {Object.keys(seserahanBoxesMap).length === 0 ? (
                 <Card className="p-8 text-center border border-dashed text-xs text-muted-foreground">
-                  Belum ada kotak seserahan. Klik &apos;Reset Template Seeder&apos; di atas.
+                  Belum ada kotak seserahan. Klik &apos;Ambil dari Template&apos; di atas.
                 </Card>
               ) : (
                 Object.entries(seserahanBoxesMap).map(([boxTitle, boxSubItems]) => {
@@ -389,60 +812,74 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
                         {sortedBoxSubItems.map((subItem) => (
                           <div
                             key={subItem.id}
-                            className={`p-3 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all ${
+                            className={`p-3 rounded-lg border flex flex-col justify-between gap-2 transition-all ${
                               subItem.is_completed
-                                ? "bg-accent/20 border-border/50 text-muted-foreground line-through opacity-75"
+                                ? "bg-accent/20 border-border/50 text-muted-foreground opacity-85"
                                 : "bg-card border-border text-foreground hover:border-primary/50"
                             }`}
                           >
-                            <div
-                              className="flex items-start space-x-3 cursor-pointer flex-1"
-                              onClick={() => toggleItem(subItem.id)}
-                            >
-                              {subItem.is_completed ? (
-                                <CheckSquare className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                              ) : (
-                                <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                              )}
-                              <div>
-                                <p className="font-semibold text-xs leading-snug">{subItem.item_name}</p>
-                                {subItem.notes && (
-                                  <p className="text-[11px] text-muted-foreground no-underline font-normal mt-0.5">
-                                    Catatan: {subItem.notes}
-                                  </p>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div
+                                className="flex items-start space-x-3 cursor-pointer flex-1"
+                                onClick={() => handleCheckboxClick(subItem)}
+                              >
+                                {subItem.is_completed ? (
+                                  <CheckSquare className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                                ) : (
+                                  <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                                 )}
+                                <div>
+                                  <p className={`font-semibold text-xs leading-snug ${subItem.is_completed ? "line-through opacity-75" : ""}`}>
+                                    {subItem.item_name}
+                                  </p>
+                                  {subItem.notes && (
+                                    <p className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                                      Catatan: {subItem.notes}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 self-end sm:self-center">
+                                {subItem.price && (
+                                  <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-1 rounded">
+                                    Rp {subItem.price.toLocaleString("id-ID")}
+                                  </span>
+                                )}
+
+                                {subItem.purchase_url && (
+                                  <a
+                                    href={subItem.purchase_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5" />
+                                    Link Beli
+                                  </a>
+                                )}
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteItem(subItem.id)}
+                                  className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-3 no-underline self-end sm:self-center">
-                              {subItem.price && (
-                                <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-1 rounded">
-                                  Rp {subItem.price.toLocaleString("id-ID")}
+                            {/* EXECUTION NOTES DISPLAY */}
+                            {subItem.is_completed && subItem.completed_notes && (
+                              <div className="mt-1 p-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
+                                <MessageSquareQuote className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                <span>
+                                  <strong>Catatan Pelaksanaan:</strong> "{subItem.completed_notes}"
                                 </span>
-                              )}
-
-                              {subItem.purchase_url && (
-                                <a
-                                  href={subItem.purchase_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                  Link Beli
-                                </a>
-                              )}
-
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => deleteItem(subItem.id)}
-                                className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
+                              </div>
+                            )}
                           </div>
                         ))}
                       </CardContent>
@@ -460,7 +897,7 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
                 <div>
                   <CardTitle className="text-lg font-serif">
                     {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi KUA"}
-                    {activeCategory === "lamaran" && "💍 Checklist Acara Lamaran & Tunangan"}
+                    {activeCategory === "lamaran" && `💍 ${dynamicEventCategoryLabel}`}
                     {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan HARI-H"}
                   </CardTitle>
                   <CardDescription className="text-xs mt-1">
@@ -481,7 +918,7 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
             </CardHeader>
 
             <CardContent className="space-y-4">
-              <form onSubmit={addCustomItem} className="grid gap-2 sm:grid-cols-3 pt-2">
+              <form onSubmit={handleAddCustomItem} className="grid gap-2 sm:grid-cols-4 pt-2 print:hidden">
                 <Input
                   type="text"
                   placeholder="Tambah item checklist baru..."
@@ -490,15 +927,22 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
                   className="sm:col-span-2 text-xs h-9"
                   required
                 />
+                <Input
+                  type="text"
+                  placeholder="Catatan panduan opsional..."
+                  value={newItemNotes}
+                  onChange={(e) => setNewItemNotes(e.target.value)}
+                  className="text-xs h-9"
+                />
                 <div className="flex gap-2">
                   <Input
                     type="text"
-                    placeholder="Catatan opsional..."
-                    value={newItemNotes}
-                    onChange={(e) => setNewItemNotes(e.target.value)}
+                    placeholder="PIC / Penanggung Jawab..."
+                    value={newItemAssignee}
+                    onChange={(e) => setNewItemAssignee(e.target.value)}
                     className="text-xs h-9 flex-1"
                   />
-                  <Button type="submit" size="sm" className="h-9 px-3 gap-1 shrink-0">
+                  <Button type="submit" size="sm" className="h-9 px-3 gap-1 shrink-0 cursor-pointer">
                     <Plus className="h-4 w-4" /> Tambah
                   </Button>
                 </div>
@@ -507,45 +951,66 @@ export function PreweddingChecklistManager({ weddingId }: { weddingId: string })
               <div className="space-y-2 pt-2">
                 {sortedCategoryItems.length === 0 ? (
                   <div className="p-8 text-center border border-dashed rounded-lg text-muted-foreground text-xs">
-                    Belum ada item di kategori ini. Klik &apos;Reset Template Seeder&apos; di atas.
+                    Belum ada item di kategori ini. Klik &apos;Ambil dari Template&apos; di atas.
                   </div>
                 ) : (
                   sortedCategoryItems.map((it) => (
                     <div
                       key={it.id}
-                      className={`p-3 rounded-lg border flex items-start justify-between gap-3 transition-all ${
+                      className={`p-3.5 rounded-lg border flex flex-col justify-between gap-2 transition-all ${
                         it.is_completed
-                          ? "bg-accent/20 border-border/50 text-muted-foreground line-through opacity-75"
+                          ? "bg-accent/20 border-border/50 text-muted-foreground opacity-85"
                           : "bg-card border-border text-foreground hover:border-primary/50"
                       }`}
                     >
-                      <div
-                        className="flex items-start space-x-3 cursor-pointer flex-1"
-                        onClick={() => toggleItem(it.id)}
-                      >
-                        {it.is_completed ? (
-                          <CheckSquare className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        ) : (
-                          <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                        )}
-                        <div>
-                          <p className="font-semibold text-xs leading-snug">{it.item_name}</p>
-                          {it.notes && (
-                            <p className="text-[11px] text-muted-foreground no-underline font-normal mt-0.5">
-                              {it.notes}
-                            </p>
+                      <div className="flex items-start justify-between gap-3">
+                        <div
+                          className="flex items-start space-x-3 cursor-pointer flex-1"
+                          onClick={() => handleCheckboxClick(it)}
+                        >
+                          {it.is_completed ? (
+                            <CheckSquare className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                          ) : (
+                            <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
                           )}
+                          <div className="space-y-1">
+                            <p className={`font-semibold text-xs leading-snug ${it.is_completed ? "line-through opacity-75" : ""}`}>
+                              {it.item_name}
+                            </p>
+                            {it.notes && (
+                              <p className="text-[11px] text-muted-foreground font-normal">
+                                Catatan: {it.notes}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {it.assignee_name && (
+                            <Badge variant="outline" className="text-[10px] gap-1">
+                              <User className="h-3 w-3" /> PIC: {it.assignee_name}
+                            </Badge>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteItem(it.id)}
+                            className="h-7 w-7 text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </div>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteItem(it.id)}
-                        className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      {/* EXECUTION NOTES DISPLAY */}
+                      {it.is_completed && it.completed_notes && (
+                        <div className="mt-1 p-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
+                          <MessageSquareQuote className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>
+                            <strong>Catatan Pelaksanaan:</strong> "{it.completed_notes}"
+                          </span>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

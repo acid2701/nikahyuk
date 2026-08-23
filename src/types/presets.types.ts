@@ -550,4 +550,131 @@ export const DYNAMIC_ROLE_PRESETS: DynamicRolePreset[] = [
   },
 ];
 
+export const LAMARAN_CHECKLIST_PRESETS = [
+  {
+    category: "lamaran" as const,
+    item_name: "Cincin Tunangan & Tempat Kotak Cincin Premium",
+    notes: "Sudah diukur ulang ukuran jari kedua pengantin",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Pakaian Seragam Batik Keluarga Pria & Wanita",
+    notes: "Kain batik sarimbit / kebaya senada",
+  },
+  {
+    category: "seserahan" as const,
+    box_name: "Hantaran Lamaran: Kue & Makanan Tradisional",
+    item_name: "Jadah, Wajik & Tampah Kue Basah Adat",
+    estimated_price: 350000,
+  },
+  {
+    category: "seserahan" as const,
+    box_name: "Hantaran Lamaran: Parsel Buah Segar",
+    item_name: "Parsel Buah Impor (Pisang Raja, Apel, Anggur)",
+    estimated_price: 300000,
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Susunan Teks Sambutan Perwakilan Pihak Pria & Wanita",
+    notes: "Diserahkan ke juru bicara kedua keluarga",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "MC & Pemandu Acara Prosesi Lamaran",
+    notes: "Konfirmasi rundown & daftar nama keluarga utama",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Sound System & Mikrofon Portable",
+    notes: "Siapkan 2 mic wireless & playlist lagu akustik",
+  },
+  {
+    category: "emergency" as const,
+    item_name: "Kotak Jarum Pentul, Peniti, Safety Pins & Tisu Basah",
+    notes: "Kit perlengkapan darurat MUA & kebaya",
+  },
+];
+
+export const AKAD_CHECKLIST_PRESETS = [
+  {
+    category: "kua" as const,
+    item_name: "Surat Keterangan Nikah Kelurahan (Form N1, N2, N4)",
+    notes: "Bawa pengantar RT/RW ke kantor Kelurahan",
+  },
+  {
+    category: "kua" as const,
+    item_name: "Surat Rekomendasi Numpang Nikah dari KUA Domisili",
+    notes: "Diperlukan jika lokasi akad di luar kecamatan tempat tinggal",
+  },
+  {
+    category: "kua" as const,
+    item_name: "Fotokopi KTP, KK, & Akta Kelahiran Pasangan dan Orang Tua",
+    notes: "Siapkan 3 rangkap",
+  },
+  {
+    category: "kua" as const,
+    item_name: "Pasfoto Latar Biru Ukuran 2x3 (4 lembar) & 4x6 (2 lembar)",
+    notes: "Baju berkerah / kemeja putih rapi",
+  },
+  {
+    category: "kua" as const,
+    item_name: "Surat Pemeriksaan Kesehatan (Suket Sehat & Imunisasi TT)",
+    notes: "Puskesmas / Rumah Sakit setempat",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Mas Maskawin / Mahar Akad & Figura Hiasan Mahar",
+    notes: "Uang tunai / logam mulia / alat sholat",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Konfirmasi Kehadiran Saksi Nikah Pihak Pria & Wanita",
+    notes: "Bawa KTP asli saksi saat hari H",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Al-Qur'an & Sajadah Pengantin untuk Ijab Kabul",
+    notes: "Disiapkan di meja ijab kabul",
+  },
+];
+
+export const RESEPSI_CHECKLIST_PRESETS = [
+  {
+    category: "lamaran" as const,
+    item_name: "Final Food Tasting Katering & Porsi Buffet / Stall",
+    notes: "Pastikan porsi gubukan & prasmanan cukup",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Souvenir Resepsi & Kupon Souvenir Meja Registrasi",
+    notes: "Sudah dibungkus & dihitung total kupon",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Buku Tamu Fisik & Pulpen Emas / QR Scanner App",
+    notes: "Disiapkan di meja penerima tamu",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Photo Booth Props & Backdrops Resepsi",
+    notes: "Konfirmasi jam cetak foto studio booth",
+  },
+  {
+    category: "lamaran" as const,
+    item_name: "Baju Pengantin Resepsi & Gaun / Busana Adat",
+    notes: "Fitting terakhir & kemeja beskap",
+  },
+  {
+    category: "emergency" as const,
+    item_name: "Air Mineral Botol Kecil & Sedotan untuk Pelaminan",
+    notes: "Disembunyikan di belakang kursi pelaminan",
+  },
+  {
+    category: "emergency" as const,
+    item_name: "Sandal Flat / Sepatu Cadangan Nyaman untuk Pengantin Wanita",
+    notes: "Ganti heels saat istirahat pelaminan",
+  },
+];
+
+
 

@@ -153,7 +153,68 @@ export interface Database {
         };
         Relationships: [];
       };
+      wedding_checklists: {
+        Row: {
+          id: string;
+          wedding_id: string;
+          event_id: string;
+          category: "kua" | "seserahan" | "lamaran" | "emergency";
+          box_name?: string | null;
+          item_name: string;
+          price?: number | null;
+          purchase_url?: string | null;
+          notes?: string | null;
+          completed_notes?: string | null;
+          completed_by?: string | null;
+          completed_at?: string | null;
+          due_date?: string | null;
+          assignee_name?: string | null;
+          is_completed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          wedding_id: string;
+          event_id?: string;
+          category: "kua" | "seserahan" | "lamaran" | "emergency";
+          box_name?: string | null;
+          item_name: string;
+          price?: number | null;
+          purchase_url?: string | null;
+          notes?: string | null;
+          completed_notes?: string | null;
+          completed_by?: string | null;
+          completed_at?: string | null;
+          due_date?: string | null;
+          assignee_name?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          wedding_id?: string;
+          event_id?: string;
+          category?: "kua" | "seserahan" | "lamaran" | "emergency";
+          box_name?: string | null;
+          item_name?: string;
+          price?: number | null;
+          purchase_url?: string | null;
+          notes?: string | null;
+          completed_notes?: string | null;
+          completed_by?: string | null;
+          completed_at?: string | null;
+          due_date?: string | null;
+          assignee_name?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       weddings: {
+
 
         Row: {
           id: string;
