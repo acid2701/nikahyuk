@@ -17,7 +17,9 @@ import { EventSwitcher, SubEventOption } from "./event-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
 import { MobileSidebarDrawer } from "./mobile-sidebar-drawer";
+import { NotificationBell } from "./notification-bell";
 import Link from "next/link";
+
 
 
 export interface DashboardHeaderProps {
@@ -135,9 +137,11 @@ export function DashboardHeader({
           )}
         </div>
 
-
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <ThemeToggle />
+          <NotificationBell weddingId={weddingId} />
+
+
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

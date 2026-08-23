@@ -117,7 +117,44 @@ export interface Database {
         };
         Relationships: [];
       };
+      user_notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          wedding_id?: string | null;
+          title: string;
+          message: string;
+          type: "invite" | "payment" | "rsvp" | "rundown" | "system";
+          is_read: boolean;
+          action_url?: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          wedding_id?: string | null;
+          title: string;
+          message: string;
+          type?: "invite" | "payment" | "rsvp" | "rundown" | "system";
+          is_read?: boolean;
+          action_url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          wedding_id?: string | null;
+          title?: string;
+          message?: string;
+          type?: "invite" | "payment" | "rsvp" | "rundown" | "system";
+          is_read?: boolean;
+          action_url?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       weddings: {
+
         Row: {
           id: string;
           created_by: string;
