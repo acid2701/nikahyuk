@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { MediaUploaderDropzone, UploadedFileMeta } from "@/components/shared/media-uploader/dropzone";
-import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon } from "lucide-react";
+import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon, Key, Globe, ShieldCheck, Copy, Check, Eye, EyeOff } from "lucide-react";
 
 export default function AdminAppSettingsPage() {
   const [appName, setAppName] = React.useState("NikahYuk");
@@ -30,7 +30,16 @@ export default function AdminAppSettingsPage() {
   const [ctaButtonText, setCtaButtonText] = React.useState("Mulai Workspace Gratis");
   const [contactEmail, setContactEmail] = React.useState("support@nikahyuk.com");
 
+  // Google Auth & Dynamic Auth Settings State
+  const [appBaseUrl, setAppBaseUrl] = React.useState("http://localhost:3000");
+  const [googleClientId, setGoogleClientId] = React.useState("");
+  const [googleClientSecret, setGoogleClientSecret] = React.useState("");
+  const [googleEnabled, setGoogleEnabled] = React.useState(true);
+  const [showGoogleSecret, setShowGoogleSecret] = React.useState(false);
+  const [copiedAppCallback, setCopiedAppCallback] = React.useState(false);
+
   const [loading, setLoading] = React.useState(false);
+  const [authLoading, setAuthLoading] = React.useState(false);
   const { toast } = useToast();
 
   const loadBranding = React.useCallback(async () => {
@@ -50,6 +59,15 @@ export default function AdminAppSettingsPage() {
           if (val.heroSubtitle) setHeroSubtitle(val.heroSubtitle as string);
           if (val.ctaButtonText) setCtaButtonText(val.ctaButtonText as string);
           if (val.contactEmail) setContactEmail(val.contactEmail as string);
+        }
+
+        const authRow = rows.find((r) => r.key === "auth_provider_config");
+        if (authRow && authRow.value) {
+          const aVal = authRow.value;
+          if (aVal.appBaseUrl) setAppBaseUrl(aVal.appBaseUrl as string);
+          if (aVal.googleClientId) setGoogleClientId(aVal.googleClientId as string);
+          if (aVal.googleClientSecret) setGoogleClientSecret(aVal.googleClientSecret as string);
+          if (typeof aVal.googleEnabled === "boolean") setGoogleEnabled(aVal.googleEnabled as boolean);
         }
       }
     } catch {
@@ -127,6 +145,62 @@ export default function AdminAppSettingsPage() {
       setLoading(false);
     }
   }
+
+  async function handleSaveAuthConfig(e: React.FormEvent) {
+    e.preventDefault();
+    setAuthLoading(true);
+
+    const authValue = {
+      appBaseUrl,
+      googleClientId,
+      googleClientSecret,
+      googleEnabled,
+    };
+
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: "auth_provider_config", value: authValue }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Pengaturan Google OAuth Disimpan",
+          description: "URL callback & integrasi Google OAuth diperbarui secara dinamis.",
+          variant: "success",
+        });
+      } else {
+        const err = await res.json();
+        toast({
+          title: "Gagal Menyimpan Auth Config",
+          description: err.error || "Internal error",
+          variant: "destructive",
+        });
+      }
+    } catch {
+      toast({
+        title: "Kesalahan Jaringan",
+        description: "Gagal menghubungkan ke server.",
+        variant: "destructive",
+      });
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  function handleCopyCallbackUrl(url: string) {
+    navigator.clipboard.writeText(url);
+    setCopiedAppCallback(true);
+    toast({
+      title: "URL Callback Disalin!",
+      description: `URL '${url}' telah disalin ke clipboard.`,
+      variant: "success",
+    });
+    setTimeout(() => setCopiedAppCallback(false), 2000);
+  }
+
+  const computedAppCallbackUrl = `${appBaseUrl.replace(/\/$/, "")}/auth-callback`;
 
   return (
     <div className="space-y-6">
@@ -347,6 +421,158 @@ export default function AdminAppSettingsPage() {
           </CardFooter>
         </Card>
       </form>
+
+      {/* DYNAMIC GOOGLE OAUTH & AUTH PROVIDER CONFIG CARD */}
+      <Card className="border-border/70">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <CardTitle className="text-lg font-medium flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-500" /> Pengaturan Google OAuth & Auth Callback Dinamis
+              </CardTitle>
+              <CardDescription>
+                Atur Base URL aplikasi, Kredensial Google Cloud Console, dan Dapatkan URL Callback otomatis untuk disalin ke Supabase & Google Cloud.
+              </CardDescription>
+            </div>
+            <Badge variant={googleEnabled ? "success" : "secondary"} className="text-xs uppercase shrink-0 font-semibold">
+              {googleEnabled ? "Google Auth Aktif" : "Nonaktif"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <form onSubmit={handleSaveAuthConfig}>
+          <CardContent className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Globe className="h-4 w-4 text-primary" /> Base URL Aplikasi (App Origin)
+                </label>
+                <Input
+                  type="url"
+                  placeholder="e.g. http://localhost:3000 atau https://nikahyuk.com"
+                  value={appBaseUrl}
+                  onChange={(e) => setAppBaseUrl(e.target.value)}
+                  required
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  URL dasar aplikasi yang digunakan untuk mengarahkan pengguna setelah berhasil login via OAuth.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  Status Integrasi Google Auth
+                </label>
+                <div className="flex items-center space-x-3 pt-1">
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={googleEnabled}
+                      onChange={(e) => setGoogleEnabled(e.target.checked)}
+                    />
+                    <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                  </label>
+                  <span className="text-xs font-medium text-foreground">
+                    {googleEnabled ? "Aktifkan Tombol Google Login" : "Sembunyikan / Nonaktifkan Google Login"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 border-t border-border pt-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Key className="h-4 w-4 text-amber-500" /> Google OAuth Client ID
+                </label>
+                <Input
+                  type="text"
+                  placeholder="xxxxxxxxxxxx-xxxxxxxxxxxxxxxx.apps.googleusercontent.com"
+                  value={googleClientId}
+                  onChange={(e) => setGoogleClientId(e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  Client ID yang didapatkan dari Google Cloud Console -&gt; Credentials.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                  <Key className="h-4 w-4 text-amber-500" /> Google OAuth Client Secret
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showGoogleSecret ? "text" : "password"}
+                    placeholder="GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx"
+                    value={googleClientSecret}
+                    onChange={(e) => setGoogleClientSecret(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowGoogleSecret(!showGoogleSecret)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
+                    title={showGoogleSecret ? "Sembunyikan Client Secret" : "Tampilkan Client Secret"}
+                  >
+                    {showGoogleSecret ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Client Secret rahasia untuk dimasukkan di Supabase Authentication -&gt; Providers -&gt; Google.
+                </p>
+              </div>
+            </div>
+
+            {/* Generated Callback URLs Helper Card */}
+            <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-3">
+              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> URL Callback Otomatis (Salin ke Google Cloud &amp; Supabase)
+              </span>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1 bg-background p-3 rounded border border-border">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                    1. Authorized Redirect URI (Aplikasi)
+                  </span>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <code className="text-xs font-mono text-primary truncate">{computedAppCallbackUrl}</code>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-[10px] gap-1 shrink-0"
+                      onClick={() => handleCopyCallbackUrl(computedAppCallbackUrl)}
+                    >
+                      {copiedAppCallback ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                      {copiedAppCallback ? "Tersalin" : "Salin URL"}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1 bg-background p-3 rounded border border-border">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                    2. Authorized Callback URI (Supabase Provider)
+                  </span>
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <code className="text-xs font-mono text-muted-foreground truncate">
+                      https://&lt;your-project-ref&gt;.supabase.co/auth/v1/callback
+                    </code>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="justify-end">
+            <Button type="submit" disabled={authLoading} className="gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              {authLoading ? "Menyimpan Auth Config..." : "Simpan Pengaturan Google OAuth"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
     </div>
   );
 }

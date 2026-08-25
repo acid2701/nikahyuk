@@ -15,11 +15,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = React.useState("");
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [groomName, setGroomName] = React.useState("");
   const [brideName, setBrideName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
@@ -169,14 +171,29 @@ export default function RegisterPage() {
             <label className="text-xs font-medium text-foreground">
               Kata Sandi
             </label>
-            <Input
-              type="password"
-              placeholder="Minimal 6 karakter"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              required
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Minimal 6 karakter"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
+                title={showPassword ? "Sembunyikan Kata Sandi" : "Tampilkan Kata Sandi"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Database, HardDrive, Calendar, ShieldCheck, HeartHandshake } from "lucide-react";
+import { Database, HardDrive, Calendar, ShieldCheck, Settings, Key } from "lucide-react";
 import { HealthMonitorCard } from "@/components/admin/health-monitor-card";
 
 export default async function AdminOverviewPage() {
@@ -24,10 +24,15 @@ export default async function AdminOverviewPage() {
   const { data: settings } = await supabase
     .from("system_settings")
     .select("key, value")
-    .eq("key", "r2_credentials")
-    .maybeSingle();
+    .in("key", ["r2_credentials", "auth_provider_config"]);
 
-  const isR2Configured = Boolean(settings && settings.value);
+  const r2Row = settings?.find((r) => r.key === "r2_credentials");
+  const authRow = settings?.find((r) => r.key === "auth_provider_config");
+
+  const isR2Configured = Boolean(r2Row && r2Row.value);
+  const authVal = (authRow?.value || {}) as Record<string, unknown>;
+  const isGoogleAuthEnabled = authVal.googleEnabled !== false;
+  const isGoogleClientIdSet = Boolean(authVal.googleClientId);
 
   return (
     <div className="space-y-6">
@@ -36,7 +41,7 @@ export default async function AdminOverviewPage() {
           Superadmin Platform Control Plane
         </h1>
         <p className="text-sm text-muted-foreground">
-          Ringkasan kesehatan infrastruktur, statistik ruang kerja SaaS, dan status Cloudflare R2.
+          Ringkasan kesehatan infrastruktur, statistik ruang kerja SaaS, status Storage R2, dan Provider Google OAuth.
         </p>
       </div>
 
@@ -76,21 +81,6 @@ export default async function AdminOverviewPage() {
         <Card className="border-border/70">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
-              Berkas Media & Dokumen
-            </CardTitle>
-            <HardDrive className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{docsCount || 0} File</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Tersimpan di Cloudflare R2
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
               Status Storage S3 R2
             </CardTitle>
             <ShieldCheck className="h-4 w-4 text-emerald-500" />
@@ -101,20 +91,62 @@ export default async function AdminOverviewPage() {
                 variant={isR2Configured ? "success" : "destructive"}
                 className="text-xs"
               >
-                {isR2Configured ? "TERHUBUNG (HEALTHY)" : "BELUM DISETTING"}
+                {isR2Configured ? "HEALTHY" : "BELUM DISETTING"}
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Dynamic Config Engine Active
+              {docsCount || 0} file tersimpan di R2
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Status Google OAuth
+            </CardTitle>
+            <Key className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center space-x-2">
+              <Badge
+                variant={isGoogleAuthEnabled ? "success" : "secondary"}
+                className="text-xs"
+              >
+                {isGoogleAuthEnabled ? (isGoogleClientIdSet ? "AKTIF (CONFIGURED)" : "AKTIF (DEFAULT)") : "NONAKTIF"}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Auth Callback Engine Ready
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <Card className="border-border/70">
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Modul Infrastruktur & Media</CardTitle>
+            <CardTitle className="text-lg font-medium">App Branding & Google OAuth</CardTitle>
+            <CardDescription>
+              Atur Base URL callback, Client ID/Secret Google, serta Logo & Favicon S3.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
+              <div>
+                <p className="text-sm font-semibold">Pengaturan Auth & Branding</p>
+                <p className="text-xs text-muted-foreground">URL Callback, OAuth Key & Identity</p>
+              </div>
+              <Button asChild size="sm">
+                <Link href="/admin/app-settings">Buka Setting</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-border/70">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium">Modul Storage R2</CardTitle>
             <CardDescription>
               Kelola kredensial S3 Cloudflare R2 dan aturan upload secara dinamis.
             </CardDescription>
@@ -123,10 +155,10 @@ export default async function AdminOverviewPage() {
             <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
               <div>
                 <p className="text-sm font-semibold">Konfigurasi R2 Storage</p>
-                <p className="text-xs text-muted-foreground">Atur Account ID, Secret Key, & CDN Domain</p>
+                <p className="text-xs text-muted-foreground">Account ID & Secret Key</p>
               </div>
-              <Button asChild size="sm">
-                <Link href="/admin/storage-config">Buka Pengaturan</Link>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/admin/storage-config">Buka Storage</Link>
               </Button>
             </div>
           </CardContent>
@@ -134,7 +166,7 @@ export default async function AdminOverviewPage() {
 
         <Card className="border-border/70">
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Modul Keamanan & Hak Akses</CardTitle>
+            <CardTitle className="text-lg font-medium">Keamanan & RBAC</CardTitle>
             <CardDescription>
               Atur template izin default global untuk WO dan Panitia Keluarga.
             </CardDescription>
@@ -143,7 +175,7 @@ export default async function AdminOverviewPage() {
             <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
               <div>
                 <p className="text-sm font-semibold">Template RBAC Global</p>
-                <p className="text-xs text-muted-foreground">Master matriks izin bawaan WO / Panitia</p>
+                <p className="text-xs text-muted-foreground">Matriks izin bawaan</p>
               </div>
               <Button asChild size="sm" variant="secondary">
                 <Link href="/admin/rbac-templates">Kelola Template</Link>

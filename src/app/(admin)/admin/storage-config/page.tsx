@@ -12,13 +12,14 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { HardDrive, ShieldCheck, HeartHandshake, ArrowRight } from "lucide-react";
+import { HardDrive, ShieldCheck, HeartHandshake, ArrowRight, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminStorageConfigPage() {
   const [accountId, setAccountId] = React.useState("");
   const [accessKeyId, setAccessKeyId] = React.useState("");
   const [secretAccessKey, setSecretAccessKey] = React.useState("");
+  const [showSecretKey, setShowSecretKey] = React.useState(false);
   const [bucketName, setBucketName] = React.useState("");
   const [publicCdnDomain, setPublicCdnDomain] = React.useState("");
 
@@ -211,14 +212,29 @@ export default function AdminStorageConfigPage() {
                 <label className="text-xs font-medium text-foreground">
                   Secret Access Key
                 </label>
-                <Input
-                  type="password"
-                  placeholder="••••••••••••••••••••••••"
-                  value={secretAccessKey}
-                  onChange={(e) => setSecretAccessKey(e.target.value)}
-                  disabled={loading}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    type={showSecretKey ? "text" : "password"}
+                    placeholder="••••••••••••••••••••••••"
+                    value={secretAccessKey}
+                    onChange={(e) => setSecretAccessKey(e.target.value)}
+                    disabled={loading}
+                    className="pr-10"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSecretKey(!showSecretKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
+                    title={showSecretKey ? "Sembunyikan Secret Key" : "Tampilkan Secret Key"}
+                  >
+                    {showSecretKey ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1">

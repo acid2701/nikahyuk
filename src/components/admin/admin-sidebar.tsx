@@ -74,7 +74,7 @@ export function AdminSidebar({
       icon: History,
     },
     {
-      title: "Pengaturan App & Branding",
+      title: "App Branding & Auth Provider",
       href: "/admin/app-settings",
       icon: Settings,
     },

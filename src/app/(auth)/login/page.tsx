@@ -15,14 +15,38 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const supabase = createClient();
+
+  const [authConfig, setAuthConfig] = React.useState<{
+    googleEnabled: boolean;
+    appBaseUrl: string;
+  } | null>(null);
+
+  React.useEffect(() => {
+    async function loadAuthConfig() {
+      try {
+        const res = await fetch("/api/public/auth-config");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.config) {
+            setAuthConfig(json.config);
+          }
+        }
+      } catch {
+        // Fallback to default
+      }
+    }
+    loadAuthConfig();
+  }, []);
 
   async function handleEmailLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -68,11 +92,23 @@ export default function LoginPage() {
   }
 
   async function handleGoogleLogin() {
+    if (authConfig && !authConfig.googleEnabled) {
+      toast({
+        title: "Google Auth Nonaktif",
+        description: "Metode masuk dengan Google sedang dinonaktifkan oleh administrator.",
+        variant: "warning",
+      });
+      return;
+    }
+
     setLoading(true);
+    const redirectOrigin =
+      authConfig?.appBaseUrl || (typeof window !== "undefined" ? window.location.origin : "");
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth-callback`,
+        redirectTo: `${redirectOrigin}/auth-callback`,
       },
     });
 
@@ -148,17 +184,40 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground">
-              Kata Sandi
-            </label>
-            <Input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-              required
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-foreground">
+                Kata Sandi
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-[11px] text-primary hover:underline font-medium"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                className="pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
+                title={showPassword ? "Sembunyikan Kata Sandi" : "Tampilkan Kata Sandi"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
