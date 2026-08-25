@@ -22,6 +22,15 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import {
   fetchChecklistItemsAction,
@@ -48,7 +57,12 @@ import {
   User,
   MessageSquareQuote,
   CheckCircle2,
+  X,
+  Settings2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+
 
 export interface ChecklistItem {
   id: string;
@@ -109,6 +123,73 @@ export function PreweddingChecklistManager({
   const [completionNoteInput, setCompletionNoteInput] = React.useState("");
 
   const [activeCategory, setActiveCategory] = React.useState<"kua" | "seserahan" | "lamaran" | "emergency">("kua");
+
+  const hiddenTabsStorageKey = `nikahyuk_checklist_hidden_tabs_${weddingId}_${eventId}`;
+  const [hiddenCategories, setHiddenCategories] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedHidden = localStorage.getItem(hiddenTabsStorageKey);
+    if (savedHidden) {
+      try {
+        const parsed = JSON.parse(savedHidden);
+        if (Array.isArray(parsed)) {
+          setHiddenCategories(parsed);
+        }
+      } catch {
+        // fallback
+      }
+    }
+  }, [hiddenTabsStorageKey]);
+
+  function saveHiddenCategories(newHidden: string[]) {
+    setHiddenCategories(newHidden);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(hiddenTabsStorageKey, JSON.stringify(newHidden));
+    }
+  }
+
+  function hideCategory(categoryKey: string) {
+    if (hiddenCategories.includes(categoryKey)) return;
+    const updated = [...hiddenCategories, categoryKey];
+    saveHiddenCategories(updated);
+
+    const allCategories = ["kua", "seserahan", "lamaran", "emergency"];
+    const remaining = allCategories.filter((c) => !updated.includes(c));
+    if (activeCategory === categoryKey && remaining.length > 0) {
+      setActiveCategory(remaining[0] as any);
+    }
+
+    toast({
+      title: "Tab Disembunyikan",
+      description: "Tab kategori disembunyikan. Tampilkan kembali kapan saja via tombol '⚙️ Kelola Tab'.",
+      variant: "warning",
+    });
+  }
+
+  function toggleCategoryVisibility(categoryKey: string) {
+    if (hiddenCategories.includes(categoryKey)) {
+      const updated = hiddenCategories.filter((c) => c !== categoryKey);
+      saveHiddenCategories(updated);
+      toast({
+        title: "Tab Ditampilkan Kembali",
+        description: "Tab kategori telah dibuka kembali.",
+        variant: "success",
+      });
+    } else {
+      hideCategory(categoryKey);
+    }
+  }
+
+  function showAllCategories() {
+    saveHiddenCategories([]);
+    toast({
+      title: "Seluruh Tab Ditampilkan",
+      description: "Semua 4 kategori tab checklist telah dibuka kembali.",
+      variant: "success",
+    });
+  }
+
 
   // Initial Load from Supabase DB with LocalStorage Fallback
   const loadChecklistItems = React.useCallback(async () => {
@@ -480,6 +561,19 @@ export function PreweddingChecklistManager({
       ? eventName
       : "Acara & Prosesi";
 
+  // Per-category counts for tab triggers
+  const kuaItems = items.filter((it) => it.category === "kua");
+  const kuaCompleted = kuaItems.filter((it) => it.is_completed).length;
+
+  const seserahanAllItems = items.filter((it) => it.category === "seserahan");
+  const seserahanCompletedCount = seserahanAllItems.filter((it) => it.is_completed).length;
+
+  const lamaranItems = items.filter((it) => it.category === "lamaran");
+  const lamaranCompleted = lamaranItems.filter((it) => it.is_completed).length;
+
+  const emergencyItems = items.filter((it) => it.category === "emergency");
+  const emergencyCompleted = emergencyItems.filter((it) => it.is_completed).length;
+
   return (
     <div className="space-y-6 print:p-0 print:m-0">
       {/* COMPLETION NOTE MODAL */}
@@ -649,25 +743,159 @@ export function PreweddingChecklistManager({
         </Badge>
       </div>
 
+      {/* ALL-TABS HIDDEN SAFETY BANNER */}
+      {hiddenCategories.length === 4 && (
+        <div className="p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300 flex items-center justify-between gap-3 text-xs print:hidden">
+          <div className="flex items-center gap-2">
+            <EyeOff className="h-4 w-4 text-amber-600 shrink-0" />
+            <span>Seluruh 4 tab kategori disembunyikan untuk acara ini.</span>
+          </div>
+          <Button
+            size="sm"
+            onClick={showAllCategories}
+            className="h-7 text-xs font-semibold gap-1.5 cursor-pointer bg-amber-600 hover:bg-amber-700 text-white"
+          >
+            <Eye className="h-3.5 w-3.5" /> Tampilkan Semua Tab
+          </Button>
+        </div>
+      )}
+
       <Tabs value={activeCategory} onValueChange={(v: any) => setActiveCategory(v)} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/60 print:hidden">
-          <TabsTrigger value="kua" className="py-2 text-xs gap-1.5 font-medium">
-            <FileText className="h-4 w-4 text-blue-600" />
-            Dokumen KUA
-          </TabsTrigger>
-          <TabsTrigger value="seserahan" className="py-2 text-xs gap-1.5 font-medium">
-            <Gift className="h-4 w-4 text-pink-600" />
-            Kotak Seserahan
-          </TabsTrigger>
-          <TabsTrigger value="lamaran" className="py-2 text-xs gap-1.5 font-medium min-w-0">
-            <Heart className="h-4 w-4 text-amber-600 shrink-0" />
-            <span className="truncate">{dynamicTabTriggerLabel}</span>
-          </TabsTrigger>
-          <TabsTrigger value="emergency" className="py-2 text-xs gap-1.5 font-medium">
-            <AlertTriangle className="h-4 w-4 text-rose-600" />
-            Emergency H-Day
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap print:hidden">
+          <TabsList className="flex-1 flex flex-wrap h-auto p-1 bg-muted/60 min-h-[42px]">
+            {!hiddenCategories.includes("kua") && (
+              <TabsTrigger value="kua" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
+                <FileText className="h-4 w-4 text-blue-600 shrink-0" />
+                <span>Dokumen ({kuaCompleted}/{kuaItems.length})</span>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    hideCategory("kua");
+                  }}
+                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                  title="Sembunyikan Tab Dokumen"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              </TabsTrigger>
+            )}
+
+            {!hiddenCategories.includes("seserahan") && (
+              <TabsTrigger value="seserahan" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
+                <Gift className="h-4 w-4 text-pink-600 shrink-0" />
+                <span>Kotak Seserahan ({seserahanCompletedCount}/{seserahanAllItems.length})</span>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    hideCategory("seserahan");
+                  }}
+                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                  title="Sembunyikan Tab Kotak Seserahan"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              </TabsTrigger>
+            )}
+
+            {!hiddenCategories.includes("lamaran") && (
+              <TabsTrigger value="lamaran" className="group py-2 px-3 text-xs gap-1.5 font-medium min-w-0 relative cursor-pointer">
+                <Heart className="h-4 w-4 text-amber-600 shrink-0" />
+                <span className="truncate">{dynamicTabTriggerLabel} ({lamaranCompleted}/{lamaranItems.length})</span>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    hideCategory("lamaran");
+                  }}
+                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                  title="Sembunyikan Tab Event Ini"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              </TabsTrigger>
+            )}
+
+            {!hiddenCategories.includes("emergency") && (
+              <TabsTrigger value="emergency" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
+                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                <span>Emergency H-Day ({emergencyCompleted}/{emergencyItems.length})</span>
+                <span
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    hideCategory("emergency");
+                  }}
+                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
+                  title="Sembunyikan Tab Emergency H-Day"
+                >
+                  <X className="h-3 w-3" />
+                </span>
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+
+          {/* MANAGE TABS DROPDOWN */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-10 text-xs gap-1.5 font-medium cursor-pointer shrink-0">
+                <Settings2 className="h-4 w-4" /> Kelola Tab
+                {hiddenCategories.length > 0 && (
+                  <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 min-w-4 flex items-center justify-center">
+                    {hiddenCategories.length}
+                  </Badge>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="text-xs">Tampilkan Kategori Tab</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuCheckboxItem
+                checked={!hiddenCategories.includes("kua")}
+                onCheckedChange={() => toggleCategoryVisibility("kua")}
+                className="text-xs cursor-pointer"
+              >
+                📄 Dokumen
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuCheckboxItem
+                checked={!hiddenCategories.includes("seserahan")}
+                onCheckedChange={() => toggleCategoryVisibility("seserahan")}
+                className="text-xs cursor-pointer"
+              >
+                🎁 Kotak Seserahan
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuCheckboxItem
+                checked={!hiddenCategories.includes("lamaran")}
+                onCheckedChange={() => toggleCategoryVisibility("lamaran")}
+                className="text-xs cursor-pointer"
+              >
+                ♡ {dynamicTabTriggerLabel}
+              </DropdownMenuCheckboxItem>
+
+              <DropdownMenuCheckboxItem
+                checked={!hiddenCategories.includes("emergency")}
+                onCheckedChange={() => toggleCategoryVisibility("emergency")}
+                className="text-xs cursor-pointer"
+              >
+                ⚠️ Emergency H-Day
+              </DropdownMenuCheckboxItem>
+
+              {hiddenCategories.length > 0 && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={showAllCategories}
+                    className="text-xs text-primary font-semibold cursor-pointer"
+                  >
+                    <Eye className="h-3.5 w-3.5 mr-2" /> Tampilkan Semua Tab
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
 
         {/* SESERAHAN VIEW */}
         {activeCategory === "seserahan" ? (
@@ -896,9 +1124,10 @@ export function PreweddingChecklistManager({
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-lg font-serif">
-                    {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi KUA"}
+                    {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi"}
                     {activeCategory === "lamaran" && `💍 ${dynamicEventCategoryLabel}`}
                     {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan HARI-H"}
+
                   </CardTitle>
                   <CardDescription className="text-xs mt-1">
                     Progres: {completedCount} dari {totalCount} item selesai ({progressPercent}%)
