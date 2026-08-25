@@ -39,33 +39,49 @@ export async function updateSession(request: NextRequest) {
 
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/admin");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/vendor/dashboard");
 
   const isAdminRoute = pathname.startsWith("/admin");
-  const isAuthRoute = pathname === "/login" || pathname === "/register";
+  const isVendorRoute = pathname.startsWith("/vendor/dashboard");
+  const isAuthRoute =
+    pathname === "/login" ||
+    pathname === "/register" ||
+    pathname === "/vendor/login";
 
+  // 1. Unauthenticated users trying to access protected routes
   if (!user && isProtectedRoute) {
-    url.pathname = "/login";
+    url.pathname = isVendorRoute ? "/vendor/login" : "/login";
     return NextResponse.redirect(url);
   }
 
+  // 2. Admin Route Protection
   if (user && isAdminRoute) {
     const isSuperadmin =
       user.app_metadata?.role === "superadmin" ||
       user.user_metadata?.role === "superadmin";
 
     if (!isSuperadmin) {
-      url.pathname = "/dashboard";
+      url.pathname = user.user_metadata?.user_type === "vendor" ? "/vendor/dashboard" : "/dashboard";
       return NextResponse.redirect(url);
     }
   }
 
+  // 3. Logged-in users hitting Auth pages (/login, /register, /vendor/login)
   if (user && isAuthRoute) {
     const isSuperadmin =
       user.app_metadata?.role === "superadmin" ||
       user.user_metadata?.role === "superadmin";
+    const isVendor = user.user_metadata?.user_type === "vendor";
 
-    url.pathname = isSuperadmin ? "/admin" : "/dashboard";
+    if (isSuperadmin) {
+      url.pathname = "/admin";
+    } else if (isVendor) {
+      url.pathname = "/vendor/dashboard";
+    } else {
+      url.pathname = "/dashboard";
+    }
+
     return NextResponse.redirect(url);
   }
 

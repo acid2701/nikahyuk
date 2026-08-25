@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Building2 } from "lucide-react";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
@@ -76,16 +76,27 @@ export default function LoginPage() {
       const isSuperadmin =
         data.user.app_metadata?.role === "superadmin" ||
         data.user.user_metadata?.role === "superadmin";
+      const isVendor = data.user.user_metadata?.user_type === "vendor";
 
       toast({
-        title: isSuperadmin ? "Berhasil Masuk Superadmin" : "Berhasil Masuk",
+        title: isSuperadmin
+          ? "Berhasil Masuk Superadmin"
+          : isVendor
+          ? "Berhasil Masuk Portal Vendor"
+          : "Berhasil Masuk",
         description: isSuperadmin
           ? "Selamat datang di Superadmin Control Plane NikahYuk!"
+          : isVendor
+          ? "Selamat datang di Dashboard Mandiri Mitra Vendor NikahYuk!"
           : "Selamat datang kembali di NikahYuk!",
         variant: "success",
       });
 
-      const targetPath = isSuperadmin ? "/admin" : "/dashboard";
+      const targetPath = isSuperadmin
+        ? "/admin"
+        : isVendor
+        ? "/vendor/dashboard"
+        : "/dashboard";
       router.push(targetPath);
       router.refresh();
     }
@@ -225,7 +236,7 @@ export default function LoginPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="justify-center">
+      <CardFooter className="flex-col gap-3 justify-center pt-2">
         <p className="text-xs text-muted-foreground">
           Belum memiliki akun?{" "}
           <Link
@@ -235,6 +246,18 @@ export default function LoginPage() {
             Daftar Calon Pengantin
           </Link>
         </p>
+        <div className="w-full pt-3 border-t border-dashed border-border text-center space-y-1.5">
+          <p className="text-[11px] text-muted-foreground font-medium">
+            Pemilik Usaha Vendor Pernikahan?
+          </p>
+          <Link
+            href="/vendor-register"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-2 rounded-md transition-colors w-full border border-amber-500/30"
+          >
+            <Building2 className="h-4 w-4 text-amber-600" />
+            Daftarkan Usaha Vendor Anda di Sini →
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );

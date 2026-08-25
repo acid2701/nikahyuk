@@ -531,6 +531,9 @@ export interface Database {
           pic_name: string | null;
           sanitized_phone: string | null;
           contract_value: number;
+          status: "candidate" | "shortlisted" | "selected" | "rejected";
+          pros_cons_notes: string | null;
+          package_details: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -543,6 +546,9 @@ export interface Database {
           pic_name?: string | null;
           sanitized_phone?: string | null;
           contract_value?: number;
+          status?: "candidate" | "shortlisted" | "selected" | "rejected";
+          pros_cons_notes?: string | null;
+          package_details?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -555,6 +561,9 @@ export interface Database {
           pic_name?: string | null;
           sanitized_phone?: string | null;
           contract_value?: number;
+          status?: "candidate" | "shortlisted" | "selected" | "rejected";
+          pros_cons_notes?: string | null;
+          package_details?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -583,6 +592,7 @@ export interface Database {
           r2_file_key: string;
           file_size_bytes: number;
           mime_type: string;
+          doc_type: "pricelist" | "menu" | "contract" | "receipt" | "other";
           uploaded_at: string;
         };
         Insert: {
@@ -592,6 +602,7 @@ export interface Database {
           r2_file_key: string;
           file_size_bytes: number;
           mime_type: string;
+          doc_type?: "pricelist" | "menu" | "contract" | "receipt" | "other";
           uploaded_at?: string;
         };
         Update: {
@@ -601,6 +612,7 @@ export interface Database {
           r2_file_key?: string;
           file_size_bytes?: number;
           mime_type?: string;
+          doc_type?: "pricelist" | "menu" | "contract" | "receipt" | "other";
           uploaded_at?: string;
         };
         Relationships: [

@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Database, HardDrive, Calendar, ShieldCheck, Settings, Key } from "lucide-react";
+import { Database, HardDrive, Calendar, ShieldCheck, Settings, Key, Building2, Clock } from "lucide-react";
 import { HealthMonitorCard } from "@/components/admin/health-monitor-card";
 
 export default async function AdminOverviewPage() {
@@ -20,6 +20,16 @@ export default async function AdminOverviewPage() {
   const { count: docsCount } = await supabase
     .from("vendor_documents")
     .select("*", { count: "exact", head: true });
+
+  let pendingVendorsCount = 0;
+  try {
+    const { count } = await (supabase.from("vendor_partners" as any) as any)
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending");
+    pendingVendorsCount = count || 0;
+  } catch (err) {
+    console.warn("vendor_partners pending count notice:", err);
+  }
 
   const { data: settings } = await supabase
     .from("system_settings")
@@ -41,13 +51,50 @@ export default async function AdminOverviewPage() {
           Superadmin Platform Control Plane
         </h1>
         <p className="text-sm text-muted-foreground">
-          Ringkasan kesehatan infrastruktur, statistik ruang kerja SaaS, status Storage R2, dan Provider Google OAuth.
+          Ringkasan kesehatan infrastruktur, persetujuan mitra vendor, statistik ruang kerja SaaS, dan Storage R2.
         </p>
       </div>
+
+      {pendingVendorsCount > 0 && (
+        <Card className="border-amber-500/40 bg-amber-500/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="font-serif font-bold text-sm text-foreground">
+                Ada {pendingVendorsCount} Pengajuan Mitra Vendor Menunggu Persetujuan!
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Mitra vendor baru telah mendaftar dan menunggu moderasi dari Admin Superadmin.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" className="bg-amber-500 hover:bg-amber-600 text-white gap-1 text-xs shrink-0">
+            <Link href="/admin/vendor-partners">
+              Tinjau Pengajuan Vendor →
+            </Link>
+          </Button>
+        </Card>
+      )}
 
       <HealthMonitorCard />
 
       <div className="grid gap-4 md:grid-cols-4">
+        <Card className="border-border/70">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground">
+              Pengajuan Vendor Pending
+            </CardTitle>
+            <Building2 className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold font-mono text-amber-600">{pendingVendorsCount}</div>
+            <p className="text-[11px] text-muted-foreground mt-1">
+              Menunggu peninjauan Admin
+            </p>
+          </CardContent>
+        </Card>
         <Card className="border-border/70">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">

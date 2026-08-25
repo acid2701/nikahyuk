@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, User, Shield, ChevronRight, Home } from "lucide-react";
+import { LogOut, User, Shield, ChevronRight, Home, Building2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
@@ -189,6 +189,13 @@ export function DashboardHeader({
                   Profil Pernikahan
                 </DropdownMenuItem>
               )}
+              <DropdownMenuItem
+                onClick={() => router.push("/vendor/dashboard")}
+                className="text-xs font-medium cursor-pointer"
+              >
+                <Building2 className="h-3.5 w-3.5 mr-2 text-amber-500" />
+                Portal Vendor Saya
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/admin")}
                 className="text-xs font-medium cursor-pointer"

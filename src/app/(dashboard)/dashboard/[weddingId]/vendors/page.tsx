@@ -49,7 +49,18 @@ export default async function VendorsPage(props: {
     query = query.or(`event_id.eq.${activeEventId},event_id.is.null`);
   }
 
-  const { data: vendorsData } = await query.order("created_at", { ascending: false });
+  let { data: vendorsData, error: queryError } = await query.order("created_at", { ascending: false });
+
+  // Graceful fallback if event_id column is missing in Supabase schema
+  if (queryError && queryError.message?.includes("event_id")) {
+    const fallbackQuery = await supabase
+      .from("vendors")
+      .select("*, vendor_documents(*)")
+      .eq("wedding_id", weddingId)
+      .order("created_at", { ascending: false });
+    vendorsData = fallbackQuery.data;
+  }
+
   const vendors = vendorsData || [];
 
   return (

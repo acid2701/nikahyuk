@@ -15,6 +15,7 @@ import {
   TrendingUp,
   HeartHandshake,
   Settings,
+  Building2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -32,6 +33,11 @@ export function AdminSidebar({
       title: "Overview Platform",
       href: "/admin",
       icon: LayoutDashboard,
+    },
+    {
+      title: "Persetujuan Mitra Vendor",
+      href: "/admin/vendor-partners",
+      icon: Building2,
     },
     {
       title: "Keuangan & Donasi KlikQRIS",

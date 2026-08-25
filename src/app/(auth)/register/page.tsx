@@ -15,7 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Building2 } from "lucide-react";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = React.useState("");
@@ -31,92 +31,73 @@ export default function RegisterPage() {
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !password || !groomName || !brideName) {
-      toast({
-        title: "Perhatian",
-        description: "Mohon lengkapi seluruh kolom formulir registrasi.",
-        variant: "warning",
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "Kata Sandi Lemah",
-        description: "Kata sandi minimal harus terdiri dari 6 karakter.",
-        variant: "warning",
-      });
-      return;
-    }
-
     setLoading(true);
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName || `${groomName} & ${brideName}`,
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (!authData.user) {
+        throw new Error("Gagal membuat akun.");
+      }
+
+      if (groomName && brideName) {
+        const weddingSlug = `${groomName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${brideName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
+        await supabase.from("weddings").insert({
+          created_by: authData.user.id,
           groom_name: groomName,
           bride_name: brideName,
-        },
-      },
-    });
+          wedding_slug: weddingSlug,
+        } as any);
+      }
 
-    if (authError) {
       toast({
-        title: "Gagal Pendaftaran",
-        description: authError.message,
+        title: "Pendaftaran Berhasil",
+        description: "Akun pengantin Anda telah berhasil dibuat.",
+        variant: "success",
+      });
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err) {
+      toast({
+        title: "Gagal Mendaftar",
+        description: err instanceof Error ? err.message : "Terjadi kesalahan",
         variant: "destructive",
       });
+    } finally {
       setLoading(false);
-      return;
     }
-
-    if (authData.user) {
-      const weddingSlug = `${groomName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${brideName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-      const { error: weddingError } = await supabase.from("weddings").insert({
-        created_by: authData.user.id,
-        groom_name: groomName,
-        bride_name: brideName,
-        wedding_slug: weddingSlug,
-      });
-
-      if (weddingError) {
-        console.error("Error creating initial workspace:", weddingError);
-      }
-    }
-
-    toast({
-      title: "Pendaftaran Berhasil",
-      description: "Akun calon pengantin telah dibuat. Silakan lanjut ke dashboard.",
-      variant: "success",
-    });
-
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
-    <Card className="shadow-sm border-border/70">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-xl font-semibold text-center">
-          Registrasi Calon Pengantin
+    <Card className="w-full max-w-md shadow-lg border-border/80">
+      <CardHeader className="space-y-1 text-center">
+        <CardTitle className="font-serif text-2xl font-bold">
+          Daftar NikahYuk
         </CardTitle>
-        <CardDescription className="text-center">
-          Buat akun dan ruang kerja pernikahan Anda dalam beberapa langkah
+        <CardDescription className="text-xs">
+          Buat akun pasangan pengantin Anda untuk mengelola seluruh kebutuhan pernikahan.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleRegister} className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground">
-              Nama Lengkap Pendaftar
+        <form onSubmit={handleRegister} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Nama Lengkap Anda
             </label>
             <Input
               type="text"
-              placeholder="Contoh: Sarah Az-Zahra"
+              placeholder="e.g. Budi Santoso"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               disabled={loading}
@@ -125,37 +106,36 @@ export default function RegisterPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">
                 Nama Pengantin Pria
               </label>
               <Input
                 type="text"
-                placeholder="Dimas"
+                placeholder="Nama Pria"
                 value={groomName}
                 onChange={(e) => setGroomName(e.target.value)}
                 disabled={loading}
-                required
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-foreground">
                 Nama Pengantin Wanita
               </label>
               <Input
                 type="text"
-                placeholder="Sarah"
+                placeholder="Nama Wanita"
                 value={brideName}
                 onChange={(e) => setBrideName(e.target.value)}
                 disabled={loading}
-                required
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground">
-              Email
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
+              Alamat Email
             </label>
             <Input
               type="email"
@@ -167,14 +147,14 @@ export default function RegisterPage() {
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-medium text-foreground">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground">
               Kata Sandi
             </label>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
-                placeholder="Minimal 6 karakter"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
@@ -201,7 +181,7 @@ export default function RegisterPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="justify-center">
+      <CardFooter className="flex-col gap-3 justify-center border-t border-border/60 pt-4">
         <p className="text-xs text-muted-foreground">
           Sudah memiliki akun?{" "}
           <Link
@@ -211,6 +191,19 @@ export default function RegisterPage() {
             Masuk di sini
           </Link>
         </p>
+
+        <div className="w-full pt-3 border-t border-dashed border-border text-center space-y-1.5">
+          <p className="text-[11px] text-muted-foreground font-medium">
+            Pemilik Usaha Vendor Pernikahan?
+          </p>
+          <Link
+            href="/vendor-register"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-2 rounded-md transition-colors w-full border border-amber-500/30"
+          >
+            <Building2 className="h-4 w-4 text-amber-600" />
+            Daftarkan Usaha Vendor Anda di Sini →
+          </Link>
+        </div>
       </CardFooter>
     </Card>
   );
