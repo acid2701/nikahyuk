@@ -525,6 +525,7 @@ export interface Database {
         Row: {
           id: string;
           wedding_id: string;
+          event_id: string | null;
           category: string;
           vendor_name: string;
           pic_name: string | null;
@@ -536,6 +537,7 @@ export interface Database {
         Insert: {
           id?: string;
           wedding_id: string;
+          event_id?: string | null;
           category: string;
           vendor_name: string;
           pic_name?: string | null;
@@ -547,6 +549,7 @@ export interface Database {
         Update: {
           id?: string;
           wedding_id?: string;
+          event_id?: string | null;
           category?: string;
           vendor_name?: string;
           pic_name?: string | null;
@@ -561,6 +564,13 @@ export interface Database {
             columns: ["wedding_id"];
             isOneToOne: false;
             referencedRelation: "weddings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "vendors_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "wedding_events";
             referencedColumns: ["id"];
           }
         ];

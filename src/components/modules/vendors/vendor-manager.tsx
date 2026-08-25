@@ -63,6 +63,8 @@ export interface VendorDocumentItem {
 
 export interface VendorItem {
   id: string;
+  wedding_id?: string;
+  event_id?: string | null;
   vendor_name: string;
   category: string;
   pic_name?: string | null;
@@ -73,10 +75,12 @@ export interface VendorItem {
 
 export interface VendorManagerProps {
   weddingId: string;
+  eventId?: string;
+  events?: { id: string; event_name: string }[];
   initialVendors: VendorItem[];
 }
 
-export function VendorManager({ weddingId, initialVendors }: VendorManagerProps) {
+export function VendorManager({ weddingId, eventId, events = [], initialVendors }: VendorManagerProps) {
   const [vendors, setVendors] = React.useState<VendorItem[]>(initialVendors);
   const [openModal, setOpenModal] = React.useState(false);
   const [openEditModal, setOpenEditModal] = React.useState(false);
@@ -138,6 +142,7 @@ export function VendorManager({ weddingId, initialVendors }: VendorManagerProps)
     try {
       await createVendorAction({
         weddingId,
+        eventId: eventId || null,
         vendorName,
         category,
         picName,

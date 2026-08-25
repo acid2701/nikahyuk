@@ -8,6 +8,7 @@ import { sanitizePhoneNumber } from "@/lib/utils/wa-sanitizer";
 
 export interface CreateVendorInput {
   weddingId: string;
+  eventId?: string | null;
   vendorName: string;
   category: string;
   picName?: string | null;
@@ -33,6 +34,7 @@ export async function createVendorAction(input: CreateVendorInput) {
     .from("vendors")
     .insert({
       wedding_id: input.weddingId,
+      event_id: input.eventId || null,
       vendor_name: input.vendorName,
       category: input.category,
       pic_name: input.picName || null,
@@ -52,7 +54,7 @@ export async function createVendorAction(input: CreateVendorInput) {
     userDisplayName: user.email || "Pengantin",
     moduleName: "Vendors",
     actionType: "CREATE",
-    changeDiff: { vendorName: input.vendorName, category: input.category },
+    changeDiff: { vendorName: input.vendorName, category: input.category, eventId: input.eventId },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/vendors`);
@@ -63,6 +65,7 @@ export async function updateVendorAction(
   vendorId: string,
   weddingId: string,
   updates: {
+    eventId?: string | null;
     vendorName?: string;
     category?: string;
     picName?: string | null;
@@ -88,6 +91,7 @@ export async function updateVendorAction(
   const { data: vendor, error } = await supabase
     .from("vendors")
     .update({
+      ...(updates.eventId !== undefined && { event_id: updates.eventId }),
       ...(updates.vendorName !== undefined && { vendor_name: updates.vendorName }),
       ...(updates.category !== undefined && { category: updates.category }),
       ...(updates.picName !== undefined && { pic_name: updates.picName || null }),
@@ -96,6 +100,7 @@ export async function updateVendorAction(
       updated_at: new Date().toISOString(),
     })
     .eq("id", vendorId)
+    .eq("wedding_id", weddingId)
     .select()
     .single();
 
@@ -224,7 +229,8 @@ export async function deleteVendorAction(vendorId: string, weddingId: string) {
   const { error } = await supabase
     .from("vendors")
     .delete()
-    .eq("id", vendorId);
+    .eq("id", vendorId)
+    .eq("wedding_id", weddingId);
 
   if (error) {
     throw new Error(error.message);
