@@ -28,10 +28,12 @@ export async function generatePresignedUploadUrl(
 
   const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 300 });
 
-  const cdnDomain = config.publicCdnDomain.replace(/\/$/, "");
-  const publicUrl = cdnDomain.startsWith("http")
-    ? `${cdnDomain}/${r2FileKey}`
-    : `https://${cdnDomain}/${r2FileKey}`;
+  const rawCdn = (config.publicCdnDomain || "").replace(/\/$/, "");
+  const publicUrl = rawCdn
+    ? rawCdn.startsWith("http")
+      ? `${rawCdn}/${r2FileKey}`
+      : `https://${rawCdn}/${r2FileKey}`
+    : `https://${config.bucketName}.${config.accountId}.r2.cloudflarestorage.com/${r2FileKey}`;
 
   return {
     presignedUrl,

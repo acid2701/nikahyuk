@@ -5,6 +5,7 @@ import {
   resolveEffectiveEventIds,
 } from "@/lib/auth/collaborator-security";
 import { AccessDeniedCard } from "@/components/shared/access-denied-card";
+import { autoLinkMissingPartnerDocumentsAction } from "@/actions/vendor-partner-actions";
 
 export default async function VendorsPage(props: {
   params: Promise<any>;
@@ -39,6 +40,9 @@ export default async function VendorsPage(props: {
     ? events?.find((e) => e.id === effectiveEventId)
     : null;
   const activeEventId = activeEvent?.id;
+
+  // Auto-heal/link missing R2 brochure documents for partner vendors imported previously
+  await autoLinkMissingPartnerDocumentsAction(weddingId);
 
   let query = supabase
     .from("vendors")

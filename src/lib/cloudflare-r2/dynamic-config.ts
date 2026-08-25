@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { S3Client } from "@aws-sdk/client-s3";
 
 export interface R2Config {
@@ -23,6 +24,15 @@ let cachedStorageRules: StorageRules | null = null;
 let lastFetchedTimestamp = 0;
 const CACHE_TTL_MS = 60 * 1000;
 
+// Helper to get supabase client with admin service_role fallback to bypass RLS on system_settings
+async function getSettingsSupabaseClient() {
+  try {
+    return createAdminClient();
+  } catch (e) {
+    return await createClient();
+  }
+}
+
 export async function getDynamicR2Client(): Promise<{
   s3: S3Client;
   config: R2Config;
@@ -36,16 +46,15 @@ export async function getDynamicR2Client(): Promise<{
     return { s3: cachedS3Client, config: cachedR2Config };
   }
 
-  const supabase = await createClient();
+  const supabase = await getSettingsSupabaseClient();
   const { data, error } = await supabase
     .from("system_settings")
     .select("key, value")
     .in("key", ["r2_credentials", "storage_rules"]);
 
-  if (error || !data) {
+  if (error || !data || data.length === 0) {
     throw new Error(
-      "Gagal memuat konfigurasi sistem dinamis dari database: " +
-        (error?.message || "Data tidak ditemukan")
+      "Kredensial Cloudflare R2 belum dikonfigurasi di panel Superadmin."
     );
   }
 
@@ -56,14 +65,28 @@ export async function getDynamicR2Client(): Promise<{
     );
   }
 
-  const r2Val = r2Row.value as unknown as R2Config;
-  cachedR2Config = r2Val;
+  const r2Val = (r2Row.value || {}) as Partial<R2Config>;
+  if (!r2Val.accountId || !r2Val.accessKeyId || !r2Val.secretAccessKey || !r2Val.bucketName) {
+    throw new Error(
+      "Kredensial Cloudflare R2 belum lengkap. Mohon isi Account ID, Access Key, Secret Key, dan Bucket Name di Admin Panel."
+    );
+  }
+
+  const sanitizedConfig: R2Config = {
+    accountId: r2Val.accountId.trim(),
+    accessKeyId: r2Val.accessKeyId.trim(),
+    secretAccessKey: r2Val.secretAccessKey.trim(),
+    bucketName: r2Val.bucketName.trim(),
+    publicCdnDomain: (r2Val.publicCdnDomain || "").trim(),
+  };
+
+  cachedR2Config = sanitizedConfig;
   cachedS3Client = new S3Client({
     region: "auto",
-    endpoint: `https://${r2Val.accountId}.r2.cloudflarestorage.com`,
+    endpoint: `https://${sanitizedConfig.accountId}.r2.cloudflarestorage.com`,
     credentials: {
-      accessKeyId: r2Val.accessKeyId,
-      secretAccessKey: r2Val.secretAccessKey,
+      accessKeyId: sanitizedConfig.accessKeyId,
+      secretAccessKey: sanitizedConfig.secretAccessKey,
     },
   });
 
@@ -82,7 +105,7 @@ export async function getDynamicStorageRules(): Promise<StorageRules> {
     return cachedStorageRules;
   }
 
-  const supabase = await createClient();
+  const supabase = await getSettingsSupabaseClient();
   const { data, error } = await supabase
     .from("system_settings")
     .select("key, value")

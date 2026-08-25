@@ -877,27 +877,25 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
                           {/* Action Buttons (Sync Budget, Rating, Detail, Edit & Delete) */}
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end space-x-1">
-                              {v.status === "selected" && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  disabled={syncingBudgetId === v.id || Boolean((v as any).synced_budget_item_id)}
-                                  onClick={() => handleSyncToBudget(v)}
-                                  className={`h-7 text-[11px] gap-1 px-2 ${
-                                    (v as any).synced_budget_item_id
-                                      ? "text-emerald-600 font-semibold cursor-default"
-                                      : "text-amber-600 hover:bg-amber-500/10 font-bold border border-amber-500/30"
-                                  }`}
-                                  title={
-                                    (v as any).synced_budget_item_id
-                                      ? "Vendor Sudah Tersinkronisasi ke Modul Anggaran"
-                                      : "Sync ke Modul Anggaran & Payment Milestones"
-                                  }
-                                >
-                                  <Zap className="h-3 w-3" />
-                                  {(v as any).synced_budget_item_id ? "Synced" : "Sync Budget"}
-                                </Button>
-                              )}
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={syncingBudgetId === v.id || Boolean((v as any).synced_budget_item_id)}
+                                onClick={() => handleSyncToBudget(v)}
+                                className={`h-7 text-[11px] gap-1 px-2 ${
+                                  (v as any).synced_budget_item_id
+                                    ? "text-emerald-600 font-semibold cursor-default"
+                                    : "text-amber-600 hover:bg-amber-500/10 font-bold border border-amber-500/30"
+                                }`}
+                                title={
+                                  (v as any).synced_budget_item_id
+                                    ? "Vendor Sudah Tersinkronisasi ke Modul Anggaran"
+                                    : "Sync ke Modul Anggaran & Payment Milestones"
+                                }
+                              >
+                                <Zap className="h-3 w-3 text-amber-500" />
+                                {(v as any).synced_budget_item_id ? "Synced ✅" : "Sync Budget"}
+                              </Button>
 
                               <Button
                                 variant="ghost"

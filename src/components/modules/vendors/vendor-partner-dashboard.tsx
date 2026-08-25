@@ -1793,24 +1793,62 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                   </h4>
                   <div className="p-3 border border-border rounded-lg bg-card space-y-2">
                     {pricelistR2Key ? (
-                      <div className="flex items-center justify-between text-xs p-2 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-700">
-                        <span className="font-semibold flex items-center gap-1.5 truncate">
-                          <FileText className="h-4 w-4" /> {uploadedFileName || "Brosur Pricelist R2 Terunggah"}
+                      <div className="flex items-center justify-between text-xs p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-700">
+                        <span className="font-semibold flex items-center gap-2 truncate min-w-0">
+                          <FileText className="h-4 w-4 shrink-0 text-emerald-600" />
+                          <span className="truncate">{uploadedFileName || "Brosur Pricelist R2 Terunggah (Database)"}</span>
                         </span>
-                        <a
-                          href={`/api/storage/presign?key=${encodeURIComponent(pricelistR2Key)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[10px] font-semibold underline text-primary"
-                        >
-                          Lihat Berkas R2
-                        </a>
+
+                        <div className="flex items-center space-x-1 shrink-0">
+                          <Badge className="bg-emerald-600 text-white text-[9px] hidden sm:inline-flex">
+                            Tersimpan di DB ✅
+                          </Badge>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            asChild
+                            className="h-7 text-[10px] gap-1 font-semibold border-border hover:bg-muted"
+                          >
+                            <a
+                              href={`/api/storage/presign?key=${encodeURIComponent(pricelistR2Key)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Eye className="h-3 w-3 text-primary" /> Lihat
+                            </a>
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setPricelistR2Key("");
+                              setUploadedFileName("");
+                              toast({
+                                title: "Pricelist Di-reset",
+                                description: "Brosur lama dilepas dari draft. Silakan unggah berkas baru di bawah lalu simpan.",
+                              });
+                            }}
+                            className="h-7 text-[10px] gap-1 text-rose-600 border-rose-200 hover:bg-rose-50"
+                          >
+                            <Trash2 className="h-3 w-3 text-rose-600" /> Hapus
+                          </Button>
+                        </div>
                       </div>
                     ) : null}
                     <MediaUploaderDropzone
                       weddingId="public-vendor"
                       folder="contracts"
+                      multiple={true}
                       onUploadSuccess={handleUploadSuccess}
+                      onUploadError={(err) => {
+                        toast({
+                          title: "Gagal Mengunggah ke Cloudflare R2",
+                          description: err,
+                          variant: "destructive",
+                        });
+                      }}
                     />
                   </div>
                 </div>

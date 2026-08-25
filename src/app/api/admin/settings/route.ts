@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { invalidateSystemConfigCache } from "@/lib/cloudflare-r2/dynamic-config";
 
 export async function GET() {
@@ -12,7 +13,8 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase.from("system_settings").select("*");
+  const adminSupabase = createAdminClient();
+  const { data, error } = await adminSupabase.from("system_settings").select("*");
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -42,7 +44,8 @@ export async function PUT(request: Request) {
       );
     }
 
-    const { data, error } = await supabase
+    const adminSupabase = createAdminClient();
+    const { data, error } = await adminSupabase
       .from("system_settings")
       .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" })
       .select()

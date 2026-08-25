@@ -2,7 +2,19 @@
 
 import * as React from "react";
 import imageCompression from "browser-image-compression";
-import { UploadCloud, CheckCircle2, Loader2 } from "lucide-react";
+import {
+  UploadCloud,
+  CheckCircle2,
+  Loader2,
+  FileText,
+  Eye,
+  Trash2,
+  RefreshCw,
+  Plus,
+  FileCheck,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 export interface UploadedFileMeta {
@@ -13,12 +25,22 @@ export interface UploadedFileMeta {
   public_url?: string;
 }
 
+export interface DynamicRules {
+  maxImageSizeMb: number;
+  maxPdfSizeMb: number;
+  targetImageFormat: string;
+  imageQualityRatio: number;
+  allowedMimeTypes: string[];
+}
+
 export interface MediaUploaderDropzoneProps {
   weddingId: string;
   folder: "invoices" | "contracts" | "proofs" | "documents";
   maxSizeBytes?: number;
   allowedMimeTypes?: string[];
+  multiple?: boolean;
   onUploadSuccess: (meta: UploadedFileMeta) => void;
+  onMultiUploadChange?: (files: UploadedFileMeta[]) => void;
   onUploadError?: (errorMessage: string) => void;
   isProcessing?: boolean;
   className?: string;
@@ -27,14 +49,16 @@ export interface MediaUploaderDropzoneProps {
 export function MediaUploaderDropzone({
   weddingId,
   folder,
-  maxSizeBytes = 10 * 1024 * 1024,
+  maxSizeBytes,
   allowedMimeTypes = [
     "image/jpeg",
     "image/png",
     "image/webp",
     "application/pdf",
   ],
+  multiple = false,
   onUploadSuccess,
+  onMultiUploadChange,
   onUploadError,
   isProcessing = false,
   className,
@@ -42,50 +66,93 @@ export function MediaUploaderDropzone({
   const [uploading, setUploading] = React.useState(false);
   const [progressText, setProgressText] = React.useState("");
   const [dragActive, setDragActive] = React.useState(false);
-  const [lastUploaded, setLastUploaded] = React.useState<UploadedFileMeta | null>(
-    null
-  );
+  const [uploadedList, setUploadedList] = React.useState<UploadedFileMeta[]>([]);
+  const [replaceIndex, setReplaceIndex] = React.useState<number | null>(null);
+
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  // DYNAMIC STORAGE RULES FETCHED FROM ADMIN PANEL (POSTGRESQL SYSTEM_SETTINGS)
+  const [dynamicRules, setDynamicRules] = React.useState<DynamicRules>({
+    maxImageSizeMb: 2,
+    maxPdfSizeMb: 3,
+    targetImageFormat: "webp",
+    imageQualityRatio: 0.8,
+    allowedMimeTypes: [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ],
+  });
+
+  React.useEffect(() => {
+    async function fetchDynamicRules() {
+      try {
+        const res = await fetch("/api/storage/rules");
+        if (res.ok) {
+          const json = await res.json();
+          if (json.rules) {
+            setDynamicRules(json.rules);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed fetching dynamic storage rules, using fallback:", e);
+      }
+    }
+    fetchDynamicRules();
+  }, []);
+
+  const effectiveMaxImageMb = dynamicRules.maxImageSizeMb || 2;
+  const effectiveMaxPdfMb = dynamicRules.maxPdfSizeMb || 3;
+
   async function processAndUploadFile(file: File) {
-    if (!allowedMimeTypes.includes(file.type)) {
-      const err = `Tipe file '${file.type}' tidak diizinkan. Mohon pilih format gambar atau PDF.`;
+    const isPdf = file.type === "application/pdf";
+    const allowedTypes = dynamicRules.allowedMimeTypes || allowedMimeTypes;
+
+    if (!allowedTypes.includes(file.type)) {
+      const err = `Tipe file '${file.type}' tidak diizinkan. Mohon pilih format gambar (JPG/PNG/WebP) atau PDF.`;
       onUploadError?.(err);
       return;
     }
 
-    if (file.size > maxSizeBytes) {
-      const err = `Ukuran file (${(file.size / (1024 * 1024)).toFixed(2)} MB) melebihi batas ${(maxSizeBytes / (1024 * 1024)).toFixed(0)} MB.`;
+    const maxMb = isPdf ? effectiveMaxPdfMb : effectiveMaxImageMb;
+    const maxBytes = maxSizeBytes || maxMb * 1024 * 1024;
+
+    if (file.size > maxBytes) {
+      const err = `Ukuran file (${(file.size / (1024 * 1024)).toFixed(2)} MB) melebihi batas maksimal ${isPdf ? "PDF" : "Gambar"} ${maxMb} MB sesuai aturan Admin.`;
       onUploadError?.(err);
       return;
     }
 
     setUploading(true);
-    setLastUploaded(null);
 
     try {
       let finalFile: File = file;
 
       if (file.type.startsWith("image/")) {
-        setProgressText("Mengompresi gambar ke WebP...");
+        const targetFormat = dynamicRules.targetImageFormat || "webp";
+        const qualityRatio = dynamicRules.imageQualityRatio || 0.8;
+
+        setProgressText(`Mengompresi gambar ke ${targetFormat.toUpperCase()} (Kualitas ${Math.round(qualityRatio * 100)}%)...`);
         try {
           const options = {
-            maxSizeMB: 2,
+            maxSizeMB: effectiveMaxImageMb,
             maxWidthOrHeight: 1920,
             useWebWorker: true,
-            fileType: "image/webp",
+            initialQuality: qualityRatio,
+            fileType: `image/${targetFormat}`,
           };
           const compressedBlob = await imageCompression(file, options);
-          const webpName = file.name.replace(/\.[^/.]+$/, "") + ".webp";
-          finalFile = new File([compressedBlob], webpName, {
-            type: "image/webp",
+          const newFileName = file.name.replace(/\.[^/.]+$/, "") + `.${targetFormat}`;
+          finalFile = new File([compressedBlob], newFileName, {
+            type: `image/${targetFormat}`,
           });
         } catch (compressionErr) {
           console.warn("Client-side compression warning, uploading original:", compressionErr);
         }
       }
 
-      setProgressText("Meminta URL pengunggahan aman...");
+      setProgressText("Meminta URL pengunggahan aman R2...");
       const presignRes = await fetch("/api/storage/presign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -98,35 +165,81 @@ export function MediaUploaderDropzone({
         }),
       });
 
-      if (!presignRes.ok) {
-        const errJson = await presignRes.json();
-        throw new Error(errJson.error || "Gagal mendapatkan presigned URL");
-      }
-
       const { presignedUrl, r2FileKey, publicUrl } = await presignRes.json();
 
-      setProgressText("Mengunggah langsung ke Cloudflare R2...");
-      const uploadRes = await fetch(presignedUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": finalFile.type,
-        },
-        body: finalFile,
-      });
+      let uploadSuccess = false;
+      let r2KeyResult = r2FileKey;
+      let publicUrlResult = publicUrl;
 
-      if (!uploadRes.ok) {
-        throw new Error(`Upload S3 gagal (HTTP ${uploadRes.status})`);
+      setProgressText("Mengunggah ke Cloudflare R2...");
+      try {
+        const uploadRes = await fetch(presignedUrl, {
+          method: "PUT",
+          headers: {
+            "Content-Type": finalFile.type,
+          },
+          body: finalFile,
+        });
+
+        if (uploadRes.ok) {
+          uploadSuccess = true;
+        }
+      } catch (corsOrNetworkErr) {
+        console.warn("Direct R2 upload CORS block detected, switching to server proxy fallback...", corsOrNetworkErr);
+      }
+
+      // SERVER-SIDE PROXY FALLBACK (100% IMMUNE TO CORS)
+      if (!uploadSuccess) {
+        setProgressText("Mengunggah via Server Proxy (Cloudflare R2)...");
+        const proxyFormData = new FormData();
+        proxyFormData.append("file", finalFile);
+        proxyFormData.append("weddingId", weddingId);
+        proxyFormData.append("folder", folder);
+
+        const proxyRes = await fetch("/api/storage/upload", {
+          method: "POST",
+          body: proxyFormData,
+        });
+
+        if (!proxyRes.ok) {
+          const pErr = await proxyRes.json();
+          throw new Error(pErr.error || "Gagal mengunggah file via server proxy");
+        }
+
+        const pData = await proxyRes.json();
+        r2KeyResult = pData.r2FileKey;
+        publicUrlResult = pData.publicUrl;
       }
 
       const meta: UploadedFileMeta = {
-        r2_file_key: r2FileKey,
+        r2_file_key: r2KeyResult,
         file_name: finalFile.name,
         file_size_bytes: finalFile.size,
         mime_type: finalFile.type,
-        public_url: publicUrl,
+        public_url: publicUrlResult,
       };
 
-      setLastUploaded(meta);
+      if (replaceIndex !== null) {
+        // REPLACE SINGLE FILE AT INDEX
+        setUploadedList((prev) => {
+          const updated = [...prev];
+          updated[replaceIndex] = meta;
+          onMultiUploadChange?.(updated);
+          return updated;
+        });
+        setReplaceIndex(null);
+      } else if (multiple) {
+        // ADD TO MULTI-FILE LIST
+        setUploadedList((prev) => {
+          const updated = [...prev, meta];
+          onMultiUploadChange?.(updated);
+          return updated;
+        });
+      } else {
+        // SINGLE FILE MODE
+        setUploadedList([meta]);
+      }
+
       onUploadSuccess(meta);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Gagal mengunggah file.";
@@ -141,6 +254,20 @@ export function MediaUploaderDropzone({
     if (e.target.files && e.target.files[0]) {
       processAndUploadFile(e.target.files[0]);
     }
+  }
+
+  function handleRemoveFile(index: number) {
+    setUploadedList((prev) => {
+      const updated = prev.filter((_, idx) => idx !== index);
+      onMultiUploadChange?.(updated);
+      return updated;
+    });
+  }
+
+  function handleTriggerReplace(index: number, e: React.MouseEvent) {
+    e.stopPropagation();
+    setReplaceIndex(index);
+    fileInputRef.current?.click();
   }
 
   function handleDragOver(e: React.DragEvent) {
@@ -165,18 +292,7 @@ export function MediaUploaderDropzone({
   }
 
   return (
-    <div
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      className={cn(
-        "relative border-2 border-dashed rounded-lg p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer bg-card/50 hover:bg-accent/40",
-        dragActive && "border-primary bg-primary/5",
-        (uploading || isProcessing) && "pointer-events-none opacity-80",
-        className
-      )}
-      onClick={() => fileInputRef.current?.click()}
-    >
+    <div className="space-y-3 w-full text-xs">
       <input
         ref={fileInputRef}
         type="file"
@@ -185,38 +301,133 @@ export function MediaUploaderDropzone({
         className="hidden"
       />
 
-      {uploading || isProcessing ? (
-        <div className="flex flex-col items-center space-y-2 py-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm font-medium text-foreground">{progressText}</p>
-          <p className="text-xs text-muted-foreground">
-            Mohon tunggu hingga proses selesai...
-          </p>
+      {/* LIST OF UPLOADED FILES WITH 1-CLICK PREVIEW, REPLACE, & REMOVE ACTIONS BEFORE SAVING */}
+      {uploadedList.length > 0 && (
+        <div className="space-y-2 flex flex-col">
+          <span className="font-semibold text-foreground text-xs flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-emerald-600">
+              <FileCheck className="h-4 w-4" /> Berkas Terunggah di R2 ({uploadedList.length}):
+            </span>
+            <span className="text-[10px] text-muted-foreground">Siap Disimpan</span>
+          </span>
+
+          {uploadedList.map((item, idx) => (
+            <div
+              key={item.r2_file_key + idx}
+              className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between gap-3 transition-all"
+            >
+              <div className="flex items-center space-x-2.5 min-w-0">
+                <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
+                <div className="space-y-0.5 min-w-0">
+                  <p className="font-semibold text-foreground text-xs leading-none truncate">
+                    {item.file_name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {(item.file_size_bytes / 1024).toFixed(1)} KB • {item.mime_type}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-1 shrink-0">
+                <Badge className="bg-emerald-600 text-white text-[9px] hidden sm:inline-flex">
+                  R2 Active ✅
+                </Badge>
+
+                {/* 👁️ PREVIEW BUTTON */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  className="h-7 text-[10px] gap-1 border-border hover:bg-muted font-semibold"
+                >
+                  <a
+                    href={item.public_url || `/api/storage/presign?key=${encodeURIComponent(item.r2_file_key)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Eye className="h-3 w-3 text-primary" /> Lihat
+                  </a>
+                </Button>
+
+                {/* 🔄 REPLACE BUTTON */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => handleTriggerReplace(idx, e)}
+                  title="Ganti berkas ini"
+                  className="h-7 text-[10px] gap-1 border-border hover:bg-muted font-semibold"
+                >
+                  <RefreshCw className="h-3 w-3 text-amber-500" /> Ganti
+                </Button>
+
+                {/* 🗑️ REMOVE DRAFT BUTTON */}
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleRemoveFile(idx)}
+                  title="Hapus berkas ini dari antrean"
+                  className="h-7 w-7 p-0 text-rose-600 border-rose-200 hover:bg-rose-50 hover:border-rose-300"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
         </div>
-      ) : lastUploaded ? (
-        <div className="flex flex-col items-center space-y-2 py-2">
-          <CheckCircle2 className="h-8 w-8 text-success" />
-          <p className="text-sm font-medium text-foreground">
-            Berhasil Diunggah: {lastUploaded.file_name}
-          </p>
-          <p className="text-xs text-muted-foreground">
-            {(lastUploaded.file_size_bytes / 1024).toFixed(1)} KB • Klik untuk mengunggah file baru
-          </p>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center space-y-2 py-2">
-          <UploadCloud className="h-8 w-8 text-muted-foreground" />
-          <div>
-            <p className="text-sm font-medium text-foreground">
-              Tarik & Lepas file di sini, atau{" "}
-              <span className="text-primary font-semibold hover:underline">
-                pilih file
-              </span>
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Mendukung Gambar (JPG, PNG, WebP) & Dokumen PDF (Maksimal {(maxSizeBytes / (1024 * 1024)).toFixed(0)} MB)
-            </p>
-          </div>
+      )}
+
+      {/* DROPZONE DRAG & DROP AREA */}
+      {(multiple || uploadedList.length === 0) && (
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "relative border-2 border-dashed rounded-lg p-5 flex flex-col items-center justify-center text-center transition-colors cursor-pointer bg-card/50 hover:bg-accent/40",
+            dragActive && "border-primary bg-primary/5",
+            (uploading || isProcessing) && "pointer-events-none opacity-80",
+            className
+          )}
+          onClick={() => {
+            setReplaceIndex(null);
+            fileInputRef.current?.click();
+          }}
+        >
+          {uploading || isProcessing ? (
+            <div className="flex flex-col items-center space-y-2 py-3">
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <p className="text-sm font-medium text-foreground">{progressText}</p>
+              <p className="text-xs text-muted-foreground">
+                Mohon tunggu hingga proses pengunggahan selesai...
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center space-y-2 py-1">
+              <UploadCloud className="h-7 w-7 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {uploadedList.length > 0 && multiple ? (
+                    <span className="text-amber-600 font-semibold flex items-center gap-1 justify-center">
+                      <Plus className="h-4 w-4" /> Tambah Berkas Lain ke Antrean
+                    </span>
+                  ) : (
+                    <>
+                      Tarik & Lepas file di sini, atau{" "}
+                      <span className="text-primary font-semibold hover:underline">
+                        pilih file
+                      </span>
+                    </>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1 font-mono">
+                  Mendukung Gambar (Maksimal {effectiveMaxImageMb} MB) & Dokumen PDF (Maksimal {effectiveMaxPdfMb} MB)
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

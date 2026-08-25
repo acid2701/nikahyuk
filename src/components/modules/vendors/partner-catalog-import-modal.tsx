@@ -166,7 +166,9 @@ export function PartnerCatalogImportModal({
   );
 
   async function handleImportPackage(partner: VendorPartnerItem) {
-    const pkgId = selectedPackages[partner.id] || null;
+    const pkgId =
+      selectedPackages[partner.id] ||
+      (partner.packages && partner.packages.length > 0 ? partner.packages[0].id : null);
     setImportingId(partner.id);
 
     try {

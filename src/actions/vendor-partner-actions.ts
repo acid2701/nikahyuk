@@ -797,18 +797,26 @@ export async function importPartnerPackageToWeddingAction(
     console.warn("Auto budget sync warning:", budgetErr);
   }
 
-  // Link R2 pricelist if exists
-  if (partnerData.pricelist_r2_key) {
+  // Link R2 pricelist/brochure if exists (from vendor profile or package)
+  const r2FileKeyToLink = partnerData.pricelist_r2_key || (selectedPkg as any)?.brochure_r2_key || (selectedPkg as any)?.pdf_r2_key;
+  if (r2FileKeyToLink) {
     try {
-      await supabase.from("vendor_documents").insert({
+      const adminSupabase = createAdminClient();
+      const docPayload: any = {
         vendor_id: importedVendor.id,
-        wedding_id: weddingId,
-        document_title: `Pricelist Resmi - ${partnerData.company_name}`,
-        r2_file_key: partnerData.pricelist_r2_key,
+        document_title: `Pricelist Resmi - ${partnerData.company_name} ${selectedPkg ? `(${selectedPkg.package_name})` : ""}`,
+        r2_file_key: r2FileKeyToLink,
         file_size_bytes: 1024 * 500,
         mime_type: "application/pdf",
         doc_type: "pricelist",
-      } as any);
+      };
+
+      let { error: docErr } = await (adminSupabase.from("vendor_documents" as any) as any).insert(docPayload);
+
+      if (docErr && docErr.message?.includes("doc_type")) {
+        delete docPayload.doc_type;
+        await (adminSupabase.from("vendor_documents" as any) as any).insert(docPayload);
+      }
     } catch (docErr) {
       console.warn("Pricelist document link warning:", docErr);
     }
@@ -825,6 +833,60 @@ export async function importPartnerPackageToWeddingAction(
 
   revalidatePath(`/dashboard/${weddingId}/vendors`);
   return { success: true, vendor: importedVendor };
+}
+
+export async function autoLinkMissingPartnerDocumentsAction(weddingId: string) {
+  try {
+    const adminSupabase = createAdminClient();
+    const { data: vendors } = await (adminSupabase.from("vendors" as any) as any)
+      .select("id, vendor_name, pros_cons_notes, vendor_documents(id)")
+      .eq("wedding_id", weddingId);
+
+    if (!vendors || vendors.length === 0) return { success: true, count: 0 };
+
+    let linkedCount = 0;
+
+    for (const v of vendors) {
+      const docs = v.vendor_documents || [];
+      if (docs.length === 0) {
+        const compName = v.vendor_name.split(" (")[0]?.trim();
+        if (compName) {
+          const { data: partner } = await (adminSupabase.from("vendor_partners" as any) as any)
+            .select("company_name, pricelist_r2_key")
+            .ilike("company_name", compName)
+            .maybeSingle();
+
+          if (partner && partner.pricelist_r2_key) {
+            const docPayload: any = {
+              vendor_id: v.id,
+              document_title: `Brosur PDF Resmi - ${partner.company_name}`,
+              r2_file_key: partner.pricelist_r2_key,
+              file_size_bytes: 1024 * 500,
+              mime_type: "application/pdf",
+              doc_type: "pricelist",
+            };
+
+            let { error: docErr } = await (adminSupabase.from("vendor_documents" as any) as any).insert(docPayload);
+
+            if (docErr && docErr.message?.includes("doc_type")) {
+              delete docPayload.doc_type;
+              await (adminSupabase.from("vendor_documents" as any) as any).insert(docPayload);
+            }
+            linkedCount++;
+          }
+        }
+      }
+    }
+
+    if (linkedCount > 0) {
+      revalidatePath(`/dashboard/${weddingId}/vendors`);
+    }
+
+    return { success: true, count: linkedCount };
+  } catch (e) {
+    console.warn("Auto link missing partner documents warning:", e);
+    return { success: false, count: 0 };
+  }
 }
 
 /* ========================================================================= */
