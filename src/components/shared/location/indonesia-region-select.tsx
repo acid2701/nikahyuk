@@ -110,7 +110,7 @@ export function IndonesiaRegionSelect({
           onValueChange={handleProvinceSelect}
           disabled={disabled || loadingProvinces}
         >
-          <SelectTrigger className="h-9 text-xs">
+          <SelectTrigger className="h-10 text-sm">
             <SelectValue
               placeholder={loadingProvinces ? "Memuat Provinsi..." : "Pilih Provinsi..."}
             />
@@ -152,7 +152,7 @@ export function IndonesiaRegionSelect({
           onValueChange={handleCitySelect}
           disabled={disabled || !selectedProvinceId || loadingRegencies}
         >
-          <SelectTrigger className="h-9 text-xs">
+          <SelectTrigger className="h-10 text-sm">
             <SelectValue
               placeholder={
                 !selectedProvinceId

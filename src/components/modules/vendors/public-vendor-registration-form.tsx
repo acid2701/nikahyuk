@@ -17,9 +17,31 @@ import { PhoneInput } from "@/components/shared/whatsapp/phone-input";
 import { IndonesiaRegionSelect } from "@/components/shared/location/indonesia-region-select";
 import { registerVendorPartnerAction } from "@/actions/vendor-partner-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Building2, CheckCircle2, Sparkles, Send, Lock, Mail, User, ShieldCheck } from "lucide-react";
+import {
+  Building2,
+  CheckCircle2,
+  Sparkles,
+  Send,
+  Lock,
+  Mail,
+  User,
+  ShieldCheck,
+  Store,
+  Layers,
+  MapPin,
+  ArrowRight,
+  HelpCircle,
+} from "lucide-react";
 
-export function PublicVendorRegistrationForm() {
+interface PublicVendorRegistrationFormProps {
+  appName?: string;
+  logoUrl?: string;
+}
+
+export function PublicVendorRegistrationForm({
+  appName = "NikahYuk",
+  logoUrl,
+}: PublicVendorRegistrationFormProps) {
   const [companyName, setCompanyName] = React.useState("");
   const [category, setCategory] = React.useState("Catering");
   const [city, setCity] = React.useState("");
@@ -36,6 +58,15 @@ export function PublicVendorRegistrationForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    if (!companyName.trim()) {
+      toast({
+        title: "Nama Brand Wajib Diisi",
+        description: "Silakan masukkan nama usaha atau brand vendor Anda.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!province || !city) {
       toast({
         title: "Provinsi & Kota Wajib Dipilih",
@@ -45,10 +76,28 @@ export function PublicVendorRegistrationForm() {
       return;
     }
 
+    if (!picName.trim()) {
+      toast({
+        title: "Nama PIC Wajib Diisi",
+        description: "Silakan masukkan nama penanggung jawab atau pemilik usaha.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!phone) {
       toast({
         title: "Nomor WhatsApp Wajib Diisi",
         description: "Silakan isi nomor WhatsApp aktif PIC usaha Anda.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email.trim() || !email.includes("@")) {
+      toast({
+        title: "Email Tidak Valid",
+        description: "Silakan isi alamat email aktif untuk akun login vendor.",
         variant: "destructive",
       });
       return;
@@ -67,13 +116,13 @@ export function PublicVendorRegistrationForm() {
 
     try {
       const res = await registerVendorPartnerAction({
-        companyName,
+        companyName: companyName.trim(),
         category,
         city,
         province,
-        picName,
+        picName: picName.trim(),
         phone,
-        email,
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -89,7 +138,7 @@ export function PublicVendorRegistrationForm() {
       setSubmitted(true);
       toast({
         title: "Pendaftaran Berhasil!",
-        description: "Akun mitra vendor Anda telah terdaftar. Tim Admin akan memverifikasi profil usaha Anda.",
+        description: "Akun mitra vendor Anda telah terdaftar. Silakan login ke portal vendor.",
         variant: "success",
       });
     } catch (err) {
@@ -105,24 +154,37 @@ export function PublicVendorRegistrationForm() {
 
   if (submitted) {
     return (
-      <Card className="border-emerald-500/40 bg-emerald-500/5 max-w-lg mx-auto p-8 text-center space-y-4 shadow-lg">
-        <div className="mx-auto h-16 w-16 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-600">
+      <Card className="border-border/80 bg-card/90 backdrop-blur-sm max-w-xl mx-auto p-6 sm:p-10 text-center space-y-6 shadow-xl rounded-2xl">
+        <div className="mx-auto h-20 w-20 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 animate-in zoom-in duration-300">
           <CheckCircle2 className="h-10 w-10" />
         </div>
-        <div className="space-y-2">
-          <h2 className="font-serif text-2xl font-bold text-foreground">
+        <div className="space-y-3">
+          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-xs px-3 py-1">
+            Status: Terdaftar & Siap Masuk
+          </Badge>
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
             Pendaftaran Berhasil Terkirim!
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Selamat, akun vendor <span className="font-semibold text-foreground">{companyName}</span> telah berhasil dibuat.
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+            Selamat, akun vendor <span className="font-semibold text-foreground">{companyName}</span> ({category}) telah dibuat.
           </p>
-          <p className="text-xs text-muted-foreground">
-            Setelah disetujui Admin, Anda dapat masuk ke Portal Vendor untuk melengkapi brosur R2, logo, dan menambahkan paket penawaran interaktif.
-          </p>
+          <div className="p-4 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground text-left space-y-1.5 max-w-md mx-auto">
+            <p className="font-semibold text-foreground flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Langkah Selanjutnya:
+            </p>
+            <p>1. Masuk ke Portal Vendor dengan email <span className="font-mono text-foreground font-medium">{email}</span></p>
+            <p>2. Unggah logo resmi dan portofolio brosur digital Anda</p>
+            <p>3. Buat paket harga penawaran untuk calon pengantin</p>
+          </div>
         </div>
-        <div className="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
-          <Button asChild className="text-xs font-semibold">
-            <Link href="/vendor/login">Masuk ke Portal Dashboard Vendor →</Link>
+        <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+          <Button asChild size="lg" className="w-full sm:w-auto text-sm font-semibold gap-2 shadow-md">
+            <Link href="/vendor/login">
+              Masuk ke Portal Vendor <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-sm">
+            <Link href="/">Kembali ke Beranda</Link>
           </Button>
         </div>
       </Card>
@@ -130,137 +192,219 @@ export function PublicVendorRegistrationForm() {
   }
 
   return (
-    <Card className="border-border/80 shadow-md max-w-xl mx-auto">
-      <CardHeader className="text-center pb-4 border-b border-border/60 bg-muted/20">
-        <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/30 mx-auto text-[11px] mb-1">
-          Kemitraan Vendor Pernikahan NikahYuk
-        </Badge>
-        <CardTitle className="font-serif text-2xl font-bold">
-          Daftar Mitra Vendor Pernikahan
-        </CardTitle>
-        <CardDescription className="text-xs max-w-md mx-auto">
-          Proses cepat 30 detik. Promosikan jasa pernikahan Anda ke ribuan calon pasangan pengantin di Indonesia.
+    <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-xl max-w-3xl w-full mx-auto rounded-2xl overflow-hidden transition-all">
+      <CardHeader className="pb-6 pt-7 px-5 sm:px-8 border-b border-border/60 bg-muted/15">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] px-2.5 py-0.5">
+                Kemitraan Vendor {appName}
+              </Badge>
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Bebas Biaya Registrasi
+              </span>
+            </div>
+            <CardTitle className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+              Formulir Pendaftaran Mitra Vendor
+            </CardTitle>
+          </div>
+          <div className="hidden sm:block text-right">
+            <span className="text-xs text-muted-foreground block">Sudah terdaftar?</span>
+            <Link
+              href="/vendor/login"
+              className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Masuk Portal <ArrowRight className="h-3 w-3" />
+            </Link>
+          </div>
+        </div>
+        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2">
+          Hanya butuh 1 menit untuk mendaftarkan layanan pernikahan Anda. Calon pengantin dapat langsung menghubungi via WhatsApp resmi usaha Anda.
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+      <CardContent className="p-5 sm:p-8">
+        <form onSubmit={handleSubmit} className="space-y-8">
           {/* Section 1: Profil Usaha */}
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <Building2 className="h-4 w-4 text-primary" /> 1. Profil Perusahaan / Usaha
-            </h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/10 text-primary text-xs font-bold">1</span>
+                Profil Usaha & Layanan Pernikahan
+              </h3>
+              <span className="text-[11px] text-muted-foreground italic">* Wajib diisi</span>
+            </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Nama Brand Vendor *</label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Store className="h-3.5 w-3.5 text-muted-foreground" /> Nama Brand / Usaha Vendor *
+                </label>
                 <Input
                   type="text"
-                  placeholder="e.g. Berkah Catering Utama"
+                  placeholder="e.g. Royal Wedding Decor & Catering"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
+                  className="h-10 text-sm"
                   required
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  Nama brand komersial yang akan tampil di katalog calon pengantin.
+                </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Kategori Layanan *</label>
+              <div className="space-y-1.5 sm:col-span-2 md:col-span-1">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5 text-muted-foreground" /> Kategori Layanan Utama *
+                </label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="h-9 text-xs">
-                    <SelectValue placeholder="Pilih Kategori..." />
+                  <SelectTrigger className="h-10 text-sm w-full">
+                    <SelectValue placeholder="Pilih Kategori Layanan..." />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-h-72">
                     <SelectItem value="Catering">🍱 Catering & Makanan</SelectItem>
-                    <SelectItem value="Venue">🏛️ Venue & Gedung</SelectItem>
-                    <SelectItem value="Dekorasi">🌸 Dekorasi Acara</SelectItem>
-                    <SelectItem value="MUA & Busana">💄 MUA & Busana Pengantin</SelectItem>
+                    <SelectItem value="Venue">🏛️ Venue & Gedung Pernikahan</SelectItem>
+                    <SelectItem value="Dekorasi">🌸 Dekorasi & Pelaminan</SelectItem>
+                    <SelectItem value="MUA & Busana">💄 MUA, Gaun & Busana Pengantin</SelectItem>
                     <SelectItem value="Dokumentasi">📷 Foto & Video Dokumentasi</SelectItem>
-                    <SelectItem value="Entertainment">🎵 Music & Entertainment</SelectItem>
-                    <SelectItem value="Wedding Organizer">📋 Wedding Organizer (WO)</SelectItem>
+                    <SelectItem value="Entertainment">🎵 Music, Sound & Entertainment</SelectItem>
+                    <SelectItem value="Wedding Organizer">📋 Wedding Organizer (WO / Planner)</SelectItem>
+                    <SelectItem value="Undangan & Souvenir">💌 Undangan & Souvenir Pernikahan</SelectItem>
+                    <SelectItem value="Kue & Hantaran">🎂 Kue Pernikahan & Hantaran</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="text-[11px] text-muted-foreground">
+                  Kategori utama jasa Anda untuk mempermudah filter pencarian.
+                </p>
               </div>
             </div>
 
-            {/* Indonesia Region API Select */}
-            <IndonesiaRegionSelect
-              provinceName={province}
-              cityName={city}
-              onProvinceChange={setProvince}
-              onCityChange={setCity}
-            />
+            {/* Indonesia Region Cascading API */}
+            <div className="pt-1">
+              <label className="text-xs font-medium text-foreground flex items-center gap-1.5 mb-1.5">
+                <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> Wilayah Operasional Usaha *
+              </label>
+              <IndonesiaRegionSelect
+                provinceName={province}
+                cityName={city}
+                onProvinceChange={setProvince}
+                onCityChange={setCity}
+              />
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Pilih cakupan provinsi dan kota domisili usaha Anda di Indonesia.
+              </p>
+            </div>
           </div>
 
-          {/* Section 2: Kontak & Kredensial Login */}
-          <div className="space-y-3 pt-2 border-t border-border/60">
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-600" /> 2. Kontak PIC & Kredensial Login
-            </h3>
+          {/* Section 2: Kontak & Kredensial Akses */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between border-b border-border/40 pb-2">
+              <h3 className="text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 text-xs font-bold">2</span>
+                Kontak PIC & Kredensial Login Portal
+              </h3>
+              <span className="text-[11px] text-muted-foreground italic">* Terenkripsi aman</span>
+            </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Nama PIC / Penanggung Jawab *</label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-muted-foreground" /> Nama PIC / Penanggung Jawab *
+                </label>
                 <Input
                   type="text"
-                  placeholder="e.g. Ibu Rita Suwandi"
+                  placeholder="e.g. Bpk. Hendra Gunawan"
                   value={picName}
                   onChange={(e) => setPicName(e.target.value)}
+                  className="h-10 text-sm"
                   required
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Nomor WhatsApp Aktif *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  Nomor WhatsApp Aktif PIC *
+                </label>
                 <PhoneInput
                   value={phone}
                   onChange={setPhone}
                   placeholder="081234567890"
+                  className="h-10 text-sm"
                 />
               </div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Email Akun Login *</label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-muted-foreground" /> Email Akun Login *
+                </label>
                 <Input
                   type="email"
-                  placeholder="vendor@email.com"
+                  placeholder="admin@vendoranda.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="h-10 text-sm"
                   required
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  Digunakan untuk masuk ke Portal Dashboard Vendor.
+                </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Kata Sandi (Password) *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
+                  <Lock className="h-3.5 w-3.5 text-muted-foreground" /> Kata Sandi (Password) *
+                </label>
                 <Input
                   type="password"
                   placeholder="Minimal 6 karakter"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="h-10 text-sm"
                   required
                 />
+                <p className="text-[11px] text-muted-foreground">
+                  Gunakan kombinasi huruf & angka yang kuat.
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-border/60 flex items-center justify-between">
-            <p className="text-[11px] text-muted-foreground italic">
-              * Detail paket & brosur R2 dilengkapi di Dashboard Vendor.
-            </p>
-            <Button type="submit" disabled={loading} className="gap-2 text-xs font-semibold px-6 bg-amber-500 hover:bg-amber-600 text-white">
+          {/* Section 3: Value Summary & Submit Bar */}
+          <div className="pt-4 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-2 max-w-sm">
+              <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+              <p className="text-xs text-muted-foreground leading-normal">
+                Dengan mendaftar, Anda menyetujui standar etika layanan mitra {appName} dan menjaga transparansi harga kepada calon pengantin.
+              </p>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              size="lg"
+              className="w-full sm:w-auto h-11 px-8 gap-2 font-semibold shadow-md shrink-0"
+            >
               <Send className="h-4 w-4" />
-              {loading ? "Mendaftarkan..." : "Daftar Mitra Vendor (30 Detik)"}
+              {loading ? "Mendaftarkan Mitra..." : "Daftar Mitra Vendor Sekarang"}
             </Button>
           </div>
         </form>
       </CardContent>
 
-      <CardFooter className="justify-center border-t border-border/60 py-3 bg-muted/20">
-        <p className="text-xs text-muted-foreground">
-          Sudah memiliki akun vendor?{" "}
+      <CardFooter className="flex flex-col sm:flex-row items-center justify-between border-t border-border/60 py-4 px-5 sm:px-8 bg-muted/20 gap-3">
+        <p className="text-xs text-muted-foreground text-center sm:text-left">
+          Sudah memiliki akun mitra vendor?{" "}
           <Link href="/vendor/login" className="text-primary font-semibold hover:underline">
             Masuk ke Portal Vendor
+          </Link>
+        </p>
+
+        <p className="text-xs text-muted-foreground text-center sm:text-right">
+          Butuh bantuan pendaftaran?{" "}
+          <Link href="/" className="text-muted-foreground hover:text-foreground underline">
+            Hubungi Dukungan {appName}
           </Link>
         </p>
       </CardFooter>
