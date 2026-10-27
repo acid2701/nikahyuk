@@ -256,7 +256,7 @@ export default async function AdminAnalyticsPage() {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           {weddings.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
               Belum ada ruang kerja pernikahan terdaftar.

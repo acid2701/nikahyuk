@@ -418,8 +418,8 @@ export default function AdminAppSettingsPage() {
             </div>
           </CardContent>
 
-          <CardFooter className="justify-end">
-            <Button type="submit" disabled={loading} className="gap-2">
+          <CardFooter className="p-4 sm:p-6 pt-0 sm:pt-0 flex flex-col sm:flex-row justify-end border-t border-border mt-4 pt-4">
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto gap-2">
               <CheckCircle2 className="h-4 w-4" />
               {loading ? "Menyimpan..." : "Simpan Pengaturan Application Branding"}
             </Button>
