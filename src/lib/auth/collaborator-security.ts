@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export interface SecurityContextResult {
   user: any;
@@ -20,22 +21,18 @@ export interface SecurityContextResult {
 export async function getCollaboratorSecurityContext(
   weddingId: string
 ): Promise<SecurityContextResult> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     redirect("/login");
   }
 
-  const { data: wedding } = await supabase
-    .from("weddings")
-    .select("created_by")
-    .eq("id", weddingId)
-    .single();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+    select: { createdBy: true },
+  });
 
-  const isOwner = wedding?.created_by === user.id;
+  const isOwner = wedding?.createdBy === sessionUser.userId;
 
   let allowedEventIds: string[] | null = null;
   let permissions = {
@@ -50,15 +47,15 @@ export async function getCollaboratorSecurityContext(
   };
 
   if (!isOwner) {
-    const { data: collaborator } = await supabase
-      .from("wedding_collaborators")
-      .select("custom_permissions")
-      .eq("wedding_id", weddingId)
-      .eq("user_id", user.id)
-      .maybeSingle();
+    const collaborator = await prisma.weddingCollaborator.findFirst({
+      where: {
+        weddingId,
+        userId: sessionUser.userId,
+      },
+    });
 
-    if (collaborator && collaborator.custom_permissions) {
-      const perms = collaborator.custom_permissions as any;
+    if (collaborator && collaborator.customPermissions) {
+      const perms = collaborator.customPermissions as any;
 
       if (
         Array.isArray(perms.allowed_event_ids) &&
@@ -81,7 +78,15 @@ export async function getCollaboratorSecurityContext(
     }
   }
 
-  return { user, isOwner, allowedEventIds, permissions };
+  const formattedUser = {
+    id: sessionUser.userId,
+    email: sessionUser.email,
+    user_metadata: {
+      full_name: sessionUser.fullName,
+    },
+  };
+
+  return { user: formattedUser, isOwner, allowedEventIds, permissions };
 }
 
 /**
@@ -124,10 +129,9 @@ export function resolveEffectiveEventIds(
   } else {
     // If 'all' requested or no event specified
     if (isRestricted) {
-      // Restricted users cannot see 'all', default to their first allowed event
       effectiveEventId = availableEvents[0].id;
     } else {
-      effectiveEventId = undefined; // represents 'all'
+      effectiveEventId = undefined;
     }
   }
 

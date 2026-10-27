@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 
 export interface AuditLogPayload {
   weddingId: string;
@@ -11,14 +11,20 @@ export interface AuditLogPayload {
 
 export async function recordAuditLog(payload: AuditLogPayload): Promise<void> {
   try {
-    const supabase = await createClient();
-    await supabase.from("audit_logs").insert({
-      wedding_id: payload.weddingId,
-      user_id: payload.userId || null,
-      user_display_name: payload.userDisplayName,
-      module_name: payload.moduleName,
-      action_type: payload.actionType,
-      change_diff: payload.changeDiff ? (payload.changeDiff as any) : null,
+    // If weddingId is a pseudo ID like GLOBAL_SYSTEM or a non-existent wedding, skip or check
+    if (payload.weddingId === "GLOBAL_SYSTEM") {
+      return;
+    }
+
+    await prisma.auditLog.create({
+      data: {
+        weddingId: payload.weddingId,
+        userId: payload.userId || null,
+        userDisplayName: payload.userDisplayName,
+        moduleName: payload.moduleName,
+        actionType: payload.actionType,
+        changeDiff: payload.changeDiff ? (payload.changeDiff as any) : undefined,
+      },
     });
   } catch (err) {
     console.error("Failed to record audit log:", err);
