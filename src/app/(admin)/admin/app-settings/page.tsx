@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { MediaUploaderDropzone, UploadedFileMeta } from "@/components/shared/media-uploader/dropzone";
-import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon, Key, Globe, ShieldCheck, Copy, Check, Eye, EyeOff } from "lucide-react";
+import { Settings, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon, Key, Globe, ShieldCheck, Copy, Check, Eye, EyeOff, Layers } from "lucide-react";
 
 export default function AdminAppSettingsPage() {
   const [appName, setAppName] = React.useState("NikahYuk");
@@ -222,8 +222,8 @@ export default function AdminAppSettingsPage() {
       <form onSubmit={handleSaveBranding} className="space-y-6">
         <Card className="border-border/70">
           <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-amber-500" /> Identitas App & Unggah Asset ke Cloudflare R2
+            <CardTitle className="font-serif text-lg flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-primary" /> Identitas Aplikasi & Aset Cloudflare R2
             </CardTitle>
             <CardDescription>
               Nama aplikasi, tagline, serta dropzone pengunggahan berkas Logo & Favicon langsung ke S3 R2.
@@ -298,8 +298,8 @@ export default function AdminAppSettingsPage() {
               {/* Favicon Upload Card */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                    <UploadCloud className="h-4 w-4 text-purple-500" /> Upload Favicon ke R2
+                  <label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
+                    <UploadCloud className="h-4 w-4 text-sky-500" /> Upload Favicon ke R2
                   </label>
                   {faviconUrl && (
                     <Badge variant="success" className="text-[10px] gap-1">
@@ -390,7 +390,7 @@ export default function AdminAppSettingsPage() {
             </div>
 
             {/* Live Preview Box */}
-            <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 via-background to-accent/30 border border-border flex flex-col items-center justify-center text-center space-y-3">
+            <div className="p-4 rounded-xl bg-card/60 border border-border/80 flex flex-col items-center justify-center text-center space-y-3">
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                 Live Preview Hero Landing Page
               </span>

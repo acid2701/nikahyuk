@@ -369,8 +369,8 @@ export function MobileCheckinDesk({
                       onClick={() => handleToggleSouvenir(item)}
                       className={`h-8 px-2 text-[10px] gap-1 ${
                         item.souvenirReceived
-                          ? "bg-purple-600 hover:bg-purple-700 text-white"
-                          : "text-purple-600 border-purple-300"
+                          ? "bg-amber-600 hover:bg-amber-700 text-white"
+                          : "text-amber-600 border-amber-300 dark:border-amber-800"
                       }`}
                     >
                       <Gift className="h-3 w-3" />

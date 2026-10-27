@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Check, Clock } from "lucide-react";
+import { Check, Clock, Layers } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -76,15 +76,15 @@ export function RundownPresetDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Sparkles className="h-4 w-4 text-amber-500" />
-          Gunakan Preset Rundown
+          <Layers className="h-4 w-4 text-primary" />
+          Template Susunan Rundown
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            Template Preset Live Rundown
+            <Layers className="h-5 w-5 text-primary" />
+            Template Susunan Acara (Rundown)
           </DialogTitle>
           <DialogDescription>
             Pilih template susunan acara siap pakai untuk mempercepat pembuatan rundown.

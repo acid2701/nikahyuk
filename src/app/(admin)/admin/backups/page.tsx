@@ -260,7 +260,7 @@ export default function AdminBackupsPage() {
           <CardContent>
             <div className="flex items-center space-x-2">
               <Badge variant="outline" className="text-xs gap-1 font-mono font-bold">
-                <FileArchive className="h-3 w-3 text-purple-500" /> Cloudflare R2 /backups/
+                <FileArchive className="h-3 w-3 text-sky-500" /> Cloudflare R2 /backups/
               </Badge>
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">

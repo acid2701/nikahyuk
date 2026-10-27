@@ -345,7 +345,7 @@ export default function AdminStorageConfigPage() {
         </Card>
 
         {/* Link Banner to Dedicated Payments & Donasi Page */}
-        <Card className="border-border/70 md:col-span-2 bg-gradient-to-r from-accent/20 via-background to-primary/5">
+        <Card className="border-border/70 md:col-span-2 bg-card/60 shadow-xs">
           <CardContent className="p-4 flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <HeartHandshake className="h-6 w-6 text-primary shrink-0" />

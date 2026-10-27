@@ -60,7 +60,7 @@ export function MobileSidebarDrawer({
           />
 
           {/* Slide-over Drawer Panel */}
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-card border-r border-border shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-200">
+          <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-card border-r border-border/80 shadow-lg flex flex-col z-50 animate-in slide-in-from-left duration-200">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <span className="font-serif font-bold text-sm text-primary">
                 Menu Navigasi

@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DYNAMIC_ROLE_PRESETS, DynamicRolePreset } from "@/types/presets.types";
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, Trash2, Shield, Sparkles } from "lucide-react";
+import { Plus, Trash2, Shield } from "lucide-react";
 
 export interface CustomRoleManagerModalProps {
   weddingId: string;
@@ -124,7 +124,7 @@ export function CustomRoleManagerModal({
       <DialogTrigger asChild>
         {trigger || (
           <Button variant="outline" size="sm" className="gap-2 text-xs">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+            <Shield className="h-3.5 w-3.5 text-primary" />
             Kelola Peran Kustom
           </Button>
         )}

@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { PublicVendorRegistrationForm } from "@/components/modules/vendors/public-vendor-registration-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Users, Layers, ShieldCheck, ArrowRight, Heart } from "lucide-react";
+import { Briefcase, Users, Layers, ShieldCheck, ArrowRight } from "lucide-react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -60,10 +60,10 @@ export default async function VendorRegisterPage() {
       </header>
 
       {/* 2. RESPONSIVE HERO VALUE PROPOSITION */}
-      <section className="relative overflow-hidden pt-8 pb-6 sm:pt-14 sm:pb-10 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-muted/30 via-background to-background border-b border-border/40">
+      <section className="relative overflow-hidden pt-8 pb-6 sm:pt-12 sm:pb-10 px-4 sm:px-6 lg:px-8 bg-muted/20 border-b border-border/60">
         <div className="max-w-4xl mx-auto text-center space-y-4">
           <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-3 py-1 font-medium mx-auto inline-flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" /> Program Kemitraan Eksklusif B2B
+            <Briefcase className="h-3.5 w-3.5" /> Program Kemitraan Vendor B2B
           </Badge>
 
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">

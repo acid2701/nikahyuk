@@ -255,10 +255,10 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
             <CardTitle className="text-xs font-medium text-muted-foreground">
               Total Kado Fisik / Barang
             </CardTitle>
-            <Package className="h-4 w-4 text-purple-500" />
+            <Package className="h-4 w-4 text-sky-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold font-mono text-purple-600">
+            <div className="text-2xl font-bold font-mono text-sky-600">
               {totalPhysicalItemsCount} Kado
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -590,14 +590,14 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
                             ? "border-blue-500/40 text-blue-600 bg-blue-50/50"
                             : g.giver_side === "bride"
                             ? "border-pink-500/40 text-pink-600 bg-pink-50/50"
-                            : "border-purple-500/40 text-purple-600 bg-purple-50/50"
+                            : "border-slate-500/40 text-slate-700 bg-slate-50/50 dark:text-slate-300 dark:bg-slate-900/40"
                         }
                       >
                         {g.giver_side === "groom"
                           ? "Pria"
                           : g.giver_side === "bride"
                           ? "Wanita"
-                          : "Joint"}
+                          : "Bersama"}
                       </Badge>
                     </TableCell>
 

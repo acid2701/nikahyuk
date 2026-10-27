@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, Sparkles, MapPin, Gift, Share2 } from "lucide-react";
+import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, CalendarCheck, MapPin, Gift, Share2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -107,7 +107,7 @@ export default async function WeddingOverviewPage(props: {
   return (
     <div className="space-y-6">
       {/* Header Banner */}
-      <div className="rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 via-accent/30 to-background p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-sm">
+      <div className="rounded-xl border border-border/80 bg-card/60 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <Heart className="h-5 w-5 text-primary fill-primary/20" />
@@ -226,9 +226,9 @@ export default async function WeddingOverviewPage(props: {
                 Kelola jadwal, lokasi Google Maps, dan penanggung jawab per acara.
               </CardDescription>
             </div>
-            <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1">
+            <Button asChild size="sm" variant="outline" className="text-xs gap-1">
               <Link href={`/dashboard/${weddingId}/events`}>
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Kelola Sub-Event
+                <CalendarCheck className="h-3.5 w-3.5 text-primary" /> Kelola Sub-Event
               </Link>
             </Button>
           </div>
@@ -381,7 +381,7 @@ export default async function WeddingOverviewPage(props: {
 
             <Button asChild variant="outline" className="justify-start h-12">
               <Link href={`/dashboard/${weddingId}/gifts`}>
-                <Gift className="h-4 w-4 mr-2 text-purple-600" />
+                <Gift className="h-4 w-4 mr-2 text-amber-600" />
                 <div className="text-left">
                   <p className="font-semibold text-xs">Log Kado & Angpao</p>
                   <p className="text-[10px] text-muted-foreground font-normal">Pria / Wanita Side</p>
@@ -391,7 +391,7 @@ export default async function WeddingOverviewPage(props: {
 
             <Button asChild variant="outline" className="justify-start h-12">
               <Link href={`/dashboard/${weddingId}/share`}>
-                <Share2 className="h-4 w-4 mr-2 text-indigo-600" />
+                <Share2 className="h-4 w-4 mr-2 text-sky-600" />
                 <div className="text-left">
                   <p className="font-semibold text-xs">Berbagi Link (Share)</p>
                   <p className="text-[10px] text-muted-foreground font-normal">PWA Kru Lapangan</p>

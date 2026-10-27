@@ -20,7 +20,6 @@ import { useToast } from "@/components/ui/use-toast";
 import {
   Building2,
   CheckCircle2,
-  Sparkles,
   Send,
   Lock,
   Mail,
@@ -31,6 +30,7 @@ import {
   MapPin,
   ArrowRight,
   HelpCircle,
+  ListOrdered,
 } from "lucide-react";
 
 interface PublicVendorRegistrationFormProps {
@@ -154,8 +154,8 @@ export function PublicVendorRegistrationForm({
 
   if (submitted) {
     return (
-      <Card className="border-border/80 bg-card/90 backdrop-blur-sm max-w-xl mx-auto p-6 sm:p-10 text-center space-y-6 shadow-xl rounded-2xl">
-        <div className="mx-auto h-20 w-20 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 animate-in zoom-in duration-300">
+      <Card className="border-border/80 bg-card/90 backdrop-blur-sm max-w-xl mx-auto p-6 sm:p-10 text-center space-y-6 shadow-sm rounded-xl">
+        <div className="mx-auto h-16 w-16 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 animate-in zoom-in duration-300">
           <CheckCircle2 className="h-10 w-10" />
         </div>
         <div className="space-y-3">
@@ -170,7 +170,7 @@ export function PublicVendorRegistrationForm({
           </p>
           <div className="p-4 rounded-xl bg-muted/40 border border-border/60 text-xs text-muted-foreground text-left space-y-1.5 max-w-md mx-auto">
             <p className="font-semibold text-foreground flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Langkah Selanjutnya:
+              <ListOrdered className="h-3.5 w-3.5 text-primary" /> Langkah Selanjutnya:
             </p>
             <p>1. Masuk ke Portal Vendor dengan email <span className="font-mono text-foreground font-medium">{email}</span></p>
             <p>2. Unggah logo resmi dan portofolio brosur digital Anda</p>
@@ -178,7 +178,7 @@ export function PublicVendorRegistrationForm({
           </div>
         </div>
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild size="lg" className="w-full sm:w-auto text-sm font-semibold gap-2 shadow-md">
+          <Button asChild size="lg" className="w-full sm:w-auto text-sm font-semibold gap-2 shadow-sm">
             <Link href="/vendor/login">
               Masuk ke Portal Vendor <ArrowRight className="h-4 w-4" />
             </Link>
@@ -192,7 +192,7 @@ export function PublicVendorRegistrationForm({
   }
 
   return (
-    <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-xl max-w-3xl w-full mx-auto rounded-2xl overflow-hidden transition-all">
+    <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-sm max-w-3xl w-full mx-auto rounded-xl overflow-hidden transition-all">
       <CardHeader className="pb-6 pt-7 px-5 sm:px-8 border-b border-border/60 bg-muted/15">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">

@@ -15,7 +15,7 @@ import {
 import { IndonesiaRegionSelect } from "@/components/shared/location/indonesia-region-select";
 import { setupVendorProfileForExistingUserAction } from "@/actions/vendor-partner-actions";
 import { useToast } from "@/components/ui/use-toast";
-import { Building2, Sparkles, User, Mail, Phone, CheckCircle2 } from "lucide-react";
+import { Building2, ShieldCheck, User, Mail, Phone, CheckCircle2 } from "lucide-react";
 
 interface SetupVendorProfileFormProps {
   userEmail: string;
@@ -93,10 +93,10 @@ export function SetupVendorProfileForm({
   }
 
   return (
-    <Card className="w-full max-w-xl mx-auto shadow-xl border-border/80 my-8">
+    <Card className="w-full max-w-xl mx-auto shadow-sm border-border/80 rounded-xl my-8">
       <CardHeader className="space-y-2 text-center bg-muted/20 pb-6 border-b border-border/60">
         <Badge className="w-fit mx-auto bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] gap-1">
-          <Sparkles className="h-3 w-3 fill-amber-500" /> Satu Akun NikahYuk (Single Identity)
+          <ShieldCheck className="h-3.5 w-3.5 text-amber-500" /> Satu Akun NikahYuk (Single Identity)
         </Badge>
         <CardTitle className="font-serif text-2xl font-bold">
           Lengkapi Informasi Profil Usaha Vendor Anda

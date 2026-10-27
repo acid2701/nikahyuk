@@ -43,7 +43,7 @@ import {
   CheckCircle2,
   FileText,
   Upload,
-  Sparkles,
+  Coins,
   Plus,
   Edit,
   Trash2,
@@ -965,7 +965,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                   </div>
                 </div>
                 <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/20">
-                  <Sparkles className="h-4 w-4" />
+                  <Coins className="h-4 w-4" />
                 </div>
               </CardContent>
             </Card>

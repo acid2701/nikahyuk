@@ -51,7 +51,6 @@ import {
   ExternalLink,
   Layers,
   Download,
-  Sparkles,
   Printer,
   Calendar,
   User,
@@ -652,7 +651,7 @@ export function PreweddingChecklistManager({
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="font-serif text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-primary" /> Pilih Template Preset untuk '{eventName}'
+                  <Layers className="h-5 w-5 text-primary" /> Pilih Template Preset untuk '{eventName}'
                 </DialogTitle>
                 <DialogDescription className="text-xs">
                   Pilih salah satu template preset di bawah untuk menambahkan item persiapan secara otomatis ke acara ini:

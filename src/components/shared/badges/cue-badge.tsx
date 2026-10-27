@@ -23,7 +23,7 @@ export function CueBadge({ cueType, instruction, className }: CueBadgeProps) {
     label = "LIGHTING";
   } else if (cueType === "music") {
     icon = <Music className="h-3 w-3" />;
-    colorClass = "bg-purple-500/15 text-purple-700 border-purple-500/30 dark:text-purple-300";
+    colorClass = "bg-sky-500/15 text-sky-700 border-sky-500/30 dark:text-sky-300";
     label = "MUSIC";
   } else if (cueType === "multimedia") {
     icon = <Video className="h-3 w-3" />;

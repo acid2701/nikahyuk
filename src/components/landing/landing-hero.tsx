@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Sparkles, CheckCircle2, Clock, Users, DollarSign, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, Users, DollarSign, Smartphone } from "lucide-react";
 
 export interface LandingHeroProps {
   heroTitle: string;
@@ -30,11 +30,11 @@ export function LandingHero({
           variant="outline"
           className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border-primary/30 bg-primary/5 text-primary shadow-xs"
         >
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <span>Platform Wedding & Event Companion #1 di Indonesia</span>
+          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+          <span>Platform Wedding & Event Companion SaaS Indonesia</span>
         </Badge>
 
-        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-foreground leading-[1.15]">
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
           {heroTitle}
         </h1>
 
@@ -43,7 +43,7 @@ export function LandingHero({
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <Button asChild size="lg" className="h-12 px-6 text-sm font-bold gap-2 shadow-md w-full sm:w-auto">
+          <Button asChild size="lg" className="h-12 px-6 text-sm font-bold gap-2 shadow-xs w-full sm:w-auto">
             <Link href={isLoggedIn ? "/dashboard" : "/register"}>
               {ctaButtonText} <ArrowRight className="h-4 w-4" />
             </Link>
@@ -59,33 +59,33 @@ export function LandingHero({
             <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Tanpa Biaya Pendaftaran
           </span>
           <span className="flex items-center gap-1">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Realtime WebSocket CDC
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Sinkronisasi Realtime Terenkripsi
           </span>
           <span className="flex items-center gap-1">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> PWA Mobile Field Crew
+            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> PWA Mobile Kru Lapangan
           </span>
         </div>
 
         {/* App Showcase Card */}
         <div className="pt-8 max-w-3xl mx-auto">
-          <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-sm p-4 shadow-xl grid gap-3 grid-cols-2 sm:grid-cols-4 text-left">
-            <div className="p-3 rounded-xl bg-background border border-border space-y-1">
+          <div className="rounded-xl border border-border/80 bg-card/60 backdrop-blur-xs p-4 shadow-xs grid gap-3 grid-cols-2 sm:grid-cols-4 text-left">
+            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
               <Clock className="h-5 w-5 text-primary" />
               <p className="font-bold text-xs">Live Rundown</p>
               <p className="text-[10px] text-muted-foreground">Timeline shift 1-klik</p>
             </div>
-            <div className="p-3 rounded-xl bg-background border border-border space-y-1">
+            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
               <Users className="h-5 w-5 text-amber-500" />
               <p className="font-bold text-xs">RSVP & WA Blast</p>
               <p className="text-[10px] text-muted-foreground">Template pesan instan</p>
             </div>
-            <div className="p-3 rounded-xl bg-background border border-border space-y-1">
+            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
               <DollarSign className="h-5 w-5 text-emerald-500" />
               <p className="font-bold text-xs">Anggaran Core</p>
               <p className="text-[10px] text-muted-foreground">Multiple Milestones</p>
             </div>
-            <div className="p-3 rounded-xl bg-background border border-border space-y-1">
-              <Smartphone className="h-5 w-5 text-purple-500" />
+            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
+              <Smartphone className="h-5 w-5 text-sky-500" />
               <p className="font-bold text-xs">Mobile PWA</p>
               <p className="text-[10px] text-muted-foreground">Check-in desk offline</p>
             </div>

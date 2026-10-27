@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Wallet, Heart, Gift } from "lucide-react";
+import { Wallet, Heart, Gift, Coins } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -131,8 +131,8 @@ export function BudgetPresetDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Sparkles className="h-4 w-4 text-amber-500" />
-          Seeder Presets Anggaran
+          <Coins className="h-4 w-4 text-primary" />
+          Template Alokasi Anggaran
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">

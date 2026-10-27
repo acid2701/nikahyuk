@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Sparkles, Check } from "lucide-react";
+import { CalendarCheck, Check } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -75,15 +75,15 @@ export function EventPresetDialog({ weddingId }: EventPresetDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
-          <Sparkles className="h-4 w-4 text-amber-500" />
-          Gunakan Preset Sub-Event
+          <CalendarCheck className="h-4 w-4 text-primary" />
+          Template Sub-Event
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="font-serif text-xl flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-amber-500" />
-            Preset Template Sub-Event Acara
+            <CalendarCheck className="h-5 w-5 text-primary" />
+            Template Sub-Event Acara
           </DialogTitle>
           <DialogDescription>
             Pilih rangkaian acara adat & pernikahan (Lamaran, Pengajian, Siraman, Midodareni, dll). Tanggal acara opsional.

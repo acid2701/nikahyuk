@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { useSystemSettings } from "@/hooks/use-system-settings";
-import { HeartHandshake, Sparkles, Building, CheckCircle2 } from "lucide-react";
+import { HeartHandshake, QrCode, Building, CheckCircle2 } from "lucide-react";
 
 export default function AdminPaymentsPage() {
   const { settings, loading, fetching, saveSetting } = useSystemSettings();
@@ -81,8 +81,8 @@ export default function AdminPaymentsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-medium flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-amber-500" /> Pengaturan Barcode KlikQRIS
+                <CardTitle className="text-lg font-serif flex items-center gap-2">
+                  <QrCode className="h-5 w-5 text-primary" /> Pengaturan Barcode KlikQRIS
                 </CardTitle>
                 <CardDescription>
                   Tersimpan di `system_settings` PostgreSQL dan diakses oleh modal donasi pengguna.

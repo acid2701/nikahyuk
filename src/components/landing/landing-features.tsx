@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Clock, Users, DollarSign, Briefcase, Share2, ShieldCheck, Heart, Sparkles } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Clock, Users, DollarSign, Briefcase, Share2, ShieldCheck, Layers } from "lucide-react";
 
 export function LandingFeatures() {
   const features = [
@@ -36,14 +36,14 @@ export function LandingFeatures() {
     },
     {
       icon: Share2,
-      color: "text-purple-600 bg-purple-500/10",
+      color: "text-sky-600 bg-sky-500/10",
       title: "Shareable Token & Field Crew PWA",
       description:
         "Bagikan link PWA publik dengan PIN pengaman 4-6 digit untuk kru lapangan, meja registrasi check-in, dan door greeter tanpa perlu login akun.",
     },
     {
       icon: ShieldCheck,
-      color: "text-indigo-600 bg-indigo-500/10",
+      color: "text-emerald-600 bg-emerald-500/10",
       title: "Resiliensi Offline & Realtime Sync",
       description:
         "Dukungan penyimpanan browser Dexie IndexedDB untuk lokasi acara dengan sinyal terbatas, serta sinkronisasi otomatis WebSocket CDC saat online.",
@@ -54,8 +54,8 @@ export function LandingFeatures() {
     <section id="features" className="py-16 md:py-24 border-t border-border/50 bg-accent/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-1">
-            <Sparkles className="h-3.5 w-3.5 text-amber-500" /> Modul & Fitur Unggulan
+          <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-1.5">
+            <Layers className="h-3.5 w-3.5 text-primary" /> Modul & Fitur Terintegrasi
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Semua yang Anda Butuhkan untuk Acara Sempurna
