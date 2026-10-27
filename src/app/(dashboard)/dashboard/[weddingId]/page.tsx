@@ -38,6 +38,14 @@ export default async function WeddingOverviewPage(props: {
     daysUntilWedding = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 
+  const formatSafeDate = (d: any, fallback: string = "Belum Ditentukan") => {
+    if (!d) return fallback;
+    if (d instanceof Date) return d.toLocaleDateString("id-ID", { dateStyle: "medium" });
+    const str = String(d).split("T")[0];
+    const parsed = new Date(str);
+    return isNaN(parsed.getTime()) ? str : parsed.toLocaleDateString("id-ID", { dateStyle: "medium" });
+  };
+
   const { data: budgetItems } = activeEvent
     ? await supabase
         .from("budget_items")
@@ -118,7 +126,7 @@ export default async function WeddingOverviewPage(props: {
           <p className="text-xs text-muted-foreground">
             Workspace Pernikahan • Acara Aktif:{" "}
             <span className="font-semibold text-foreground">{activeEvent?.event_name || "Belum Ada Sub-Event"}</span>{" "}
-            ({activeEvent?.event_date ? activeEvent.event_date : "Tanggal Belum Ditentukan"})
+            ({formatSafeDate(activeEvent?.event_date, "Tanggal Belum Ditentukan")})
           </p>
         </div>
 
@@ -263,7 +271,7 @@ export default async function WeddingOverviewPage(props: {
                       </div>
                       <p className="text-[11px] text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3 text-primary" />
-                        {ev.event_date ? ev.event_date : "Tanggal TBD"}
+                        {formatSafeDate(ev.event_date, "Tanggal TBD")}
                       </p>
                       {ev.location_name && (
                         <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
