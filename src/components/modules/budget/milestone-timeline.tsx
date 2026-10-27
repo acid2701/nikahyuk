@@ -84,7 +84,14 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
       {milestones.length === 0 ? (
         <p className="text-xs text-muted-foreground italic">Belum ada termin pembayaran yang ditambahkan.</p>
       ) : (
-        milestones.map((m) => (
+        milestones.map((m) => {
+          const formattedDueDate = m.due_date
+            ? ((m.due_date as unknown) instanceof Date
+                ? ((m.due_date as unknown) as Date).toISOString().split("T")[0]
+                : String(m.due_date).split("T")[0])
+            : null;
+
+          return (
           <div
             key={m.id}
             className="p-3 rounded-lg border border-border/70 bg-card/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -99,17 +106,17 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
                 </Badge>
                 <DueDateBadge
                   paymentStatus={m.payment_status}
-                  dueDateString={m.due_date}
+                  dueDateString={formattedDueDate}
                 />
               </div>
               <div className="flex items-center space-x-3 text-xs text-muted-foreground">
                 <span className="font-mono font-semibold text-foreground">
                   Rp {Number(m.amount).toLocaleString("id-ID")}
                 </span>
-                {m.due_date && (
+                {formattedDueDate && (
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
-                    Jatuh Tempo: {m.due_date}
+                    Jatuh Tempo: {formattedDueDate}
                   </span>
                 )}
               </div>
@@ -168,7 +175,8 @@ export function MilestoneTimeline({ weddingId, milestones }: MilestoneTimelinePr
               </div>
             )}
           </div>
-        ))
+          );
+        })
       )}
 
       {previewMilestone && (

@@ -74,7 +74,13 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
   function handleOpenEdit(eventItem: EventItem) {
     setEditingEvent(eventItem);
     setEventName(eventItem.event_name || "");
-    setEventDate(eventItem.event_date || "");
+    const rawDate = eventItem.event_date as unknown;
+    const formattedDate = rawDate
+      ? (rawDate instanceof Date
+          ? (rawDate as Date).toISOString().split("T")[0]
+          : String(rawDate).split("T")[0])
+      : "";
+    setEventDate(formattedDate);
     setTimeStart(eventItem.time_start || "");
     setTimeEnd(eventItem.time_end || "");
     setLocationName(eventItem.location_name || "");
@@ -403,7 +409,17 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                     <CardDescription className="text-xs flex items-center gap-1">
                       <Calendar className="h-3 w-3 text-primary" />
                       {ev.event_date ? (
-                        <span>{ev.event_date}</span>
+                        <span>
+                          {(ev.event_date as unknown) instanceof Date
+                            ? ((ev.event_date as unknown) as Date).toLocaleDateString("id-ID", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
+                            : typeof ev.event_date === "string"
+                            ? ev.event_date.split("T")[0]
+                            : String(ev.event_date)}
+                        </span>
                       ) : (
                         <span className="italic text-muted-foreground">Belum Ditentukan</span>
                       )}
