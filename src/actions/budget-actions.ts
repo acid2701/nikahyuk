@@ -1,71 +1,114 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { BudgetItemInput, BudgetItemInputSchema } from "@/types/budget.types";
 
+function toMilestoneDTO(m: any) {
+  if (!m) return null;
+  return {
+    id: m.id,
+    budget_item_id: m.budgetItemId,
+    milestone_name: m.milestoneName,
+    amount: Number(m.amount),
+    due_date: m.dueDate
+      ? m.dueDate instanceof Date
+        ? m.dueDate.toISOString().split("T")[0]
+        : String(m.dueDate).split("T")[0]
+      : null,
+    paid_date: m.paidDate
+      ? m.paidDate instanceof Date
+        ? m.paidDate.toISOString().split("T")[0]
+        : String(m.paidDate).split("T")[0]
+      : null,
+    alert_days_before: m.alertDaysBefore,
+    payment_status: m.paymentStatus,
+    paid_by: m.paidBy || "joint",
+    created_at: m.createdAt?.toISOString?.() || m.createdAt,
+    updated_at: m.updatedAt?.toISOString?.() || m.updatedAt,
+    budgetItemId: m.budgetItemId,
+    milestoneName: m.milestoneName,
+    dueDate: m.dueDate,
+    paidDate: m.paidDate,
+    alertDaysBefore: m.alertDaysBefore,
+    paymentStatus: m.paymentStatus,
+    paidBy: m.paidBy || "joint",
+  };
+}
+
+function toBudgetItemDTO(b: any) {
+  if (!b) return null;
+  return {
+    id: b.id,
+    event_id: b.eventId,
+    category_id: b.categoryId || null,
+    vendor_id: b.vendorId || null,
+    item_name: b.itemName,
+    estimated_cost: Number(b.estimatedCost),
+    target_payer: b.targetPayer,
+    notes: b.notes || null,
+    created_at: b.createdAt?.toISOString?.() || b.createdAt,
+    updated_at: b.updatedAt?.toISOString?.() || b.updatedAt,
+    eventId: b.eventId,
+    categoryId: b.categoryId || null,
+    vendorId: b.vendorId || null,
+    itemName: b.itemName,
+    estimatedCost: Number(b.estimatedCost),
+    targetPayer: b.targetPayer,
+    milestones: b.milestones ? b.milestones.map(toMilestoneDTO) : [],
+  };
+}
+
 export async function createBudgetItemWithMilestonesAction(input: BudgetItemInput) {
   const parsed = BudgetItemInputSchema.parse(input);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: item, error: itemErr } = await supabase
-    .from("budget_items")
-    .insert({
-      event_id: parsed.eventId,
-      category_id: parsed.categoryId || null,
-      vendor_id: parsed.vendorId || null,
-      item_name: parsed.itemName,
-      estimated_cost: parsed.estimatedCost,
-      target_payer: parsed.targetPayer,
-      notes: parsed.notes || null,
-    })
-    .select()
-    .single();
-
-  if (itemErr || !item) {
-    throw new Error(itemErr?.message || "Gagal membuat pos anggaran.");
-  }
-
-  if (parsed.milestones && parsed.milestones.length > 0) {
-    const milestoneRows = parsed.milestones.map((m) => ({
-      budget_item_id: item.id,
-      milestone_name: m.milestoneName,
-      amount: m.amount,
-      due_date: m.dueDate || null,
-      paid_date: m.paidDate || null,
-      alert_days_before: m.alertDaysBefore || 7,
-      payment_status: m.paymentStatus,
-      paid_by: m.paidBy,
-    }));
-
-    const { error: msErr } = await supabase
-      .from("payment_milestones")
-      .insert(milestoneRows);
-
-    if (msErr) {
-      console.error("Failed to insert milestones:", msErr);
-    }
-  }
+  const item = await prisma.budgetItem.create({
+    data: {
+      eventId: parsed.eventId,
+      categoryId: parsed.categoryId || null,
+      vendorId: parsed.vendorId || null,
+      itemName: parsed.itemName.trim(),
+      estimatedCost: parsed.estimatedCost,
+      targetPayer: parsed.targetPayer || "joint",
+      notes: parsed.notes?.trim() || null,
+      milestones:
+        parsed.milestones && parsed.milestones.length > 0
+          ? {
+              create: parsed.milestones.map((m) => ({
+                milestoneName: m.milestoneName.trim(),
+                amount: m.amount,
+                dueDate: m.dueDate ? new Date(m.dueDate) : null,
+                paidDate: m.paidDate ? new Date(m.paidDate) : null,
+                alertDaysBefore: m.alertDaysBefore || 7,
+                paymentStatus: m.paymentStatus || "unpaid",
+                paidBy: m.paidBy || parsed.targetPayer || "joint",
+              })),
+            }
+          : undefined,
+    },
+    include: {
+      milestones: true,
+    },
+  });
 
   await recordAuditLog({
     weddingId: parsed.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Budget",
     actionType: "CREATE",
     changeDiff: { itemName: parsed.itemName, estimatedCost: parsed.estimatedCost, side: parsed.targetPayer },
   });
 
   revalidatePath(`/dashboard/${parsed.weddingId}/budget`);
-  return item;
+  return toBudgetItemDTO(item);
 }
 
 export async function payMilestoneAction(
@@ -79,78 +122,60 @@ export async function payMilestoneAction(
     mimeType: string;
   } | null
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const todayStr = new Date().toISOString().split("T")[0];
-
-  const { data: milestone, error } = await supabase
-    .from("payment_milestones")
-    .update({
-      payment_status: paymentStatus,
-      paid_date: paymentStatus === "paid" ? todayStr : null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", milestoneId)
-    .select()
-    .single();
-
-  if (error || !milestone) {
-    throw new Error(error?.message || "Gagal memperbarui status pembayaran termin.");
-  }
+  const milestone = await prisma.paymentMilestone.update({
+    where: { id: milestoneId },
+    data: {
+      paymentStatus,
+      paidDate: paymentStatus === "paid" ? new Date() : null,
+    },
+  });
 
   if (receiptMeta) {
-    await supabase.from("payment_attachments").insert({
-      milestone_id: milestoneId,
-      r2_file_key: receiptMeta.r2FileKey,
-      file_name: receiptMeta.fileName,
-      file_size_bytes: receiptMeta.fileSizeBytes,
-      mime_type: receiptMeta.mimeType,
+    await prisma.paymentAttachment.create({
+      data: {
+        milestoneId,
+        r2FileKey: receiptMeta.r2FileKey,
+        fileName: receiptMeta.fileName,
+        fileSizeBytes: BigInt(receiptMeta.fileSizeBytes),
+        mimeType: receiptMeta.mimeType,
+      },
     });
   }
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Budget Milestones",
     actionType: "UPDATE",
     changeDiff: { milestoneId, paymentStatus, receiptMeta },
   });
 
   revalidatePath(`/dashboard/${weddingId}/budget`);
-  return milestone;
+  return toMilestoneDTO(milestone);
 }
 
 export async function deleteBudgetItemAction(itemId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("budget_items")
-    .delete()
-    .eq("id", itemId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.budgetItem.delete({
+    where: { id: itemId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Budget",
     actionType: "DELETE",
     changeDiff: { itemId },
@@ -171,80 +196,61 @@ export async function updateBudgetItemAction(
     milestones?: any[];
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const updatePayload: {
-    item_name?: string;
-    estimated_cost?: number;
-    target_payer?: "groom" | "bride" | "joint";
-    notes?: string | null;
-    updated_at?: string;
-  } = {
-    updated_at: new Date().toISOString(),
-  };
-
-  if (updates.itemName !== undefined) updatePayload.item_name = updates.itemName;
-  if (updates.estimatedCost !== undefined) updatePayload.estimated_cost = updates.estimatedCost;
-  if (updates.targetPayer !== undefined) updatePayload.target_payer = updates.targetPayer;
-  if (updates.notes !== undefined) updatePayload.notes = updates.notes;
-
-  const { data: item, error } = await supabase
-    .from("budget_items")
-    .update(updatePayload)
-    .eq("id", itemId)
-    .select()
-    .single();
-
-  if (error || !item) {
-    throw new Error(error?.message || "Gagal memperbarui pos anggaran.");
-  }
+  const dataToUpdate: any = {};
+  if (updates.itemName !== undefined) dataToUpdate.itemName = updates.itemName.trim();
+  if (updates.estimatedCost !== undefined) dataToUpdate.estimatedCost = updates.estimatedCost;
+  if (updates.targetPayer !== undefined) dataToUpdate.targetPayer = updates.targetPayer;
+  if (updates.notes !== undefined) dataToUpdate.notes = updates.notes?.trim() || null;
 
   if (updates.milestones !== undefined) {
-    // Refresh milestones for this budget item
-    await supabase
-      .from("payment_milestones")
-      .delete()
-      .eq("budget_item_id", itemId);
+    await prisma.paymentMilestone.deleteMany({
+      where: { budgetItemId: itemId },
+    });
 
     if (updates.milestones.length > 0) {
-      const milestoneRows = updates.milestones.map((m) => ({
-        budget_item_id: itemId,
-        milestone_name: m.milestoneName || m.milestone_name,
-        amount: Number(m.amount) || 0,
-        due_date: m.dueDate || m.due_date || null,
-        paid_date: m.paidDate || m.paid_date || (m.paymentStatus === "paid" || m.payment_status === "paid" ? new Date().toISOString().split("T")[0] : null),
-        alert_days_before: m.alertDaysBefore || m.alert_days_before || 7,
-        payment_status: m.paymentStatus || m.payment_status || "unpaid",
-        paid_by: m.paidBy || m.paid_by || updates.targetPayer || "joint",
-      }));
-
-      const { error: msErr } = await supabase
-        .from("payment_milestones")
-        .insert(milestoneRows);
-
-      if (msErr) {
-        console.error("Failed to update payment milestones:", msErr);
-      }
+      await prisma.paymentMilestone.createMany({
+        data: updates.milestones.map((m) => {
+          const mDueDate = m.dueDate || m.due_date;
+          const mPaidDate = m.paidDate || m.paid_date;
+          const isPaid = m.paymentStatus === "paid" || m.payment_status === "paid";
+          return {
+            budgetItemId: itemId,
+            milestoneName: (m.milestoneName || m.milestone_name || "Pembayaran").trim(),
+            amount: Number(m.amount) || 0,
+            dueDate: mDueDate ? new Date(mDueDate) : null,
+            paidDate: mPaidDate ? new Date(mPaidDate) : isPaid ? new Date() : null,
+            alertDaysBefore: m.alertDaysBefore || m.alert_days_before || 7,
+            paymentStatus: isPaid ? "paid" : "unpaid",
+            paidBy: m.paidBy || m.paid_by || updates.targetPayer || "joint",
+          };
+        }),
+      });
     }
   }
 
+  const item = await prisma.budgetItem.update({
+    where: { id: itemId },
+    data: dataToUpdate,
+    include: {
+      milestones: true,
+    },
+  });
+
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Budget",
     actionType: "UPDATE",
     changeDiff: { itemId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}/budget`);
-  return item;
+  return toBudgetItemDTO(item);
 }
-

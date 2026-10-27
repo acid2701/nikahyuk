@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { EventSideEnum, GiftTypeEnum } from "@/types/database.types";
 
@@ -17,46 +18,59 @@ export interface CreateGiftLogInput {
   notes?: string | null;
 }
 
-export async function createGiftLogAction(input: CreateGiftLogInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function toGiftDTO(g: any) {
+  if (!g) return null;
+  return {
+    id: g.id,
+    event_id: g.eventId,
+    guest_id: g.guestId || null,
+    giver_name: g.itemDescription || "Tamu",
+    gift_type: g.giftType,
+    amount: Number(g.cashAmount) || 0,
+    cash_amount: Number(g.cashAmount) || 0,
+    item_description: g.itemDescription || null,
+    giver_side: g.receivedBy || "joint",
+    received_by: g.receivedBy || "joint",
+    received_at: g.receivedAt?.toISOString?.() || g.receivedAt,
+    eventId: g.eventId,
+    guestId: g.guestId || null,
+    giftType: g.giftType,
+    cashAmount: Number(g.cashAmount) || 0,
+    itemDescription: g.itemDescription || null,
+    receivedBy: g.receivedBy || "joint",
+    receivedAt: g.receivedAt,
+  };
+}
 
-  if (!user) {
+export async function createGiftLogAction(input: CreateGiftLogInput) {
+  const sessionUser = await getCurrentUser();
+
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: gift, error } = await supabase
-    .from("gifts_log")
-    .insert({
-      event_id: input.eventId,
-      guest_id: input.guestId || null,
-      giver_name: input.giverName.trim(),
-      gift_type: input.giftType,
-      amount: input.amount || 0,
-      item_description: input.itemDescription || null,
-      giver_side: input.giverSide,
-      notes: input.notes || null,
-    })
-    .select()
-    .single();
-
-  if (error || !gift) {
-    throw new Error(error?.message || "Gagal membuat pencatatan kado/angpao.");
-  }
+  const gift = await prisma.giftLog.create({
+    data: {
+      eventId: input.eventId,
+      guestId: input.guestId || null,
+      giftType: input.giftType || "cash",
+      cashAmount: input.amount || 0,
+      itemDescription: input.itemDescription || input.giverName || null,
+      receivedBy: input.giverSide || "joint",
+    },
+  });
 
   await recordAuditLog({
     weddingId: input.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Gifts Log",
     actionType: "CREATE",
     changeDiff: { giverName: input.giverName, giftType: input.giftType, amount: input.amount },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/gifts`);
-  return gift;
+  return toGiftDTO(gift);
 }
 
 export async function updateGiftLogAction(
@@ -71,66 +85,53 @@ export async function updateGiftLogAction(
     notes?: string | null;
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: gift, error } = await supabase
-    .from("gifts_log")
-    .update({
-      ...(updates.giverName !== undefined && { giver_name: updates.giverName.trim() }),
-      ...(updates.giftType !== undefined && { gift_type: updates.giftType }),
-      ...(updates.amount !== undefined && { amount: updates.amount || 0 }),
-      ...(updates.itemDescription !== undefined && { item_description: updates.itemDescription || null }),
-      ...(updates.giverSide !== undefined && { giver_side: updates.giverSide }),
-      ...(updates.notes !== undefined && { notes: updates.notes || null }),
-    })
-    .eq("id", giftId)
-    .select()
-    .single();
-
-  if (error || !gift) {
-    throw new Error(error?.message || "Gagal memperbarui catatan kado.");
+  const dataToUpdate: any = {};
+  if (updates.giftType !== undefined) dataToUpdate.giftType = updates.giftType;
+  if (updates.amount !== undefined) dataToUpdate.cashAmount = updates.amount || 0;
+  if (updates.itemDescription !== undefined || updates.giverName !== undefined) {
+    dataToUpdate.itemDescription = updates.itemDescription || updates.giverName || null;
   }
+  if (updates.giverSide !== undefined) dataToUpdate.receivedBy = updates.giverSide;
+
+  const gift = await prisma.giftLog.update({
+    where: { id: giftId },
+    data: dataToUpdate,
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Gifts Log",
     actionType: "UPDATE",
     changeDiff: { giftId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}/gifts`);
-  return gift;
+  return toGiftDTO(gift);
 }
 
 export async function deleteGiftLogAction(giftId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase.from("gifts_log").delete().eq("id", giftId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.giftLog.delete({
+    where: { id: giftId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Gifts Log",
     actionType: "DELETE",
     changeDiff: { giftId },

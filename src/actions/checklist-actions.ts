@@ -1,6 +1,7 @@
 "use server";
 
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
 export interface DBChecklistItem {
@@ -23,26 +24,49 @@ export interface DBChecklistItem {
   updated_at?: string;
 }
 
+function toChecklistDTO(c: any): DBChecklistItem {
+  return {
+    id: c.id,
+    wedding_id: c.weddingId,
+    event_id: "all",
+    category: (c.category as any) || "emergency",
+    box_name: null,
+    item_name: c.taskTitle,
+    price: null,
+    purchase_url: null,
+    notes: c.notes || null,
+    completed_notes: null,
+    completed_by: c.assignedTo || null,
+    completed_at: null,
+    due_date: c.dueDate
+      ? c.dueDate instanceof Date
+        ? c.dueDate.toISOString().split("T")[0]
+        : String(c.dueDate).split("T")[0]
+      : null,
+    assignee_name: c.assignedTo || null,
+    is_completed: c.isCompleted,
+    created_at: c.createdAt?.toISOString?.() || c.createdAt,
+    updated_at: c.updatedAt?.toISOString?.() || c.updatedAt,
+  };
+}
+
 export async function fetchChecklistItemsAction(
   weddingId: string,
   eventId: string = "all"
 ): Promise<DBChecklistItem[]> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return [];
 
-  if (!user) return [];
+  try {
+    const items = await prisma.weddingChecklist.findMany({
+      where: { weddingId },
+      orderBy: { createdAt: "asc" },
+    });
 
-  const { data, error } = await supabase
-    .from("wedding_checklists")
-    .select("*")
-    .eq("wedding_id", weddingId)
-    .eq("event_id", eventId)
-    .order("created_at", { ascending: true });
-
-  if (error || !data) return [];
-  return data as DBChecklistItem[];
+    return items.map(toChecklistDTO);
+  } catch (error) {
+    return [];
+  }
 }
 
 export async function addChecklistItemAction(payload: {
@@ -57,35 +81,27 @@ export async function addChecklistItemAction(payload: {
   due_date?: string;
   assignee_name?: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { success: false, error: "Unauthorized" };
 
-  if (!user) return { success: false, error: "Unauthorized" };
+  try {
+    const item = await prisma.weddingChecklist.create({
+      data: {
+        weddingId: payload.wedding_id,
+        taskTitle: payload.item_name.trim(),
+        category: payload.category || "Umum",
+        notes: payload.notes?.trim() || null,
+        dueDate: payload.due_date ? new Date(payload.due_date) : null,
+        assignedTo: payload.assignee_name?.trim() || null,
+        isCompleted: false,
+      },
+    });
 
-  const { data, error } = await supabase
-    .from("wedding_checklists")
-    .insert({
-      wedding_id: payload.wedding_id,
-      event_id: payload.event_id || "all",
-      category: payload.category,
-      box_name: payload.box_name || null,
-      item_name: payload.item_name,
-      price: payload.price || null,
-      purchase_url: payload.purchase_url || null,
-      notes: payload.notes || null,
-      due_date: payload.due_date || null,
-      assignee_name: payload.assignee_name || null,
-      is_completed: false,
-    })
-    .select()
-    .single();
-
-  if (error) return { success: false, error: error.message };
-
-  revalidatePath(`/dashboard/${payload.wedding_id}/checklists`);
-  return { success: true, data };
+    revalidatePath(`/dashboard/${payload.wedding_id}/checklists`);
+    return { success: true, data: toChecklistDTO(item) };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Gagal membuat item checklist" };
+  }
 }
 
 export async function toggleChecklistItemAction({
@@ -99,34 +115,23 @@ export async function toggleChecklistItemAction({
   isCompleted: boolean;
   completedNotes?: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { success: false, error: "Unauthorized" };
 
-  if (!user) return { success: false, error: "Unauthorized" };
+  try {
+    const item = await prisma.weddingChecklist.update({
+      where: { id },
+      data: {
+        isCompleted,
+        notes: completedNotes ? completedNotes.trim() : undefined,
+      },
+    });
 
-  const userName =
-    user.user_metadata?.full_name || user.email?.split("@")[0] || "Pengguna";
-
-  const { data, error } = await supabase
-    .from("wedding_checklists")
-    .update({
-      is_completed: isCompleted,
-      completed_notes: isCompleted ? completedNotes || null : null,
-      completed_by: isCompleted ? userName : null,
-      completed_at: isCompleted ? new Date().toISOString() : null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("wedding_id", weddingId)
-    .select()
-    .single();
-
-  if (error) return { success: false, error: error.message };
-
-  revalidatePath(`/dashboard/${weddingId}/checklists`);
-  return { success: true, data };
+    revalidatePath(`/dashboard/${weddingId}/checklists`);
+    return { success: true, data: toChecklistDTO(item) };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Gagal memperbarui status checklist" };
+  }
 }
 
 export async function updateChecklistNotesAction({
@@ -144,42 +149,35 @@ export async function updateChecklistNotesAction({
   dueDate?: string;
   assigneeName?: string;
 }) {
-  const supabase = await createClient();
+  try {
+    const item = await prisma.weddingChecklist.update({
+      where: { id },
+      data: {
+        notes: (notes || completedNotes)?.trim() || null,
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+        assignedTo: assigneeName?.trim() || null,
+      },
+    });
 
-  const { data, error } = await supabase
-    .from("wedding_checklists")
-    .update({
-      notes: notes || null,
-      completed_notes: completedNotes || null,
-      due_date: dueDate || null,
-      assignee_name: assigneeName || null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("wedding_id", weddingId)
-    .select()
-    .single();
-
-  if (error) return { success: false, error: error.message };
-
-  revalidatePath(`/dashboard/${weddingId}/checklists`);
-  return { success: true, data };
+    revalidatePath(`/dashboard/${weddingId}/checklists`);
+    return { success: true, data: toChecklistDTO(item) };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Gagal memperbarui catatan checklist" };
+  }
 }
 
 export async function deleteChecklistItemAction(
   id: string,
   weddingId: string
 ) {
-  const supabase = await createClient();
+  try {
+    await prisma.weddingChecklist.delete({
+      where: { id },
+    });
 
-  const { error } = await supabase
-    .from("wedding_checklists")
-    .delete()
-    .eq("id", id)
-    .eq("wedding_id", weddingId);
-
-  if (error) return { success: false, error: error.message };
-
-  revalidatePath(`/dashboard/${weddingId}/checklists`);
-  return { success: true };
+    revalidatePath(`/dashboard/${weddingId}/checklists`);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Gagal menghapus checklist" };
+  }
 }

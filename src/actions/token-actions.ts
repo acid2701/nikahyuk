@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
@@ -18,13 +19,32 @@ export interface CreateShareTokenInput {
   hideInternalNotes?: boolean;
 }
 
-export async function createShareTokenAction(input: CreateShareTokenInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function toTokenDTO(t: any) {
+  if (!t) return null;
+  return {
+    id: t.id,
+    wedding_id: t.weddingId,
+    token_hash: t.tokenHash,
+    pin_hash: t.pinHash,
+    module_access: t.moduleAccess,
+    hide_internal_notes: t.hideInternalNotes,
+    expires_at: t.expiresAt?.toISOString?.() || t.expiresAt,
+    is_active: t.isActive,
+    created_at: t.createdAt?.toISOString?.() || t.createdAt,
+    weddingId: t.weddingId,
+    tokenHash: t.tokenHash,
+    pinHash: t.pinHash,
+    moduleAccess: t.moduleAccess,
+    hideInternalNotes: t.hideInternalNotes,
+    expiresAt: t.expiresAt,
+    isActive: t.isActive,
+  };
+}
 
-  if (!user) {
+export async function createShareTokenAction(input: CreateShareTokenInput) {
+  const sessionUser = await getCurrentUser();
+
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -32,7 +52,7 @@ export async function createShareTokenAction(input: CreateShareTokenInput) {
   const pinHash = input.pin ? await bcrypt.hash(input.pin, 10) : null;
 
   const expiresDays = input.expiresDays || 30;
-  const expiresAt = new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000).toISOString();
+  const expiresAt = new Date(Date.now() + expiresDays * 24 * 60 * 60 * 1000);
 
   const moduleAccess = input.moduleAccess || {
     canCheckin: true,
@@ -40,35 +60,29 @@ export async function createShareTokenAction(input: CreateShareTokenInput) {
     canViewGuests: true,
   };
 
-  const { data: tokenRecord, error } = await supabase
-    .from("shareable_tokens")
-    .insert({
-      wedding_id: input.weddingId,
-      token_hash: plainToken,
-      pin_hash: pinHash,
-      module_access: moduleAccess as any,
-      hide_internal_notes: input.hideInternalNotes ?? true,
-      expires_at: expiresAt,
-      is_active: true,
-    })
-    .select()
-    .single();
-
-  if (error || !tokenRecord) {
-    throw new Error(error?.message || "Gagal membuat token akses publik.");
-  }
+  const tokenRecord = await prisma.shareableToken.create({
+    data: {
+      weddingId: input.weddingId,
+      tokenHash: plainToken,
+      pinHash,
+      moduleAccess: moduleAccess as any,
+      hideInternalNotes: input.hideInternalNotes ?? true,
+      expiresAt,
+      isActive: true,
+    },
+  });
 
   await recordAuditLog({
     weddingId: input.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Shareable Tokens",
     actionType: "CREATE",
-    changeDiff: { tokenHash: plainToken, expiresAt },
+    changeDiff: { tokenHash: plainToken, expiresAt: expiresAt.toISOString() },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/share`);
-  return { tokenRecord, plainToken };
+  return { tokenRecord: toTokenDTO(tokenRecord), plainToken };
 }
 
 export async function toggleShareTokenActiveAction(
@@ -76,37 +90,28 @@ export async function toggleShareTokenActiveAction(
   weddingId: string,
   isActive: boolean
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: tokenRecord, error } = await supabase
-    .from("shareable_tokens")
-    .update({ is_active: isActive })
-    .eq("id", tokenId)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const tokenRecord = await prisma.shareableToken.update({
+    where: { id: tokenId },
+    data: { isActive },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Shareable Tokens",
     actionType: "UPDATE",
     changeDiff: { tokenId, isActive },
   });
 
   revalidatePath(`/dashboard/${weddingId}/share`);
-  return tokenRecord;
+  return toTokenDTO(tokenRecord);
 }
 
 export async function resetShareTokenPINAction(
@@ -114,64 +119,47 @@ export async function resetShareTokenPINAction(
   weddingId: string,
   newPin: string | null
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
   const pinHash = newPin ? await bcrypt.hash(newPin, 10) : null;
 
-  const { data: tokenRecord, error } = await supabase
-    .from("shareable_tokens")
-    .update({ pin_hash: pinHash })
-    .eq("id", tokenId)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const tokenRecord = await prisma.shareableToken.update({
+    where: { id: tokenId },
+    data: { pinHash },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Shareable Tokens",
     actionType: "UPDATE",
     changeDiff: { tokenId, hasPin: Boolean(newPin) },
   });
 
   revalidatePath(`/dashboard/${weddingId}/share`);
-  return tokenRecord;
+  return toTokenDTO(tokenRecord);
 }
 
 export async function deleteShareTokenAction(tokenId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("shareable_tokens")
-    .delete()
-    .eq("id", tokenId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.shareableToken.delete({
+    where: { id: tokenId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Shareable Tokens",
     actionType: "DELETE",
     changeDiff: { tokenId },
