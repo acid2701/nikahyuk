@@ -22,9 +22,9 @@ export default async function VendorsPage(props: {
     return <AccessDeniedCard moduleTitle="Vendor Hub & Kontrak" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
@@ -44,7 +44,7 @@ export default async function VendorsPage(props: {
   // Auto-heal/link missing R2 brochure documents for partner vendors imported previously
   await autoLinkMissingPartnerDocumentsAction(weddingId);
 
-  let query = supabase
+  let query = db
     .from("vendors")
     .select("*, vendor_documents(*)")
     .eq("wedding_id", weddingId);
@@ -55,9 +55,9 @@ export default async function VendorsPage(props: {
 
   let { data: vendorsData, error: queryError } = await query.order("created_at", { ascending: false });
 
-  // Graceful fallback if event_id column is missing in Supabase schema
+  // Graceful fallback if event_id column is missing in schema
   if (queryError && queryError.message?.includes("event_id")) {
-    const fallbackQuery = await supabase
+    const fallbackQuery = await db
       .from("vendors")
       .select("*, vendor_documents(*)")
       .eq("wedding_id", weddingId)

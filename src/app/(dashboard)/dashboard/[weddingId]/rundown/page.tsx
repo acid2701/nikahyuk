@@ -21,9 +21,9 @@ export default async function RundownPage(props: {
     return <AccessDeniedCard moduleTitle="Live Rundown" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
@@ -51,13 +51,13 @@ export default async function RundownPage(props: {
     );
   }
 
-  const { data: wedding } = await supabase
+  const { data: wedding } = await db
     .from("weddings")
     .select("groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name")
     .eq("id", weddingId)
     .single();
 
-  const { data: rundownsData } = await supabase
+  const { data: rundownsData } = await db
     .from("rundowns")
     .select("*, rundown_cues(*)")
     .eq("event_id", activeEventId)

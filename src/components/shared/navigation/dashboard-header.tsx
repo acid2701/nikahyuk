@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut, User, Shield, ChevronRight, Home, Building2 } from "lucide-react";
-import { createClient } from "@/lib/db/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,7 +94,6 @@ export function DashboardHeader({
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  const supabase = createClient();
 
   const breadcrumbs = generateBreadcrumbs(pathname, weddingId);
 

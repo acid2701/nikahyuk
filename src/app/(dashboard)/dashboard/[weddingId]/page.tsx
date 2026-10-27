@@ -13,15 +13,15 @@ export default async function WeddingOverviewPage(props: {
   const searchParams = (await props.searchParams) || {};
   const urlEventId = searchParams.eventId as string | undefined;
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: wedding } = await supabase
+  const { data: wedding } = await db
     .from("weddings")
     .select("*")
     .eq("id", weddingId)
     .single();
 
-  const { data: eventsData } = await supabase
+  const { data: eventsData } = await db
     .from("wedding_events")
     .select("*")
     .eq("wedding_id", weddingId)
@@ -47,7 +47,7 @@ export default async function WeddingOverviewPage(props: {
   };
 
   const { data: budgetItems } = activeEvent
-    ? await supabase
+    ? await db
         .from("budget_items")
         .select("estimated_cost, payment_milestones(amount, payment_status)")
         .eq("event_id", activeEvent.id)
@@ -66,7 +66,7 @@ export default async function WeddingOverviewPage(props: {
     });
   });
 
-  const { data: guestsData } = await supabase
+  const { data: guestsData } = await db
     .from("guests")
     .select("*, event_guest_assignments(*)")
     .eq("wedding_id", weddingId);
@@ -85,7 +85,7 @@ export default async function WeddingOverviewPage(props: {
   });
 
   const { data: nextRundowns } = activeEvent
-    ? await supabase
+    ? await db
         .from("rundowns")
         .select("*")
         .eq("event_id", activeEvent.id)
@@ -93,13 +93,13 @@ export default async function WeddingOverviewPage(props: {
         .limit(3)
     : { data: [] };
 
-  const { count: vendorsCount } = await supabase
+  const { count: vendorsCount } = await db
     .from("vendors")
     .select("*", { count: "exact", head: true })
     .eq("wedding_id", weddingId);
 
   const { data: giftsData } = activeEvent
-    ? await supabase
+    ? await db
         .from("gifts_log")
         .select("amount, gift_type")
         .eq("event_id", activeEvent.id)

@@ -4,9 +4,9 @@ import { WeddingProfileForm } from "@/components/modules/settings/wedding-profil
 
 export default async function WeddingProfileSettingsPage(props: { params: Promise<any> }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: wedding } = await supabase
+  const { data: wedding } = await db
     .from("weddings")
     .select("*")
     .eq("id", weddingId)

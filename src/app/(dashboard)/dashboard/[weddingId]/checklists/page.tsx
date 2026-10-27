@@ -23,9 +23,9 @@ export default async function PreweddingChecklistsPage(props: {
     );
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)

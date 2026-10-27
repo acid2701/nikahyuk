@@ -436,7 +436,7 @@ export default function AdminAppSettingsPage() {
                 <ShieldCheck className="h-5 w-5 text-blue-500" /> Pengaturan Google OAuth & Auth Callback Dinamis
               </CardTitle>
               <CardDescription>
-                Atur Base URL aplikasi, Kredensial Google Cloud Console, dan Dapatkan URL Callback otomatis untuk disalin ke Supabase & Google Cloud.
+                Atur Base URL aplikasi, Kredensial Google Cloud Console, dan Dapatkan URL Callback otomatis untuk disalin ke Google Cloud Console.
               </CardDescription>
             </div>
             <Badge variant={googleEnabled ? "success" : "secondary"} className="text-xs uppercase shrink-0 font-semibold">
@@ -526,7 +526,7 @@ export default function AdminAppSettingsPage() {
                   </button>
                 </div>
                 <p className="text-[10px] text-muted-foreground">
-                  Client Secret rahasia untuk dimasukkan di Supabase Authentication -&gt; Providers -&gt; Google.
+                  Client Secret rahasia untuk dimasukkan di kredensial Google OAuth Authentication.
                 </p>
               </div>
             </div>
@@ -534,7 +534,7 @@ export default function AdminAppSettingsPage() {
             {/* Generated Callback URLs Helper Card */}
             <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-3">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> URL Callback Otomatis (Salin ke Google Cloud &amp; Supabase)
+                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> URL Callback Otomatis (Salin ke Google Cloud Console)
               </span>
 
               <div className="grid gap-3 sm:grid-cols-2">
@@ -559,7 +559,7 @@ export default function AdminAppSettingsPage() {
 
                 <div className="space-y-1 bg-background p-3 rounded border border-border">
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase">
-                    2. Authorized Callback URI (Supabase Provider)
+                    2. Authorized Javascript Origins
                   </span>
                   <div className="flex items-center justify-between gap-2 pt-1">
                     <code className="text-xs font-mono text-muted-foreground truncate">

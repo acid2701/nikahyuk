@@ -12,10 +12,10 @@ export default async function SharePage(props: { params: Promise<any> }) {
     return <AccessDeniedCard moduleTitle="Berbagi Link (Share)" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
 
-  const { data: tokensData } = await supabase
+  const { data: tokensData } = await db
     .from("shareable_tokens")
     .select("*")
     .eq("wedding_id", weddingId)

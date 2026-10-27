@@ -9,9 +9,9 @@ export default async function CollaboratorsPage(props: {
   params: Promise<any>;
 }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: wedding } = await supabase
+  const { data: wedding } = await db
     .from("weddings")
     .select("groom_name, bride_name")
     .eq("id", weddingId)
@@ -21,12 +21,12 @@ export default async function CollaboratorsPage(props: {
     ? `${wedding.groom_name} & ${wedding.bride_name}`
     : "Pernikahan";
 
-  const { data: collaborators } = await supabase
+  const { data: collaborators } = await db
     .from("wedding_collaborators")
     .select("*")
     .eq("wedding_id", weddingId);
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)

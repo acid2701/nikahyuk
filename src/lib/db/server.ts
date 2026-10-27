@@ -7,7 +7,7 @@ type QueryFilter = {
   value: any;
 };
 
-class SupabaseQueryBuilder {
+class PostgresQueryBuilder {
   private tableName: string;
   private selectCols: string = "*";
   private filters: QueryFilter[] = [];
@@ -432,7 +432,7 @@ export async function createClient() {
   const session = await getCurrentUser();
 
   return {
-    from: (tableName: string) => new SupabaseQueryBuilder(tableName),
+    from: (tableName: string) => new PostgresQueryBuilder(tableName),
     auth: {
       getUser: async () => {
         if (!session) {
@@ -455,7 +455,7 @@ export async function createClient() {
 
 export function createAdminClient() {
   return {
-    from: (tableName: string) => new SupabaseQueryBuilder(tableName),
+    from: (tableName: string) => new PostgresQueryBuilder(tableName),
     auth: {
       admin: {
         listUsers: async () => ({ data: { users: [] as any[] }, error: null }),

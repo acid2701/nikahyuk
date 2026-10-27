@@ -39,8 +39,8 @@ export function MobileRundownView({ token, eventId, initialRundowns }: MobileRun
   }, [realtimeUpdate]);
 
   async function fetchLatestData() {
-    const supabase = createClient();
-    const { data } = await supabase
+    const db = createClient();
+    const { data } = await db
       .from("rundowns")
       .select("*, rundown_cues(*)")
       .eq("event_id", eventId)
@@ -63,8 +63,8 @@ export function MobileRundownView({ token, eventId, initialRundowns }: MobileRun
 
   async function handleToggle(rId: string, currentStatus: boolean) {
     try {
-      const supabase = createClient();
-      await supabase
+      const db = createClient();
+      await db
         .from("rundowns")
         .update({ is_completed: !currentStatus })
         .eq("id", rId);

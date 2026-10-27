@@ -3,9 +3,9 @@ import { MobileRundownView } from "@/components/modules/view/mobile-rundown-view
 
 export default async function ViewRundownPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: tokenRecord } = await supabase
+  const { data: tokenRecord } = await db
     .from("shareable_tokens")
     .select("wedding_id")
     .eq("token_hash", token)
@@ -13,7 +13,7 @@ export default async function ViewRundownPage(props: { params: Promise<any> }) {
 
   if (!tokenRecord) return null;
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id")
     .eq("wedding_id", tokenRecord.wedding_id);
@@ -28,7 +28,7 @@ export default async function ViewRundownPage(props: { params: Promise<any> }) {
     );
   }
 
-  const { data: rundownsData } = await supabase
+  const { data: rundownsData } = await db
     .from("rundowns")
     .select("*, rundown_cues(*)")
     .eq("event_id", activeEventId)

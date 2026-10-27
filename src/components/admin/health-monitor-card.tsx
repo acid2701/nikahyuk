@@ -80,34 +80,34 @@ export function HealthMonitorCard() {
           <div className="p-3 rounded-lg border border-border bg-card space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground flex items-center gap-1 font-medium">
-                <HardDrive className="h-3.5 w-3.5 text-purple-500" /> Cloudflare R2
+                <HardDrive className="h-3.5 w-3.5 text-sky-500" /> Cloudflare R2
               </span>
               <Badge variant={data?.storageStatus === "HEALTHY" ? "success" : "secondary"} className="text-[10px]">
                 {data?.storageStatus || "..."}
               </Badge>
             </div>
-            <p className="font-mono text-lg font-bold text-purple-600">
+            <p className="font-mono text-lg font-bold text-sky-600">
               S3 Storage OK
             </p>
             <p className="text-[10px] text-muted-foreground">
-              Dynamic S3 Credentials
+              Encrypted AES-256 Storage
             </p>
           </div>
 
           <div className="p-3 rounded-lg border border-border bg-card space-y-1">
             <div className="flex items-center justify-between text-xs">
               <span className="text-muted-foreground flex items-center gap-1 font-medium">
-                <Wifi className="h-3.5 w-3.5 text-blue-500" /> Supabase Realtime
+                <Wifi className="h-3.5 w-3.5 text-emerald-500" /> PostgreSQL Engine
               </span>
               <Badge variant="success" className="text-[10px]">
                 ONLINE
               </Badge>
             </div>
-            <p className="font-mono text-lg font-bold text-blue-600">
-              WebSocket CDC
+            <p className="font-mono text-lg font-bold text-emerald-600">
+              Prisma ORM
             </p>
             <p className="text-[10px] text-muted-foreground">
-              Live Checkin Sync &lt;250ms
+              Local aaPanel Connection
             </p>
           </div>
         </div>

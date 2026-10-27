@@ -12,17 +12,17 @@ export default async function WeddingDashboardLayout(props: {
   params: Promise<any>;
 }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await db.auth.getUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: wedding } = await supabase
+  const { data: wedding } = await db
     .from("weddings")
     .select("*")
     .eq("id", weddingId)
@@ -32,7 +32,7 @@ export default async function WeddingDashboardLayout(props: {
     notFound();
   }
 
-  const { data: eventsData } = await supabase
+  const { data: eventsData } = await db
     .from("wedding_events")
     .select("id, event_name, event_date, event_side")
     .eq("wedding_id", weddingId)
@@ -46,7 +46,7 @@ export default async function WeddingDashboardLayout(props: {
   }));
 
   let allowedEventIds: string[] | null = null;
-  const { data: collaborator } = await supabase
+  const { data: collaborator } = await db
     .from("wedding_collaborators")
     .select("custom_permissions")
     .eq("wedding_id", weddingId)

@@ -26,9 +26,9 @@ export default async function BudgetPage(props: {
     return <AccessDeniedCard moduleTitle="Anggaran & Pembayaran" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
@@ -52,7 +52,7 @@ export default async function BudgetPage(props: {
 
 
   if (eventIds.length > 0) {
-    const { data: items } = await supabase
+    const { data: items } = await db
       .from("budget_items")
       .select("*, payment_milestones(*, payment_attachments(*))")
       .in("event_id", eventIds)

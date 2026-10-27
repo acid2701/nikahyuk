@@ -17,23 +17,23 @@ export interface WorkspaceItem {
 }
 
 export default async function DashboardSelectorPage() {
-  const supabase = await createClient();
+  const db = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await db.auth.getUser();
 
   if (!user) {
     redirect("/login");
   }
 
   // 1. Fetch Weddings Owned by User
-  const { data: ownedWeddings } = await supabase
+  const { data: ownedWeddings } = await db
     .from("weddings")
     .select("*")
     .eq("created_by", user.id);
 
   // 2. Fetch Weddings where User is Invited as Collaborator
-  const { data: collabRows } = await supabase
+  const { data: collabRows } = await db
     .from("wedding_collaborators")
     .select("*, weddings(*)")
     .eq("user_id", user.id);

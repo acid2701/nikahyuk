@@ -5,9 +5,9 @@ import { UserCheck, Clock, Users, ShieldCheck, Heart } from "lucide-react";
 
 export default async function ViewTokenPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: tokenRecord } = await supabase
+  const { data: tokenRecord } = await db
     .from("shareable_tokens")
     .select("*, weddings(groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name)")
     .eq("token_hash", token)

@@ -22,9 +22,9 @@ export default async function SeatingPage(props: {
     return <AccessDeniedCard moduleTitle="Penataan Tempat Duduk" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
@@ -52,7 +52,7 @@ export default async function SeatingPage(props: {
     );
   }
 
-  const { data: tablesData } = await supabase
+  const { data: tablesData } = await db
     .from("event_tables")
     .select("*, event_guest_assignments(*, guests(full_name))")
     .eq("event_id", activeEventId)
@@ -67,7 +67,7 @@ export default async function SeatingPage(props: {
     })),
   }));
 
-  const { data: unassignedData } = await supabase
+  const { data: unassignedData } = await db
     .from("event_guest_assignments")
     .select("id, actual_pax, guests(full_name)")
     .eq("event_id", activeEventId)

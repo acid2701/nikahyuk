@@ -24,9 +24,9 @@ export default async function GuestsPage(props: {
     return <AccessDeniedCard moduleTitle="Master Tamu & RSVP" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name, location_name, location_maps_url")
     .eq("wedding_id", weddingId)
@@ -43,7 +43,7 @@ export default async function GuestsPage(props: {
   const activeEventId = activeEvent?.id || null;
 
 
-  const { data: guestsData } = await supabase
+  const { data: guestsData } = await db
     .from("guests")
     .select("*, event_guest_assignments(*, event_tables(table_number_or_name))")
     .eq("wedding_id", weddingId)

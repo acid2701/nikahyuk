@@ -3,7 +3,6 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogOut, User, Shield, ChevronRight, Home, Heart, Building2 } from "lucide-react";
-import { createClient } from "@/lib/db/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +22,6 @@ export function VendorHeader({ userEmail }: { userEmail: string }) {
   const searchParams = useSearchParams();
   const tab = searchParams.get("tab") || "overview";
   const { toast } = useToast();
-  const supabase = createClient();
 
   const tabLabels: Record<string, string> = {
     overview: "Ringkasan",

@@ -21,9 +21,9 @@ export default async function GiftsPage(props: {
     return <AccessDeniedCard moduleTitle="Log Kado & Angpao" weddingId={weddingId} />;
   }
 
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id, event_name")
     .eq("wedding_id", weddingId)
@@ -51,7 +51,7 @@ export default async function GiftsPage(props: {
     );
   }
 
-  const { data: giftsData } = await supabase
+  const { data: giftsData } = await db
     .from("gifts_log")
     .select("*")
     .eq("event_id", activeEventId)

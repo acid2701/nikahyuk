@@ -3,9 +3,9 @@ import { MobileCheckinDesk } from "@/components/modules/view/mobile-checkin-desk
 
 export default async function ViewCheckinPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: tokenRecord } = await supabase
+  const { data: tokenRecord } = await db
     .from("shareable_tokens")
     .select("wedding_id")
     .eq("token_hash", token)
@@ -13,7 +13,7 @@ export default async function ViewCheckinPage(props: { params: Promise<any> }) {
 
   if (!tokenRecord) return null;
 
-  const { data: events } = await supabase
+  const { data: events } = await db
     .from("wedding_events")
     .select("id")
     .eq("wedding_id", tokenRecord.wedding_id);
@@ -28,7 +28,7 @@ export default async function ViewCheckinPage(props: { params: Promise<any> }) {
     );
   }
 
-  const { data: assignmentsData } = await supabase
+  const { data: assignmentsData } = await db
     .from("event_guest_assignments")
     .select("id, guest_id, actual_pax, attendance_status, souvenir_received, guests(full_name), event_tables(table_number_or_name)")
     .eq("event_id", activeEventId);

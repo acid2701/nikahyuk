@@ -5,10 +5,10 @@ import { ChangePasswordForm } from "@/components/modules/profile/change-password
 import { UserWorkspacesCard, WorkspaceItem } from "@/components/modules/profile/user-workspaces-card";
 
 export default async function GlobalUserProfilePage() {
-  const supabase = await createClient();
+  const db = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await db.auth.getUser();
 
   if (!user) {
     redirect("/login");
@@ -20,13 +20,13 @@ export default async function GlobalUserProfilePage() {
   const isOAuthUser = provider === "google";
 
   // Fetch owned weddings
-  const { data: ownedWeddings } = await supabase
+  const { data: ownedWeddings } = await db
     .from("weddings")
     .select("id, groom_name, bride_name, wedding_slug")
     .eq("created_by", user.id);
 
   // Fetch collaborated weddings
-  const { data: colabs } = await supabase
+  const { data: colabs } = await db
     .from("wedding_collaborators")
     .select("role, weddings(id, groom_name, bride_name, wedding_slug)")
     .eq("user_id", user.id);

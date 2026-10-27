@@ -9,8 +9,8 @@ export function useRealtimeRundown(eventId: string | null) {
   useEffect(() => {
     if (!eventId) return;
 
-    const supabase = createClient();
-    const channel = supabase
+    const db = createClient();
+    const channel = db
       .channel(`realtime-rundown-${eventId}`)
       .on(
         "postgres_changes",
@@ -27,7 +27,7 @@ export function useRealtimeRundown(eventId: string | null) {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      db.removeChannel(channel);
     };
   }, [eventId]);
 

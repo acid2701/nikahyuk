@@ -16,12 +16,12 @@ export function AdminNotificationBell() {
   const [pendingCount, setPendingCount] = React.useState(0);
   const [recentVendors, setRecentVendors] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const supabase = createClient();
+  const db = createClient();
 
   const fetchNotifications = React.useCallback(async () => {
     setLoading(true);
     try {
-      const { data, count } = await (supabase.from("vendor_partners" as any) as any)
+      const { data, count } = await (db.from("vendor_partners" as any) as any)
         .select("*", { count: "exact" })
         .eq("status", "pending")
         .order("created_at", { ascending: false })
@@ -34,7 +34,7 @@ export function AdminNotificationBell() {
     } finally {
       setLoading(false);
     }
-  }, [supabase]);
+  }, [db]);
 
   React.useEffect(() => {
     fetchNotifications();

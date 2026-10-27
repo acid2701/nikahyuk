@@ -62,8 +62,8 @@ export function MobileCheckinDesk({
   }, [realtimeUpdate]);
 
   async function fetchLatestData() {
-    const supabase = createClient();
-    const { data } = await supabase
+    const db = createClient();
+    const { data } = await db
       .from("event_guest_assignments")
       .select("id, guest_id, actual_pax, attendance_status, souvenir_received, guests(full_name), event_tables(table_number_or_name)")
       .eq("event_id", eventId);
@@ -124,8 +124,8 @@ export function MobileCheckinDesk({
     }
 
     try {
-      const supabase = createClient();
-      await supabase
+      const db = createClient();
+      await db
         .from("event_guest_assignments")
         .update({
           attendance_status: newStatus,
@@ -183,8 +183,8 @@ export function MobileCheckinDesk({
     }
 
     try {
-      const supabase = createClient();
-      await supabase
+      const db = createClient();
+      await db
         .from("event_guest_assignments")
         .update({ souvenir_received: nextState })
         .eq("id", item.assignmentId);
@@ -210,8 +210,8 @@ export function MobileCheckinDesk({
     setLoading(true);
 
     try {
-      const supabase = createClient();
-      const { data: newGuest, error: guestErr } = await supabase
+      const db = createClient();
+      const { data: newGuest, error: guestErr } = await db
         .from("guests")
         .insert({
           wedding_id: weddingId,
@@ -223,7 +223,7 @@ export function MobileCheckinDesk({
 
       if (guestErr || !newGuest) throw new Error(guestErr?.message || "Gagal membuat tamu walk-in");
 
-      await supabase.from("event_guest_assignments").insert({
+      await db.from("event_guest_assignments").insert({
         event_id: eventId,
         guest_id: newGuest.id,
         actual_pax: Number(walkinPax) || 1,

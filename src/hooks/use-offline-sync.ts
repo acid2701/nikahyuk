@@ -30,13 +30,13 @@ export function useOfflineSync(eventId: string | null) {
       if (pendingMutations.length === 0) return;
 
       setIsSyncing(true);
-      const supabase = createClient();
+      const db = createClient();
       let flushedCount = 0;
 
       for (const item of pendingMutations) {
         try {
           if (item.actionType === "CHECKIN") {
-            await supabase
+            await db
               .from("event_guest_assignments")
               .update({
                 attendance_status: item.payload.attendanceStatus,
@@ -45,7 +45,7 @@ export function useOfflineSync(eventId: string | null) {
               })
               .eq("id", item.payload.assignmentId);
           } else if (item.actionType === "SOUVENIR") {
-            await supabase
+            await db
               .from("event_guest_assignments")
               .update({
                 souvenir_received: item.payload.souvenirReceived,
@@ -53,7 +53,7 @@ export function useOfflineSync(eventId: string | null) {
               })
               .eq("id", item.payload.assignmentId);
           } else if (item.actionType === "WALKIN") {
-            const { data: newGuest } = await supabase
+            const { data: newGuest } = await db
               .from("guests")
               .insert({
                 wedding_id: item.payload.weddingId,
@@ -64,7 +64,7 @@ export function useOfflineSync(eventId: string | null) {
               .single();
 
             if (newGuest) {
-              await supabase.from("event_guest_assignments").insert({
+              await db.from("event_guest_assignments").insert({
                 event_id: item.payload.eventId,
                 guest_id: newGuest.id,
                 actual_pax: item.payload.walkinPax || 1,

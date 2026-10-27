@@ -3,9 +3,9 @@ import { EventManager } from "@/components/modules/events/event-manager";
 
 export default async function EventsPage(props: { params: Promise<any> }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const supabase = await createClient();
+  const db = await createClient();
 
-  const { data: eventsData } = await supabase
+  const { data: eventsData } = await db
     .from("wedding_events")
     .select("*")
     .eq("wedding_id", weddingId)

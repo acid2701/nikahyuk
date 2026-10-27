@@ -190,7 +190,7 @@ export function PreweddingChecklistManager({
   }
 
 
-  // Initial Load from Supabase DB with LocalStorage Fallback
+  // Initial Load from PostgreSQL Database with LocalStorage Fallback
   const loadChecklistItems = React.useCallback(async () => {
     setLoading(true);
     try {
