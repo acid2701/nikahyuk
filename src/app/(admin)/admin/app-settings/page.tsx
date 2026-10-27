@@ -428,34 +428,36 @@ export default function AdminAppSettingsPage() {
       </form>
 
       {/* DYNAMIC GOOGLE OAUTH & AUTH PROVIDER CONFIG CARD */}
-      <Card className="border-border/70">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <CardTitle className="text-lg font-medium flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-blue-500" /> Pengaturan Google OAuth & Auth Callback Dinamis
+      <Card className="border-border/70 overflow-hidden">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1 min-w-0">
+              <CardTitle className="text-base sm:text-lg font-medium flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-blue-500 shrink-0" /> 
+                <span className="truncate">Pengaturan Google OAuth &amp; Auth Callback Dinamis</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs">
                 Atur Base URL aplikasi, Kredensial Google Cloud Console, dan Dapatkan URL Callback otomatis untuk disalin ke Google Cloud Console.
               </CardDescription>
             </div>
-            <Badge variant={googleEnabled ? "success" : "secondary"} className="text-xs uppercase shrink-0 font-semibold">
+            <Badge variant={googleEnabled ? "success" : "secondary"} className="text-xs uppercase self-start sm:self-auto shrink-0 font-semibold">
               {googleEnabled ? "Google Auth Aktif" : "Nonaktif"}
             </Badge>
           </div>
         </CardHeader>
         <form onSubmit={handleSaveAuthConfig}>
-          <CardContent className="space-y-6">
+          <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0 space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1">
+              <div className="space-y-1.5 min-w-0">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Globe className="h-4 w-4 text-primary" /> Base URL Aplikasi (App Origin)
+                  <Globe className="h-4 w-4 text-primary shrink-0" /> Base URL Aplikasi (App Origin)
                 </label>
                 <Input
                   type="url"
                   placeholder="e.g. http://localhost:3000 atau https://nikahyuk.com"
                   value={appBaseUrl}
                   onChange={(e) => setAppBaseUrl(e.target.value)}
+                  className="w-full text-xs font-mono"
                   required
                 />
                 <p className="text-[10px] text-muted-foreground">
@@ -463,12 +465,12 @@ export default function AdminAppSettingsPage() {
                 </p>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5 min-w-0">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                   Status Integrasi Google Auth
                 </label>
                 <div className="flex items-center space-x-3 pt-1">
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="relative inline-flex items-center cursor-pointer shrink-0">
                     <input
                       type="checkbox"
                       className="sr-only peer"
@@ -485,24 +487,25 @@ export default function AdminAppSettingsPage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 border-t border-border pt-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5 min-w-0">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Key className="h-4 w-4 text-amber-500" /> Google OAuth Client ID
+                  <Key className="h-4 w-4 text-amber-500 shrink-0" /> Google OAuth Client ID
                 </label>
                 <Input
                   type="text"
                   placeholder="xxxxxxxxxxxx-xxxxxxxxxxxxxxxx.apps.googleusercontent.com"
                   value={googleClientId}
                   onChange={(e) => setGoogleClientId(e.target.value)}
+                  className="w-full text-xs font-mono"
                 />
                 <p className="text-[10px] text-muted-foreground">
                   Client ID yang didapatkan dari Google Cloud Console -&gt; Credentials.
                 </p>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5 min-w-0">
                 <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                  <Key className="h-4 w-4 text-amber-500" /> Google OAuth Client Secret
+                  <Key className="h-4 w-4 text-amber-500 shrink-0" /> Google OAuth Client Secret
                 </label>
                 <div className="relative">
                   <Input
@@ -510,12 +513,12 @@ export default function AdminAppSettingsPage() {
                     placeholder="GOCSPX-xxxxxxxxxxxxxxxxxxxxxxxx"
                     value={googleClientSecret}
                     onChange={(e) => setGoogleClientSecret(e.target.value)}
-                    className="pr-10"
+                    className="pr-10 w-full text-xs font-mono"
                   />
                   <button
                     type="button"
                     onClick={() => setShowGoogleSecret(!showGoogleSecret)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 transition-colors rounded"
                     title={showGoogleSecret ? "Sembunyikan Client Secret" : "Tampilkan Client Secret"}
                   >
                     {showGoogleSecret ? (
@@ -532,46 +535,57 @@ export default function AdminAppSettingsPage() {
             </div>
 
             {/* Generated Callback URLs Helper Card */}
-            <div className="p-4 rounded-lg bg-muted/40 border border-border space-y-3">
+            <div className="p-3 sm:p-4 rounded-lg bg-muted/40 border border-border space-y-3 min-w-0 overflow-hidden">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" /> URL Callback Otomatis (Salin ke Google Cloud Console)
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" /> URL Callback Otomatis (Salin ke Google Cloud Console)
               </span>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="space-y-1 bg-background p-3 rounded border border-border">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                <div className="space-y-2 bg-background p-3 rounded-lg border border-border min-w-0 overflow-hidden">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
                     1. Authorized Redirect URI (Aplikasi)
                   </span>
-                  <div className="flex items-center justify-between gap-2 pt-1">
-                    <code className="text-xs font-mono text-primary truncate">{computedAppCallbackUrl}</code>
+                  <div className="space-y-2 min-w-0">
+                    <code className="text-xs font-mono text-primary break-all select-all block p-2 rounded bg-muted/50 border border-border/50">
+                      {computedAppCallbackUrl}
+                    </code>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="h-7 px-2 text-[10px] gap-1 shrink-0"
+                      className="w-full sm:w-auto h-8 px-3 text-xs gap-1.5 font-medium"
                       onClick={() => handleCopyCallbackUrl(computedAppCallbackUrl)}
                     >
-                      {copiedAppCallback ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
+                      {copiedAppCallback ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
                       {copiedAppCallback ? "Tersalin" : "Salin URL"}
                     </Button>
                   </div>
                 </div>
 
-                <div className="space-y-1 bg-background p-3 rounded border border-border">
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase">
+                <div className="space-y-2 bg-background p-3 rounded-lg border border-border min-w-0 overflow-hidden">
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
                     2. Authorized Javascript Origins
                   </span>
-                  <div className="flex items-center justify-between gap-2 pt-1">
-                    <code className="text-xs font-mono text-muted-foreground truncate">
-                      https://nikahyuk.pilihmenumu.com/auth-callback
+                  <div className="space-y-2 min-w-0">
+                    <code className="text-xs font-mono text-muted-foreground break-all select-all block p-2 rounded bg-muted/50 border border-border/50">
+                      {appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyuk.pilihmenumu.com"}
                     </code>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full sm:w-auto h-8 px-3 text-xs gap-1.5 font-medium"
+                      onClick={() => handleCopyCallbackUrl(appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyuk.pilihmenumu.com")}
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Salin Origin
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="justify-end">
-            <Button type="submit" disabled={authLoading} className="gap-2">
+          <CardFooter className="p-4 sm:p-6 pt-0 sm:pt-0 flex flex-col sm:flex-row justify-end border-t border-border mt-4 pt-4">
+            <Button type="submit" disabled={authLoading} className="w-full sm:w-auto gap-2">
               <CheckCircle2 className="h-4 w-4" />
               {authLoading ? "Menyimpan Auth Config..." : "Simpan Pengaturan Google OAuth"}
             </Button>
