@@ -1,71 +1,102 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { RundownItemInput, RundownItemInputSchema } from "@/types/rundown.types";
 import { calculateTimelineShift } from "@/lib/utils/timeline-math";
 
+function toRundownDTO(item: any) {
+  if (!item) return null;
+  return {
+    id: item.id,
+    event_id: item.eventId,
+    time_start: item.timeStart,
+    time_end: item.timeEnd,
+    activity_title: item.activityTitle,
+    pic_name: item.picName || null,
+    location: item.location || null,
+    contingency_plan: item.contingencyPlan || null,
+    is_internal_only: item.isInternalOnly || false,
+    is_completed: item.isCompleted || false,
+    sort_order: item.sortOrder || 0,
+    created_at: item.createdAt?.toISOString?.() || item.createdAt,
+    updated_at: item.updatedAt?.toISOString?.() || item.updatedAt,
+    eventId: item.eventId,
+    timeStart: item.timeStart,
+    timeEnd: item.timeEnd,
+    activityTitle: item.activityTitle,
+    picName: item.picName || null,
+    contingencyPlan: item.contingencyPlan || null,
+    isInternalOnly: item.isInternalOnly || false,
+    isCompleted: item.isCompleted || false,
+    sortOrder: item.sortOrder || 0,
+    cues: item.cues
+      ? item.cues.map((c: any) => ({
+          id: c.id,
+          rundown_id: c.rundownId,
+          cue_type: c.cueType,
+          instruction: c.instruction,
+          cueType: c.cueType,
+        }))
+      : [],
+  };
+}
+
 export async function createRundownItemAction(input: RundownItemInput) {
   const parsed = RundownItemInputSchema.parse(input);
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: existing } = await supabase
-    .from("rundowns")
-    .select("sort_order")
-    .eq("event_id", parsed.eventId)
-    .order("sort_order", { ascending: false })
-    .limit(1);
+  const existingMax = await prisma.rundown.findFirst({
+    where: { eventId: parsed.eventId },
+    orderBy: { sortOrder: "desc" },
+    select: { sortOrder: true },
+  });
 
-  const nextSortOrder = existing && existing.length > 0 ? existing[0].sort_order + 1 : 0;
+  const nextSortOrder = existingMax ? existingMax.sortOrder + 1 : 0;
 
-  const { data: item, error: itemErr } = await supabase
-    .from("rundowns")
-    .insert({
-      event_id: parsed.eventId,
-      time_start: parsed.timeStart,
-      time_end: parsed.timeEnd,
-      activity_title: parsed.activityTitle,
-      pic_name: parsed.picName || null,
+  const item = await prisma.rundown.create({
+    data: {
+      eventId: parsed.eventId,
+      timeStart: parsed.timeStart,
+      timeEnd: parsed.timeEnd,
+      activityTitle: parsed.activityTitle,
+      picName: parsed.picName || null,
       location: parsed.location || null,
-      contingency_plan: parsed.contingencyPlan || null,
-      is_internal_only: parsed.isInternalOnly || false,
-      sort_order: nextSortOrder,
-    })
-    .select()
-    .single();
-
-  if (itemErr || !item) {
-    throw new Error(itemErr?.message || "Gagal membuat item rundown.");
-  }
-
-  if (parsed.cues && parsed.cues.length > 0) {
-    const cueRows = parsed.cues.map((c) => ({
-      rundown_id: item.id,
-      cue_type: c.cueType,
-      instruction: c.instruction,
-    }));
-    await supabase.from("rundown_cues").insert(cueRows);
-  }
+      contingencyPlan: parsed.contingencyPlan || null,
+      isInternalOnly: parsed.isInternalOnly || false,
+      sortOrder: nextSortOrder,
+      cues:
+        parsed.cues && parsed.cues.length > 0
+          ? {
+              create: parsed.cues.map((c) => ({
+                cueType: c.cueType,
+                instruction: c.instruction,
+              })),
+            }
+          : undefined,
+    },
+    include: {
+      cues: true,
+    },
+  });
 
   await recordAuditLog({
     weddingId: parsed.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Rundowns",
     actionType: "CREATE",
     changeDiff: { activityTitle: parsed.activityTitle, timeStart: parsed.timeStart },
   });
 
   revalidatePath(`/dashboard/${parsed.weddingId}/rundown`);
-  return item;
+  return toRundownDTO(item);
 }
 
 export async function toggleRundownItemCompleteAction(
@@ -73,40 +104,33 @@ export async function toggleRundownItemCompleteAction(
   weddingId: string,
   isCompleted: boolean
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: item, error } = await supabase
-    .from("rundowns")
-    .update({
-      is_completed: isCompleted,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", rundownId)
-    .select()
-    .single();
-
-  if (error || !item) {
-    throw new Error(error?.message || "Gagal memperbarui status checklist agenda.");
-  }
+  const item = await prisma.rundown.update({
+    where: { id: rundownId },
+    data: {
+      isCompleted,
+    },
+    include: {
+      cues: true,
+    },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Rundown Checklist",
     actionType: "UPDATE",
     changeDiff: { rundownId, isCompleted },
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
-  return item;
+  return toRundownDTO(item);
 }
 
 export async function shiftRundownTimelineAction(
@@ -115,22 +139,18 @@ export async function shiftRundownTimelineAction(
   targetRundownId: string,
   deltaMinutes: number
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: items, error: fetchErr } = await supabase
-    .from("rundowns")
-    .select("*")
-    .eq("event_id", eventId)
-    .order("sort_order", { ascending: true });
+  const items = await prisma.rundown.findMany({
+    where: { eventId },
+    orderBy: { sortOrder: "asc" },
+  });
 
-  if (fetchErr || !items || items.length === 0) {
+  if (!items || items.length === 0) {
     throw new Error("Tidak ada item rundown yang dapat digeser.");
   }
 
@@ -141,29 +161,29 @@ export async function shiftRundownTimelineAction(
 
   const mappedForMath = items.map((i) => ({
     id: i.id,
-    timeStart: i.time_start,
-    timeEnd: i.time_end,
-    orderIndex: i.sort_order,
+    timeStart: i.timeStart,
+    timeEnd: i.timeEnd,
+    orderIndex: i.sortOrder,
   }));
 
   const shiftedMath = calculateTimelineShift(mappedForMath, startIndex, deltaMinutes);
 
-  for (let i = startIndex; i < items.length; i++) {
-    const updatedTimes = shiftedMath[i];
-    await supabase
-      .from("rundowns")
-      .update({
-        time_start: updatedTimes.timeStart,
-        time_end: updatedTimes.timeEnd,
-        updated_at: new Date().toISOString(),
+  await prisma.$transaction(
+    shiftedMath.slice(startIndex).map((updatedTimes) =>
+      prisma.rundown.update({
+        where: { id: updatedTimes.id },
+        data: {
+          timeStart: updatedTimes.timeStart,
+          timeEnd: updatedTimes.timeEnd,
+        },
       })
-      .eq("id", updatedTimes.id);
-  }
+    )
+  );
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Timeline Shift Engine",
     actionType: "UPDATE",
     changeDiff: { eventId, targetRundownId, deltaMinutes, shiftedCount: items.length - startIndex },
@@ -174,28 +194,20 @@ export async function shiftRundownTimelineAction(
 }
 
 export async function deleteRundownItemAction(rundownId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("rundowns")
-    .delete()
-    .eq("id", rundownId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.rundown.delete({
+    where: { id: rundownId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Rundowns",
     actionType: "DELETE",
     changeDiff: { rundownId },
@@ -219,57 +231,54 @@ export async function updateRundownItemAction(
     cues?: { cueType: "sound" | "lighting" | "multimedia" | "music"; instruction: string }[];
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: item, error } = await supabase
-    .from("rundowns")
-    .update({
-      ...(updates.timeStart !== undefined && { time_start: updates.timeStart }),
-      ...(updates.timeEnd !== undefined && { time_end: updates.timeEnd }),
-      ...(updates.activityTitle !== undefined && { activity_title: updates.activityTitle }),
-      ...(updates.picName !== undefined && { pic_name: updates.picName || null }),
-      ...(updates.location !== undefined && { location: updates.location || null }),
-      ...(updates.contingencyPlan !== undefined && { contingency_plan: updates.contingencyPlan || null }),
-      ...(updates.isInternalOnly !== undefined && { is_internal_only: updates.isInternalOnly }),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", rundownId)
-    .select()
-    .single();
-
-  if (error || !item) {
-    throw new Error(error?.message || "Gagal memperbarui item rundown.");
-  }
+  const dataToUpdate: any = {};
+  if (updates.timeStart !== undefined) dataToUpdate.timeStart = updates.timeStart;
+  if (updates.timeEnd !== undefined) dataToUpdate.timeEnd = updates.timeEnd;
+  if (updates.activityTitle !== undefined) dataToUpdate.activityTitle = updates.activityTitle.trim();
+  if (updates.picName !== undefined) dataToUpdate.picName = updates.picName?.trim() || null;
+  if (updates.location !== undefined) dataToUpdate.location = updates.location?.trim() || null;
+  if (updates.contingencyPlan !== undefined) dataToUpdate.contingencyPlan = updates.contingencyPlan?.trim() || null;
+  if (updates.isInternalOnly !== undefined) dataToUpdate.isInternalOnly = updates.isInternalOnly;
 
   if (updates.cues !== undefined) {
-    await supabase.from("rundown_cues").delete().eq("rundown_id", rundownId);
+    await prisma.rundownCue.deleteMany({
+      where: { rundownId },
+    });
 
     if (updates.cues.length > 0) {
-      const cueRows = updates.cues.map((c) => ({
-        rundown_id: rundownId,
-        cue_type: c.cueType,
-        instruction: c.instruction,
-      }));
-      await supabase.from("rundown_cues").insert(cueRows);
+      await prisma.rundownCue.createMany({
+        data: updates.cues.map((c) => ({
+          rundownId,
+          cueType: c.cueType,
+          instruction: c.instruction.trim(),
+        })),
+      });
     }
   }
 
+  const item = await prisma.rundown.update({
+    where: { id: rundownId },
+    data: dataToUpdate,
+    include: {
+      cues: true,
+    },
+  });
+
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Rundowns",
     actionType: "UPDATE",
     changeDiff: { rundownId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
-  return item;
+  return toRundownDTO(item);
 }

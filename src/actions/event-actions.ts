@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { EventSideEnum } from "@/types/database.types";
 
@@ -16,46 +17,68 @@ export interface CreateEventInput {
   locationMapsUrl?: string | null;
 }
 
-export async function createEventAction(input: CreateEventInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function toEventDTO(e: any) {
+  if (!e) return null;
+  return {
+    id: e.id,
+    wedding_id: e.weddingId,
+    event_name: e.eventName,
+    event_date: e.eventDate
+      ? e.eventDate instanceof Date
+        ? e.eventDate.toISOString().split("T")[0]
+        : String(e.eventDate).split("T")[0]
+      : null,
+    time_start: e.timeStart || null,
+    time_end: e.timeEnd || null,
+    event_side: e.eventSide || "joint",
+    location_name: e.locationName || null,
+    location_maps_url: e.locationMapsUrl || null,
+    created_at: e.createdAt?.toISOString?.() || e.createdAt,
+    updated_at: e.updatedAt?.toISOString?.() || e.updatedAt,
+    weddingId: e.weddingId,
+    eventName: e.eventName,
+    eventDate: e.eventDate,
+    timeStart: e.timeStart,
+    timeEnd: e.timeEnd,
+    eventSide: e.eventSide,
+    locationName: e.locationName,
+    locationMapsUrl: e.locationMapsUrl,
+  };
+}
 
-  if (!user) {
+export async function createEventAction(input: CreateEventInput) {
+  const sessionUser = await getCurrentUser();
+
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: event, error } = await supabase
-    .from("wedding_events")
-    .insert({
-      wedding_id: input.weddingId,
-      event_name: input.eventName,
-      event_date: input.eventDate || null,
-      time_start: input.timeStart || null,
-      time_end: input.timeEnd || null,
-      event_side: input.eventSide || "joint",
-      location_name: input.locationName || null,
-      location_maps_url: input.locationMapsUrl || null,
-    })
-    .select()
-    .single();
+  const parsedDate = input.eventDate ? new Date(input.eventDate) : new Date();
 
-  if (error || !event) {
-    throw new Error(error?.message || "Gagal membuat sub-event.");
-  }
+  const event = await prisma.weddingEvent.create({
+    data: {
+      weddingId: input.weddingId,
+      eventName: input.eventName.trim(),
+      eventDate: parsedDate,
+      timeStart: input.timeStart || null,
+      timeEnd: input.timeEnd || null,
+      eventSide: input.eventSide || "joint",
+      locationName: input.locationName?.trim() || null,
+      locationMapsUrl: input.locationMapsUrl?.trim() || null,
+    },
+  });
 
   await recordAuditLog({
     weddingId: input.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Sub-Events",
     actionType: "CREATE",
     changeDiff: { eventName: input.eventName, eventDate: input.eventDate, side: input.eventSide },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}`);
-  return event;
+  return toEventDTO(event);
 }
 
 export async function updateEventAction(
@@ -71,71 +94,56 @@ export async function updateEventAction(
     locationMapsUrl?: string | null;
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: event, error } = await supabase
-    .from("wedding_events")
-    .update({
-      ...(updates.eventName !== undefined && { event_name: updates.eventName }),
-      ...(updates.eventDate !== undefined && { event_date: updates.eventDate || null }),
-      ...(updates.timeStart !== undefined && { time_start: updates.timeStart || null }),
-      ...(updates.timeEnd !== undefined && { time_end: updates.timeEnd || null }),
-      ...(updates.eventSide !== undefined && { event_side: updates.eventSide }),
-      ...(updates.locationName !== undefined && { location_name: updates.locationName || null }),
-      ...(updates.locationMapsUrl !== undefined && { location_maps_url: updates.locationMapsUrl || null }),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", eventId)
-    .select()
-    .single();
-
-  if (error || !event) {
-    throw new Error(error?.message || "Gagal memperbarui sub-event.");
+  const dataToUpdate: any = {};
+  if (updates.eventName !== undefined) dataToUpdate.eventName = updates.eventName.trim();
+  if (updates.eventDate !== undefined && updates.eventDate) {
+    dataToUpdate.eventDate = new Date(updates.eventDate);
   }
+  if (updates.timeStart !== undefined) dataToUpdate.timeStart = updates.timeStart || null;
+  if (updates.timeEnd !== undefined) dataToUpdate.timeEnd = updates.timeEnd || null;
+  if (updates.eventSide !== undefined) dataToUpdate.eventSide = updates.eventSide;
+  if (updates.locationName !== undefined) dataToUpdate.locationName = updates.locationName?.trim() || null;
+  if (updates.locationMapsUrl !== undefined) dataToUpdate.locationMapsUrl = updates.locationMapsUrl?.trim() || null;
+
+  const event = await prisma.weddingEvent.update({
+    where: { id: eventId },
+    data: dataToUpdate,
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "User",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "User",
     moduleName: "Sub-Events",
     actionType: "UPDATE",
     changeDiff: { eventId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}`);
-  return event;
+  return toEventDTO(event);
 }
 
 export async function deleteEventAction(eventId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("wedding_events")
-    .delete()
-    .eq("id", eventId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.weddingEvent.delete({
+    where: { id: eventId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "User",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "User",
     moduleName: "Sub-Events",
     actionType: "DELETE",
     changeDiff: { eventId },
