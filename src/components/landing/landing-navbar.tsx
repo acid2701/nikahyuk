@@ -2,9 +2,10 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
-import { Heart, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Heart, ArrowRight, LayoutDashboard, LogOut } from "lucide-react";
 
 export interface LandingNavbarProps {
   appName: string;
@@ -13,6 +14,21 @@ export interface LandingNavbarProps {
 }
 
 export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarProps) {
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = React.useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.refresh();
+      window.location.reload();
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      setLoggingOut(false);
+    }
+  }
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
@@ -42,14 +58,28 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           </a>
         </nav>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <ThemeToggle />
           {isLoggedIn ? (
-            <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
-              <Link href="/dashboard">
-                <LayoutDashboard className="h-3.5 w-3.5" /> Buka Dashboard
-              </Link>
-            </Button>
+            <>
+              <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
+                <Link href="/dashboard">
+                  <LayoutDashboard className="h-3.5 w-3.5" /> Buka Dashboard
+                </Link>
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                disabled={loggingOut}
+                className="text-xs text-muted-foreground hover:text-rose-600 gap-1 px-2"
+                title="Keluar dari akun"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{loggingOut ? "Keluar..." : "Keluar"}</span>
+              </Button>
+            </>
           ) : (
             <>
               <Button asChild variant="ghost" size="sm" className="text-xs">

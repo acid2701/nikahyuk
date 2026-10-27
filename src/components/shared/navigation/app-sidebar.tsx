@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
@@ -18,7 +18,9 @@ import {
   HeartHandshake,
   CheckSquare,
   Share2,
+  LogOut,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DonationQrisModal } from "@/components/shared/modal/donation-qris-modal";
 
@@ -41,7 +43,23 @@ export function AppSidebar({
 }: AppSidebarProps) {
 
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
+  const [loggingOut, setLoggingOut] = React.useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("Logout error:", err);
+      window.location.href = "/login";
+    } finally {
+      setLoggingOut(false);
+    }
+  }
+
   const eventId = searchParams.get("eventId");
 
   const baseUrl = weddingId ? `/dashboard/${weddingId}` : "/dashboard";
@@ -192,6 +210,18 @@ export function AppSidebar({
               </div>
             </div>
           </button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full text-xs gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-medium"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            {loggingOut ? "Keluar..." : "Keluar (Logout)"}
+          </Button>
 
           <div className="px-2 text-center text-[10px] text-muted-foreground truncate">
             {appName} SaaS v1.0.0

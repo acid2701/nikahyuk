@@ -11,6 +11,7 @@ import {
   Heart,
   ShieldCheck,
   Users,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,20 @@ export function VendorSidebar({
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [loggingOut, setLoggingOut] = React.useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/vendor/login";
+    } catch (err) {
+      console.error("Logout error:", err);
+      window.location.href = "/vendor/login";
+    } finally {
+      setLoggingOut(false);
+    }
+  }
   const currentTab = searchParams.get("tab") || "overview";
 
   const navItems = [
@@ -117,7 +132,7 @@ export function VendorSidebar({
       </div>
 
       {/* FOOTER ACTIONS & ACCOUNT INFO */}
-      <div className="space-y-3 pt-4 border-t border-border">
+      <div className="space-y-2.5 pt-4 border-t border-border">
         <Button
           variant="outline"
           size="sm"
@@ -128,12 +143,25 @@ export function VendorSidebar({
           Workspace Pengantin Saya
         </Button>
 
-        <div className="p-2.5 rounded-lg bg-secondary/60 border border-border/80 flex items-center space-x-2 text-xs">
-          <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
-          <div className="truncate">
-            <p className="font-semibold text-foreground truncate">{userEmail}</p>
-            <p className="text-[10px] text-muted-foreground">Official Partner Verified</p>
+        <div className="p-2.5 rounded-lg bg-secondary/60 border border-border/80 flex items-center justify-between text-xs">
+          <div className="flex items-center space-x-2 truncate">
+            <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+            <div className="truncate">
+              <p className="font-semibold text-foreground truncate">{userEmail}</p>
+              <p className="text-[10px] text-muted-foreground">Official Partner</p>
+            </div>
           </div>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            title="Keluar Akun Vendor"
+            className="h-7 w-7 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 shrink-0 ml-1"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+          </Button>
         </div>
       </div>
     </aside>

@@ -1,7 +1,8 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   HardDrive,
@@ -16,6 +17,7 @@ import {
   HeartHandshake,
   Settings,
   Building2,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -33,6 +35,21 @@ export function AdminSidebar({
   logoUrl?: string;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [loggingOut, setLoggingOut] = React.useState(false);
+
+  async function handleLogout() {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login";
+    } catch (err) {
+      console.error("Logout error:", err);
+      window.location.href = "/login";
+    } finally {
+      setLoggingOut(false);
+    }
+  }
 
   const navItems = [
     {
@@ -145,17 +162,31 @@ export function AdminSidebar({
         </nav>
       </div>
 
-      <div className="p-4 border-t border-border space-y-3">
+      <div className="p-4 border-t border-border space-y-2.5">
         <div className="text-[11px] text-muted-foreground truncate">
           <p className="font-medium text-foreground truncate">{userEmail}</p>
           <p className="text-[10px]">Role: Superadmin</p>
         </div>
 
-        <Button asChild variant="outline" size="sm" className="w-full text-xs gap-2">
-          <Link href="/dashboard">
-            <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Dashboard
-          </Link>
-        </Button>
+        <div className="flex flex-col gap-1.5 pt-1">
+          <Button asChild variant="outline" size="sm" className="w-full text-xs gap-2">
+            <Link href="/dashboard">
+              <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Dashboard
+            </Link>
+          </Button>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="w-full text-xs gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            {loggingOut ? "Keluar..." : "Keluar (Logout)"}
+          </Button>
+        </div>
       </div>
     </aside>
   );
