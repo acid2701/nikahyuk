@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { HelpCircle, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export function LandingFaq() {
   const [openIndex, setOpenIndex] = React.useState<number | null>(0);
@@ -29,9 +29,6 @@ export function LandingFaq() {
     <section id="faq" className="py-16 md:py-24 border-t border-border/50 bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="text-center space-y-2">
-          <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-1">
-            <HelpCircle className="h-3.5 w-3.5 text-primary" /> Tanya Jawab Umum
-          </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Pertanyaan yang Sering Diajukan (FAQ)
           </h2>

@@ -54,9 +54,6 @@ export function LandingFeatures() {
     <section id="features" className="py-16 md:py-24 border-t border-border/50 bg-accent/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold text-primary uppercase tracking-widest flex items-center justify-center gap-1.5">
-            <Layers className="h-3.5 w-3.5 text-primary" /> Modul & Fitur Terintegrasi
-          </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Semua yang Anda Butuhkan untuk Acara Sempurna
           </h2>
