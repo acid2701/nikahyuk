@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestTableView } from "@/components/modules/guests/guest-table-view";
 import { Users, UserCheck, UserX, Clock } from "lucide-react";

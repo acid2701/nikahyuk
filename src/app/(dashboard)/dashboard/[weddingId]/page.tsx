@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, CalendarCheck, MapPin, Gift, Share2 } from "lucide-react";
 import Link from "next/link";

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { GiftManager } from "@/components/modules/gifts/gift-manager";
 import {
   getCollaboratorSecurityContext,

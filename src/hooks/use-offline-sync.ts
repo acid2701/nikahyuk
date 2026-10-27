@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { offlineDB, MutationQueueItem } from "@/lib/db/dexie-offline";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import { useToast } from "@/components/ui/use-toast";
 
 export function useOfflineSync(eventId: string | null) {

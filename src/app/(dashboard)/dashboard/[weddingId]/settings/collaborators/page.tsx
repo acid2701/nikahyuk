@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { Card } from "@/components/ui/card";
 import { CollaboratorCardItem } from "@/components/modules/settings/collaborator-card-item";
 import { CollaboratorInviteModal } from "@/components/modules/settings/collaborator-invite-modal";

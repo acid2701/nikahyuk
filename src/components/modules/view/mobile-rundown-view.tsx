@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CueBadge } from "@/components/shared/badges/cue-badge";
 import { useRealtimeRundown } from "@/hooks/use-realtime-rundown";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import { ArrowLeft, Clock, CheckSquare, Square, MapPin, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/use-toast";

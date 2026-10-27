@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { RundownManager } from "@/components/modules/rundown/rundown-manager";
 import {
   getCollaboratorSecurityContext,

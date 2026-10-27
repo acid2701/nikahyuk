@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { UserProfileForm } from "@/components/modules/profile/user-profile-form";
 import { ChangePasswordForm } from "@/components/modules/profile/change-password-form";
 import { UserWorkspacesCard, WorkspaceItem } from "@/components/modules/profile/user-workspaces-card";

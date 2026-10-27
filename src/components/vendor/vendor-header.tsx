@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogOut, User, Shield, ChevronRight, Home, Heart, Building2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import {
   DropdownMenu,
   DropdownMenuContent,

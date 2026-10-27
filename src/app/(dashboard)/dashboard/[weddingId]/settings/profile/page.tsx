@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { Heart, Calendar } from "lucide-react";
 import { WeddingProfileForm } from "@/components/modules/settings/wedding-profile-form";
 

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { ShareTokenManager } from "@/components/modules/share/share-token-manager";
 import { getCollaboratorSecurityContext } from "@/lib/auth/collaborator-security";
 import { AccessDeniedCard } from "@/components/shared/access-denied-card";

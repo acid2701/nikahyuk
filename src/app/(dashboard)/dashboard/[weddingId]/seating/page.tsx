@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { SeatingManager } from "@/components/modules/seating/seating-manager";
 import {
   getCollaboratorSecurityContext,

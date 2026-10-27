@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { MobileGuestLookup } from "@/components/modules/view/mobile-guest-lookup";
 
 export default async function ViewGuestsPage(props: { params: Promise<any> }) {

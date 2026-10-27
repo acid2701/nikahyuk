@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Bell, Building2, CheckCircle2, Clock, ChevronRight } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 
 export function AdminNotificationBell() {
   const [pendingCount, setPendingCount] = React.useState(0);

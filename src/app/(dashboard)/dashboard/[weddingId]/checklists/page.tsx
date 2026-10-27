@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { PreweddingChecklistManager } from "@/components/modules/checklist/prewedding-checklist-manager";
 import {
   getCollaboratorSecurityContext,

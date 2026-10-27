@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { getAppBranding } from "@/lib/branding";
 import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
 import { DashboardHeader } from "@/components/shared/navigation/dashboard-header";

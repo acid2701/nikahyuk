@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetFormModal } from "@/components/modules/budget/budget-form-modal";
 import { BudgetPresetDialog } from "@/components/modules/budget/budget-preset-dialog";

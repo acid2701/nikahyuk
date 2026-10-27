@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { EventManager } from "@/components/modules/events/event-manager";
 
 export default async function EventsPage(props: { params: Promise<any> }) {

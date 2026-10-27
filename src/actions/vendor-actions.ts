@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/db/server";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { deletePhysicalR2File } from "@/lib/cloudflare-r2/cleanup-helper";
 import { sanitizePhoneNumber } from "@/lib/utils/wa-sanitizer";

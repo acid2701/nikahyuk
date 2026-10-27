@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { useRealtimeCheckin } from "@/hooks/use-realtime-checkin";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "@/lib/db/client";
 import { Search, UserCheck, Gift, Plus, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import {
