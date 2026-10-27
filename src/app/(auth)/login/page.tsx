@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +23,6 @@ export default function LoginPage() {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
 
   const [authConfig, setAuthConfig] = React.useState<{
     googleEnabled: boolean;
@@ -60,23 +58,28 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error || !data.user) {
-      toast({
-        title: "Gagal Masuk",
-        description: error?.message || "Email atau kata sandi tidak valid.",
-        variant: "destructive",
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      setLoading(false);
-    } else {
-      const isSuperadmin =
-        data.user.app_metadata?.role === "superadmin" ||
-        data.user.user_metadata?.role === "superadmin";
-      const isVendor = data.user.user_metadata?.user_type === "vendor";
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast({
+          title: "Gagal Masuk",
+          description: data.error || "Email atau kata sandi tidak valid.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      const user = data.user;
+      const isSuperadmin = user.role === "superadmin" || user.role === "admin";
+      const isVendor = user.userType === "vendor";
 
       toast({
         title: isSuperadmin
@@ -99,38 +102,22 @@ export default function LoginPage() {
         : "/dashboard";
       router.push(targetPath);
       router.refresh();
-    }
-  }
-
-  async function handleGoogleLogin() {
-    if (authConfig && !authConfig.googleEnabled) {
+    } catch {
       toast({
-        title: "Google Auth Nonaktif",
-        description: "Metode masuk dengan Google sedang dinonaktifkan oleh administrator.",
-        variant: "warning",
-      });
-      return;
-    }
-
-    setLoading(true);
-    const redirectOrigin =
-      authConfig?.appBaseUrl || (typeof window !== "undefined" ? window.location.origin : "");
-
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${redirectOrigin}/auth-callback`,
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Gagal Login Google",
-        description: error.message,
+        title: "Kesalahan Jaringan",
+        description: "Gagal menghubungkan ke server.",
         variant: "destructive",
       });
       setLoading(false);
     }
+  }
+
+  async function handleGoogleLogin() {
+    toast({
+      title: "Google Auth Dinonaktifkan",
+      description: "Metode masuk Google dialihkan ke login email/kata sandi mandiri.",
+      variant: "warning",
+    });
   }
 
   return (

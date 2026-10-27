@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,34 +7,24 @@ import { Database, HardDrive, Calendar, ShieldCheck, Settings, Key, Building2, C
 import { HealthMonitorCard } from "@/components/admin/health-monitor-card";
 
 export default async function AdminOverviewPage() {
-  const supabase = await createClient();
-
-  const { count: weddingsCount } = await supabase
-    .from("weddings")
-    .select("*", { count: "exact", head: true });
-
-  const { count: eventsCount } = await supabase
-    .from("wedding_events")
-    .select("*", { count: "exact", head: true });
-
-  const { count: docsCount } = await supabase
-    .from("vendor_documents")
-    .select("*", { count: "exact", head: true });
+  const weddingsCount = await prisma.wedding.count();
+  const eventsCount = await prisma.weddingEvent.count();
+  const docsCount = await prisma.vendorDocument.count();
 
   let pendingVendorsCount = 0;
   try {
-    const { count } = await (supabase.from("vendor_partners" as any) as any)
-      .select("*", { count: "exact", head: true })
-      .eq("status", "pending");
-    pendingVendorsCount = count || 0;
+    pendingVendorsCount = await prisma.vendorPartner.count({
+      where: { status: "pending" },
+    });
   } catch (err) {
     console.warn("vendor_partners pending count notice:", err);
   }
 
-  const { data: settings } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .in("key", ["r2_credentials", "auth_provider_config"]);
+  const settings = await prisma.systemSetting.findMany({
+    where: {
+      key: { in: ["r2_credentials", "auth_provider_config"] },
+    },
+  });
 
   const r2Row = settings?.find((r) => r.key === "r2_credentials");
   const authRow = settings?.find((r) => r.key === "auth_provider_config");

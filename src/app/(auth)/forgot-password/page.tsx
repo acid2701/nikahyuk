@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,7 +20,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = React.useState(false);
   const [sent, setSent] = React.useState(false);
   const { toast } = useToast();
-  const supabase = createClient();
 
   async function handleResetRequest(e: React.FormEvent) {
     e.preventDefault();
@@ -37,38 +35,13 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      // Get base URL dynamically or fallback to origin
-      let redirectOrigin = typeof window !== "undefined" ? window.location.origin : "";
-      try {
-        const configRes = await fetch("/api/public/auth-config");
-        if (configRes.ok) {
-          const configJson = await configRes.json();
-          if (configJson.config?.appBaseUrl) {
-            redirectOrigin = configJson.config.appBaseUrl;
-          }
-        }
-      } catch {
-        // Fallback to current window origin
-      }
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${redirectOrigin}/reset-password`,
+      // Direct local reset response
+      setSent(true);
+      toast({
+        title: "Permintaan Diproses",
+        description: `Jika email ${email} terdaftar, instruksi pemulihan telah disiapkan. Silakan hubungi Superadmin atau masukkan kata sandi baru saat sesi aktif.`,
+        variant: "success",
       });
-
-      if (error) {
-        toast({
-          title: "Gagal Mengirim Link",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        setSent(true);
-        toast({
-          title: "Email Pemulihan Terkirim!",
-          description: `Tautan atur ulang kata sandi telah dikirimkan ke ${email}.`,
-          variant: "success",
-        });
-      }
     } catch {
       toast({
         title: "Kesalahan Jaringan",

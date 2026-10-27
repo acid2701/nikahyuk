@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { VendorSidebar } from "./vendor-sidebar";
 import { Button } from "@/components/ui/button";
 import { Menu, Building2 } from "lucide-react";
@@ -11,8 +12,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function VendorMobileDrawer({ userEmail }: { userEmail: string }) {
+export function VendorMobileDrawer({
+  userEmail,
+  appName = "NikahYuk",
+  logoUrl,
+}: {
+  userEmail: string;
+  appName?: string;
+  logoUrl?: string;
+}) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Close drawer automatically when route changes
+  React.useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <div className="lg:hidden flex items-center justify-between p-4 border-b border-border bg-card">
@@ -39,7 +54,14 @@ export function VendorMobileDrawer({ userEmail }: { userEmail: string }) {
               NikahYuk Partner Ecosystem
             </DialogTitle>
           </DialogHeader>
-          <VendorSidebar userEmail={userEmail} onNavigate={() => setOpen(false)} />
+          <VendorSidebar
+            userEmail={userEmail}
+            onNavigate={() => {
+              setTimeout(() => setOpen(false), 80);
+            }}
+            appName={appName}
+            logoUrl={logoUrl}
+          />
         </DialogContent>
       </Dialog>
     </div>

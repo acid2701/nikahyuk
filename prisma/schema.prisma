@@ -1,0 +1,475 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// USER & AUTHENTICATION (Substitusi auth.users Supabase)
+// -------------------------------------------------------------
+model User {
+  id                   String                 @id @default(uuid())
+  email                String                 @unique
+  passwordHash         String
+  fullName             String?
+  role                 String                 @default("user") // "superadmin" | "admin" | "user" | "vendor"
+  userType             String                 @default("organizer") // "organizer" | "vendor"
+  phone                String?
+  avatarUrl            String?
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+
+  // Relasi
+  weddings             Wedding[]              @relation("UserWeddings")
+  collaborations       WeddingCollaborator[]  @relation("UserCollaborations")
+  vendorPartner        VendorPartner?
+  auditLogs            AuditLog[]
+
+  @@map("users")
+}
+
+// -------------------------------------------------------------
+// 1. SYSTEM INFRASTRUCTURE & RBAC TEMPLATES
+// -------------------------------------------------------------
+model SystemSetting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+model GlobalRoleTemplate {
+  id                 String   @id @default(uuid())
+  roleName           String   @unique @map("role_name")
+  defaultPermissions Json     @default("{}") @map("default_permissions")
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("global_role_templates")
+}
+
+model SystemBackup {
+  id             String   @id @default(uuid())
+  fileName       String   @map("file_name")
+  r2FileKey      String   @map("r2_file_key")
+  fileSizeBytes  BigInt   @map("file_size_bytes")
+  encryptionAlgo String   @default("aes-256-cbc") @map("encryption_algo")
+  status         String   // "success" | "failed"
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("system_backups")
+}
+
+model UserNotification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String   @default("info")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("user_notifications")
+}
+
+// -------------------------------------------------------------
+// 2. CORE WORKSPACE & COLLABORATION
+// -------------------------------------------------------------
+model Wedding {
+  id          String   @id @default(uuid())
+  createdBy   String   @map("created_by")
+  groomName   String   @map("groom_name")
+  brideName   String   @map("bride_name")
+  weddingSlug String   @unique @map("wedding_slug")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user          User                  @relation("UserWeddings", fields: [createdBy], references: [id], onDelete: Cascade)
+  collaborators WeddingCollaborator[]
+  events        WeddingEvent[]
+  guestCategories GuestCategory[]
+  guests        Guest[]
+  vendors       Vendor[]
+  tokens        ShareableToken[]
+  auditLogs     AuditLog[]
+  checklists    WeddingChecklist[]
+
+  @@index([createdBy])
+  @@index([weddingSlug])
+  @@map("weddings")
+}
+
+model WeddingCollaborator {
+  id                String   @id @default(uuid())
+  weddingId         String   @map("wedding_id")
+  userId            String   @map("user_id")
+  role              String   @default("family_committee") // 'partner' | 'wo' | 'family_committee'
+  customPermissions Json?    @map("custom_permissions")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user    User    @relation("UserCollaborations", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, userId])
+  @@map("wedding_collaborators")
+}
+
+model WeddingEvent {
+  id              String   @id @default(uuid())
+  weddingId       String   @map("wedding_id")
+  eventName       String   @map("event_name")
+  eventDate       DateTime @map("event_date") @db.Date
+  timeStart       String?  @map("time_start")
+  timeEnd         String?  @map("time_end")
+  eventSide       String   @default("joint") @map("event_side") // 'groom' | 'bride' | 'joint'
+  locationName    String?  @map("location_name")
+  locationMapsUrl String?  @map("location_maps_url")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding          Wedding                @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  tables           EventTable[]
+  guestAssignments EventGuestAssignment[]
+  budgetCategories BudgetCategory[]
+  budgetItems      BudgetItem[]
+  rundowns         Rundown[]
+  souvenirs        Souvenir[]
+  giftsLog         GiftLog[]
+
+  @@index([weddingId])
+  @@map("wedding_events")
+}
+
+model WeddingChecklist {
+  id          String   @id @default(uuid())
+  weddingId   String   @map("wedding_id")
+  taskTitle   String   @map("task_title")
+  category    String   @default("Umum")
+  dueDate     DateTime? @map("due_date") @db.Date
+  isCompleted Boolean  @default(false) @map("is_completed")
+  assignedTo  String?  @map("assigned_to")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([weddingId])
+  @@map("wedding_checklists")
+}
+
+// -------------------------------------------------------------
+// 3. GUEST MANAGEMENT, SEATING & LIVE CHECK-IN
+// -------------------------------------------------------------
+model GuestCategory {
+  id        String   @id @default(uuid())
+  weddingId String   @map("wedding_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  guests  Guest[]
+
+  @@map("guest_categories")
+}
+
+model Guest {
+  id             String   @id @default(uuid())
+  weddingId      String   @map("wedding_id")
+  categoryId     String?  @map("category_id")
+  fullName       String   @map("full_name")
+  sanitizedPhone String?  @map("sanitized_phone")
+  defaultPax     Int      @default(1) @map("default_pax")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding     Wedding                @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  category    GuestCategory?         @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  assignments EventGuestAssignment[]
+  gifts       GiftLog[]
+
+  @@index([weddingId])
+  @@index([sanitizedPhone])
+  @@map("guests")
+}
+
+model EventTable {
+  id                String   @id @default(uuid())
+  eventId           String   @map("event_id")
+  tableNumberOrName String   @map("table_number_or_name")
+  maxSeats          Int      @default(10) @map("max_seats")
+  notes             String?
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  event       WeddingEvent           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  assignments EventGuestAssignment[]
+
+  @@index([eventId])
+  @@map("event_tables")
+}
+
+model EventGuestAssignment {
+  id               String    @id @default(uuid())
+  eventId          String    @map("event_id")
+  guestId          String    @map("guest_id")
+  tableId          String?   @map("table_id")
+  actualPax        Int       @default(1) @map("actual_pax")
+  attendanceStatus String    @default("pending") @map("attendance_status") // 'pending' | 'attending' | 'declined' | 'checked_in'
+  souvenirReceived Boolean   @default(false) @map("souvenir_received")
+  isWalkIn         Boolean   @default(false) @map("is_walk_in")
+  checkinTimestamp DateTime? @map("checkin_timestamp")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  event WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  table EventTable?  @relation(fields: [tableId], references: [id], onDelete: SetNull)
+
+  @@unique([eventId, guestId])
+  @@index([eventId])
+  @@index([eventId, attendanceStatus])
+  @@map("event_guest_assignments")
+}
+
+// -------------------------------------------------------------
+// 4. VENDOR DIRECTORY & STORAGE MANAGEMENT
+// -------------------------------------------------------------
+model Vendor {
+  id            String   @id @default(uuid())
+  weddingId     String   @map("wedding_id")
+  category      String
+  vendorName    String   @map("vendor_name")
+  picName       String?  @map("pic_name")
+  sanitizedPhone String? @map("sanitized_phone")
+  contractValue Decimal? @default(0) @map("contract_value") @db.Decimal(14, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding     Wedding          @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  documents   VendorDocument[]
+  budgetItems BudgetItem[]
+
+  @@map("vendors")
+}
+
+model VendorDocument {
+  id            String   @id @default(uuid())
+  vendorId      String   @map("vendor_id")
+  documentTitle String   @map("document_title")
+  r2FileKey     String   @map("r2_file_key")
+  fileSizeBytes BigInt   @map("file_size_bytes")
+  mimeType      String   @map("mime_type")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_documents")
+}
+
+model VendorPartner {
+  id              String   @id @default(uuid())
+  userId          String?  @unique @map("user_id")
+  category        String
+  businessName    String   @map("business_name")
+  picName         String   @map("pic_name")
+  email           String   @unique
+  phone           String
+  instagram       String?
+  portfolioUrl    String?  @map("portfolio_url")
+  priceRangeMin   Decimal? @default(0) @map("price_range_min") @db.Decimal(14, 2)
+  priceRangeMax   Decimal? @default(0) @map("price_range_max") @db.Decimal(14, 2)
+  status          String   @default("active") // "active" | "pending" | "rejected"
+  rejectionReason String?  @map("rejection_reason")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("vendor_partners")
+}
+
+// -------------------------------------------------------------
+// 5. DYNAMIC BUDGETING & PAYMENT MILESTONES
+// -------------------------------------------------------------
+model BudgetCategory {
+  id        String   @id @default(uuid())
+  eventId   String   @map("event_id")
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  event WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  items BudgetItem[]
+
+  @@map("budget_categories")
+}
+
+model BudgetItem {
+  id            String   @id @default(uuid())
+  eventId       String   @map("event_id")
+  categoryId    String?  @map("category_id")
+  vendorId      String?  @map("vendor_id")
+  itemName      String   @map("item_name")
+  estimatedCost Decimal  @default(0) @map("estimated_cost") @db.Decimal(14, 2)
+  targetPayer   String   @default("joint") @map("target_payer") // 'groom' | 'bride' | 'joint'
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  event      WeddingEvent        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category   BudgetCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  vendor     Vendor?             @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  milestones PaymentMilestone[]
+
+  @@index([eventId])
+  @@map("budget_items")
+}
+
+model PaymentMilestone {
+  id              String    @id @default(uuid())
+  budgetItemId    String    @map("budget_item_id")
+  milestoneName   String    @map("milestone_name")
+  amount          Decimal   @default(0) @db.Decimal(14, 2)
+  dueDate         DateTime? @map("due_date") @db.Date
+  paidDate        DateTime? @map("paid_date") @db.Date
+  alertDaysBefore Int       @default(7) @map("alert_days_before")
+  paymentStatus   String    @default("unpaid") @map("payment_status") // 'unpaid' | 'paid'
+  paidBy          String?   @default("joint") @map("paid_by")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  budgetItem  BudgetItem          @relation(fields: [budgetItemId], references: [id], onDelete: Cascade)
+  attachments PaymentAttachment[]
+
+  @@index([budgetItemId])
+  @@index([dueDate])
+  @@map("payment_milestones")
+}
+
+model PaymentAttachment {
+  id            String   @id @default(uuid())
+  milestoneId   String   @map("milestone_id")
+  r2FileKey     String   @map("r2_file_key")
+  fileName      String   @map("file_name")
+  fileSizeBytes BigInt   @map("file_size_bytes")
+  mimeType      String   @map("mime_type")
+  uploadedAt    DateTime @default(now()) @map("uploaded_at")
+
+  milestone PaymentMilestone @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+
+  @@index([milestoneId])
+  @@map("payment_attachments")
+}
+
+// -------------------------------------------------------------
+// 6. LIVE RUNDOWN & TECHNICAL CUES
+// -------------------------------------------------------------
+model Rundown {
+  id              String   @id @default(uuid())
+  eventId         String   @map("event_id")
+  timeStart       String   @map("time_start")
+  timeEnd         String   @map("time_end")
+  activityTitle   String   @map("activity_title")
+  picName         String?  @map("pic_name")
+  location        String?
+  contingencyPlan String?  @map("contingency_plan")
+  isInternalOnly  Boolean  @default(false) @map("is_internal_only")
+  isCompleted     Boolean  @default(false) @map("is_completed")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  event WeddingEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  cues  RundownCue[]
+
+  @@index([eventId, sortOrder])
+  @@map("rundowns")
+}
+
+model RundownCue {
+  id          String   @id @default(uuid())
+  rundownId   String   @map("rundown_id")
+  cueType     String   @map("cue_type") // 'sound' | 'lighting' | 'multimedia' | 'music'
+  instruction String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rundown Rundown @relation(fields: [rundownId], references: [id], onDelete: Cascade)
+
+  @@index([rundownId])
+  @@map("rundown_cues")
+}
+
+// -------------------------------------------------------------
+// 7. INVENTORY, GIFTS & PHYSICAL LOGS
+// -------------------------------------------------------------
+model Souvenir {
+  id               String   @id @default(uuid())
+  eventId          String   @map("event_id")
+  souvenirName     String   @map("souvenir_name")
+  totalStock       Int      @default(0) @map("total_stock")
+  distributedCount Int      @default(0) @map("distributed_count")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  event WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("souvenirs")
+}
+
+model GiftLog {
+  id              String   @id @default(uuid())
+  eventId         String   @map("event_id")
+  guestId         String?  @map("guest_id")
+  giftType        String   @default("cash") @map("gift_type") // 'cash' | 'item' | 'voucher'
+  cashAmount      Decimal? @default(0) @map("cash_amount") @db.Decimal(14, 2)
+  itemDescription String?  @map("item_description")
+  receivedBy      String   @default("joint") @map("received_by")
+  receivedAt      DateTime @default(now()) @map("received_at")
+
+  event WeddingEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guest Guest?       @relation(fields: [guestId], references: [id], onDelete: SetNull)
+
+  @@map("gifts_log")
+}
+
+// -------------------------------------------------------------
+// 8. PUBLIC SHARING TOKENS & AUDIT LOGS
+// -------------------------------------------------------------
+model ShareableToken {
+  id                 String   @id @default(uuid())
+  weddingId          String   @map("wedding_id")
+  tokenHash          String   @unique @map("token_hash")
+  pinHash            String?  @map("pin_hash")
+  moduleAccess       Json     @default("{\"rundown\": true, \"checkin\": false, \"guest_list\": true}") @map("module_access")
+  hideInternalNotes  Boolean  @default(true) @map("hide_internal_notes")
+  expiresAt          DateTime @map("expires_at")
+  isActive           Boolean  @default(true) @map("is_active")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@map("shareable_tokens")
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  weddingId       String   @map("wedding_id")
+  userId          String?  @map("user_id")
+  userDisplayName String   @map("user_display_name")
+  moduleName      String   @map("module_name")
+  actionType      String   @map("action_type") // 'CREATE' | 'UPDATE' | 'DELETE' | 'SHIFT_TIMELINE'
+  changeDiff      Json?    @map("change_diff")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([weddingId, createdAt(sort: Desc)])
+  @@map("audit_logs")
+}

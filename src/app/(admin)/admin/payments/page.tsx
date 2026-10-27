@@ -12,10 +12,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/use-toast";
+import { useSystemSettings } from "@/hooks/use-system-settings";
 import { HeartHandshake, Sparkles, Building, CheckCircle2 } from "lucide-react";
 
 export default function AdminPaymentsPage() {
+  const { settings, loading, fetching, saveSetting } = useSystemSettings();
+
   const [qrisMerchantName, setQrisMerchantName] = React.useState("NikahYuk Platform - Donasi Sukarela");
   const [qrisImageUrl, setQrisImageUrl] = React.useState(
     "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Donasi%20NikahYuk%20QRIS%20Tip%20Jar"
@@ -28,83 +30,38 @@ export default function AdminPaymentsPage() {
   );
   const [qrisIsActive, setQrisIsActive] = React.useState(true);
 
-  const [loading, setLoading] = React.useState(false);
-  const { toast } = useToast();
-
-  const loadSettings = React.useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/settings");
-      if (res.ok) {
-        const result = await res.json();
-        const rows: Array<{ key: string; value: Record<string, unknown> }> = result.data || [];
-        const qrisRow = rows.find((r) => r.key === "qris_donasi_config");
-        if (qrisRow && qrisRow.value) {
-          setQrisMerchantName((qrisRow.value.merchantName as string) || "NikahYuk Platform - Donasi Sukarela");
-          setQrisImageUrl(
-            (qrisRow.value.qrisImageUrl as string) ||
-              "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Donasi%20NikahYuk%20QRIS%20Tip%20Jar"
-          );
-          setQrisNotes(
-            (qrisRow.value.notes as string) ||
-              "Menerima GoPay, OVO, ShopeePay, DANA, BCA, Mandiri, BRI, BNI (QRIS Standard)"
-          );
-          setPayoutBankDetails(
-            (qrisRow.value.payoutBankDetails as string) || "BCA 1234567890 a.n NikahYuk Indonesia"
-          );
-          setQrisIsActive(qrisRow.value.isActive !== false);
-        }
-      }
-    } catch {
-      // Ignore load error
-    }
-  }, []);
-
   React.useEffect(() => {
-    loadSettings();
-  }, [loadSettings]);
-
-  async function handleSaveConfig(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
-    const qrisValue = {
-      isActive: qrisIsActive,
-      merchantName: qrisMerchantName,
-      qrisImageUrl,
-      notes: qrisNotes,
-      payoutBankDetails,
-    };
-
-    try {
-      const res = await fetch("/api/admin/settings", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: "qris_donasi_config", value: qrisValue }),
-      });
-
-      if (res.ok) {
-        toast({
-          title: "Pengaturan Keuangan & QRIS Disimpan",
-          description: "Pengaturan KlikQRIS Tip Jar diperbarui dan aktif di seluruh platform.",
-          variant: "success",
-        });
-      } else {
-        const err = await res.json();
-        toast({
-          title: "Gagal Menyimpan",
-          description: err.error || "Internal error",
-          variant: "destructive",
-        });
-      }
-    } catch {
-      toast({
-        title: "Kesalahan Jaringan",
-        description: "Gagal menghubungkan ke server.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
+    const qrisRow = settings["qris_donasi_config"];
+    if (qrisRow) {
+      setQrisMerchantName(qrisRow.merchantName || "NikahYuk Platform - Donasi Sukarela");
+      setQrisImageUrl(
+        qrisRow.qrisImageUrl ||
+          "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=Donasi%20NikahYuk%20QRIS%20Tip%20Jar"
+      );
+      setQrisNotes(
+        qrisRow.notes ||
+          "Menerima GoPay, OVO, ShopeePay, DANA, BCA, Mandiri, BRI, BNI (QRIS Standard)"
+      );
+      setPayoutBankDetails(
+        qrisRow.payoutBankDetails || "BCA 1234567890 a.n NikahYuk Indonesia"
+      );
+      setQrisIsActive(qrisRow.isActive ?? true);
     }
+  }, [settings]);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+    await saveSetting(
+      "qris_donasi_config",
+      {
+        merchantName: qrisMerchantName,
+        qrisImageUrl,
+        notes: qrisNotes,
+        payoutBankDetails,
+        isActive: qrisIsActive,
+      },
+      "Konfigurasi QRIS Donasi platform berhasil diperbarui!"
+    );
   }
 
   return (
@@ -119,7 +76,7 @@ export default function AdminPaymentsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSaveConfig} className="space-y-6">
+      <form onSubmit={handleSave} className="space-y-6">
         <Card className="border-border/70">
           <CardHeader>
             <div className="flex items-center justify-between">

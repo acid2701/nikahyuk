@@ -1,21 +1,41 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
 import { ShieldAlert, Clock, User, Activity } from "lucide-react";
 
-export default async function AuditLogsPage(props: { params: Promise<any> }) {
+export default async function AuditLogsPage(props: {
+  params: Promise<any>;
+  searchParams?: Promise<{ page?: string }>;
+}) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const supabase = await createClient();
+  const searchParams = await props.searchParams;
+  const currentPage = Math.max(1, parseInt(searchParams?.page || "1", 10));
+  const pageSize = 20;
+  const skip = (currentPage - 1) * pageSize;
 
-  const { data: logsData } = await supabase
-    .from("audit_logs")
-    .select("*")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [logsData, totalLogs] = await Promise.all([
+    prisma.auditLog.findMany({
+      where: { weddingId },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+    }),
+    prisma.auditLog.count({
+      where: { weddingId },
+    }),
+  ]);
 
-  const logs = logsData || [];
+  const totalPages = Math.ceil(totalLogs / pageSize) || 1;
+
+  const logs = logsData.map((l) => ({
+    id: l.id,
+    created_at: l.createdAt.toISOString(),
+    user_display_name: l.userDisplayName,
+    module_name: l.moduleName,
+    action_type: l.actionType,
+    change_diff: l.changeDiff,
+  }));
 
   return (
     <div className="space-y-6">
@@ -40,6 +60,7 @@ export default async function AuditLogsPage(props: { params: Promise<any> }) {
         </Card>
       ) : (
         <Card className="border-border/80 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
           <Table>
             <TableHeader className="bg-muted/60">
               <TableRow>
@@ -62,7 +83,7 @@ export default async function AuditLogsPage(props: { params: Promise<any> }) {
                 return (
                   <TableRow key={log.id} className="hover:bg-muted/30">
                     <TableCell className="text-center font-mono font-semibold text-xs text-muted-foreground">
-                      {index + 1}
+                      {(currentPage - 1) * pageSize + index + 1}
                     </TableCell>
 
                     <TableCell className="text-xs font-mono text-muted-foreground">
@@ -108,6 +129,41 @@ export default async function AuditLogsPage(props: { params: Promise<any> }) {
               })}
             </TableBody>
           </Table>
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t border-border">
+              <span className="text-xs text-muted-foreground">
+                Halaman {currentPage} dari {totalPages} ({totalLogs} entri log)
+              </span>
+              <div className="flex items-center gap-2">
+                {currentPage > 1 ? (
+                  <a
+                    href={`/dashboard/${weddingId}/audit-logs?page=${currentPage - 1}`}
+                    className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                  >
+                    Sebelumnya
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
+                    Sebelumnya
+                  </span>
+                )}
+                {currentPage < totalPages ? (
+                  <a
+                    href={`/dashboard/${weddingId}/audit-logs?page=${currentPage + 1}`}
+                    className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                  >
+                    Selanjutnya
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
+                    Selanjutnya
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

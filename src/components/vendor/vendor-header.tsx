@@ -34,7 +34,7 @@ export function VendorHeader({ userEmail }: { userEmail: string }) {
   };
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
+    await fetch("/api/auth/logout", { method: "POST" });
     toast({
       title: "Berhasil Keluar",
       description: "Anda telah keluar dari akun NikahYuk.",

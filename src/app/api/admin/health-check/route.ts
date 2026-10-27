@@ -1,47 +1,43 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const startTime = Date.now();
 
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
+    const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Ping PostgreSQL DB
     const dbStartTime = Date.now();
-    const { count, error: dbErr } = await supabase
-      .from("weddings")
-      .select("*", { count: "exact", head: true });
-
+    const count = await prisma.wedding.count();
     const dbLatencyMs = Date.now() - dbStartTime;
 
-    const dbStatus = dbErr ? "ERROR" : "HEALTHY";
-
     // Storage Status Check (Cloudflare R2 configured)
-    const { data: r2Setting } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "r2_credentials")
-      .single();
+    const r2Setting = await prisma.systemSetting.findUnique({
+      where: { key: "r2_credentials" },
+    });
 
-    const r2Configured = !!(r2Setting?.value && (r2Setting.value as any).bucketName);
+    const r2Configured = !!(
+      r2Setting?.value &&
+      typeof r2Setting.value === "object" &&
+      (r2Setting.value as any).bucketName
+    );
     const storageStatus = r2Configured ? "HEALTHY" : "NOT_CONFIGURED";
 
     const totalLatencyMs = Date.now() - startTime;
 
     return NextResponse.json({
-      status: dbStatus === "HEALTHY" ? "OK" : "DEGRADED",
+      status: "OK",
       timestamp: new Date().toISOString(),
       metrics: {
         totalLatencyMs,
         dbLatencyMs,
-        dbStatus,
-        totalWeddingsCount: count || 0,
+        dbStatus: "HEALTHY",
+        totalWeddingsCount: count,
         storageStatus,
         realtimeWebSocket: "ONLINE",
       },

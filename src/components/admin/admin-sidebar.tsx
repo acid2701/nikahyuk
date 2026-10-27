@@ -22,9 +22,15 @@ import { Button } from "@/components/ui/button";
 export function AdminSidebar({
   userEmail,
   onNavigate,
+  className,
+  appName = "NikahYuk",
+  logoUrl,
 }: {
   userEmail: string;
   onNavigate?: () => void;
+  className?: string;
+  appName?: string;
+  logoUrl?: string;
 }) {
   const pathname = usePathname();
 
@@ -87,17 +93,25 @@ export function AdminSidebar({
   ];
 
   return (
-    <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col justify-between h-screen sticky top-0 shrink-0">
+    <aside
+      className={`w-64 border-r border-border bg-card flex-col justify-between h-screen sticky top-0 shrink-0 ${
+        className || "hidden lg:flex"
+      }`}
+    >
 
       <div className="p-4 space-y-6">
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
-            <Crown className="h-5 w-5 text-amber-500 fill-amber-500/20" />
-            <span className="font-serif text-lg font-bold text-foreground">
-              NikahYuk Admin
+            {logoUrl ? (
+              <img src={logoUrl} alt={appName} className="h-6 w-auto max-w-[100px] object-contain rounded" />
+            ) : (
+              <Crown className="h-5 w-5 text-amber-500 fill-amber-500/20" />
+            )}
+            <span className="font-serif text-base font-bold text-foreground truncate">
+              {appName} Admin
             </span>
           </div>
-          <span className="inline-block text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 font-semibold tracking-wider uppercase">
+          <span className="inline-block text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 font-semibold tracking-wider uppercase font-mono">
             Control Plane
           </span>
         </div>
@@ -114,6 +128,7 @@ export function AdminSidebar({
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={true}
                 onClick={onNavigate}
                 className={`flex items-center space-x-3 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                   isActive

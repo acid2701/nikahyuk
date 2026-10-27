@@ -1,30 +1,31 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getAppBranding } from "@/lib/branding";
 import { VendorSidebar } from "@/components/vendor/vendor-sidebar";
 import { VendorMobileDrawer } from "@/components/vendor/vendor-mobile-drawer";
 import { VendorHeader } from "@/components/vendor/vendor-header";
 
-export const metadata: Metadata = {
-  title: "Portal Mitra Vendor - NikahYuk SaaS",
-  description: "Dashboard mandiri pengelola paket penawaran dan profil usaha vendor resmi NikahYuk.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getAppBranding();
+  return {
+    title: `Portal Mitra Vendor - ${branding.appName}`,
+    description: `Dashboard mandiri pengelola paket penawaran dan profil usaha vendor resmi ${branding.appName}.`,
+  };
+}
 
 export default async function VendorLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUser();
   const email = user?.email || "vendor@nikahyuk.com";
+  const branding = await getAppBranding();
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background text-foreground">
-      <VendorMobileDrawer userEmail={email} />
-      <VendorSidebar userEmail={email} />
+      <VendorMobileDrawer userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
+      <VendorSidebar userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <VendorHeader userEmail={email} />

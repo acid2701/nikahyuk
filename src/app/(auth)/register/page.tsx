@@ -3,7 +3,6 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -27,37 +26,27 @@ export default function RegisterPage() {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          password,
+          groomName,
+          brideName,
+        }),
       });
 
-      if (authError) throw authError;
-
-      if (!authData.user) {
-        throw new Error("Gagal membuat akun.");
-      }
-
-      if (groomName && brideName) {
-        const weddingSlug = `${groomName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${brideName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
-        await supabase.from("weddings").insert({
-          created_by: authData.user.id,
-          groom_name: groomName,
-          bride_name: brideName,
-          wedding_slug: weddingSlug,
-        } as any);
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Gagal membuat akun.");
       }
 
       toast({

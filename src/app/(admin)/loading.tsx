@@ -1,0 +1,40 @@
+export default function AdminLoading() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      {/* Top subtle progress line */}
+      <div className="h-0.5 w-full bg-primary/20 overflow-hidden rounded-full">
+        <div className="h-full bg-primary animate-[indeterminate_1.5s_infinite_linear] origin-left w-1/3" />
+      </div>
+
+      {/* Header skeleton */}
+      <div className="space-y-2">
+        <div className="h-7 w-64 bg-muted rounded-md" />
+        <div className="h-4 w-96 max-w-full bg-muted/60 rounded-md" />
+      </div>
+
+      {/* Stats/KPI skeleton */}
+      <div className="grid gap-4 md:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="p-4 rounded-xl border border-border/60 bg-card/60 space-y-3">
+            <div className="h-4 w-28 bg-muted rounded" />
+            <div className="h-8 w-16 bg-muted/80 rounded" />
+            <div className="h-3 w-36 bg-muted/40 rounded" />
+          </div>
+        ))}
+      </div>
+
+      {/* Main content table skeleton */}
+      <div className="rounded-xl border border-border/60 bg-card/60 p-5 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-border/50">
+          <div className="h-5 w-40 bg-muted rounded" />
+          <div className="h-8 w-24 bg-muted rounded" />
+        </div>
+        <div className="space-y-2.5">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-10 w-full bg-muted/40 rounded-md" />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}

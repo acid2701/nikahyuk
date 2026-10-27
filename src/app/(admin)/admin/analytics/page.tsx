@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,43 +21,46 @@ import {
 } from "lucide-react";
 
 export default async function AdminAnalyticsPage() {
-  const supabase = await createClient();
-
   // 1. Fetch total weddings
-  const { data: weddingsData } = await supabase
-    .from("weddings")
-    .select("id, groom_name, bride_name, wedding_slug, created_at")
-    .order("created_at", { ascending: false });
+  const weddings = await prisma.wedding.findMany({
+    select: {
+      id: true,
+      groomName: true,
+      brideName: true,
+      weddingSlug: true,
+      createdAt: true,
+      _count: {
+        select: {
+          events: true,
+          guests: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
 
-  const weddings = weddingsData || [];
-  const totalWeddings = weddings.length;
+  const totalWeddings = await prisma.wedding.count();
 
   // 2. Fetch total sub-events
-  const { count: eventsCount, data: eventsData } = await supabase
-    .from("wedding_events")
-    .select("wedding_id", { count: "exact" });
-
-  const totalEvents = eventsCount || 0;
+  const totalEvents = await prisma.weddingEvent.count();
 
   // 3. Fetch total guests & RSVP counts
-  const { count: guestsCount, data: guestsData } = await supabase
-    .from("guests")
-    .select("wedding_id, default_pax", { count: "exact" });
-
-  const totalGuests = guestsCount || 0;
+  const totalGuests = await prisma.guest.count();
 
   // 4. Fetch assignments for RSVP rates
-  const { data: assignmentsData } = await supabase
-    .from("event_guest_assignments")
-    .select("attendance_status, actual_pax");
+  const assignmentsData = await prisma.eventGuestAssignment.findMany({
+    select: { attendanceStatus: true, actualPax: true },
+    take: 5000,
+  });
 
   let confirmedPax = 0;
   let totalAssignedPax = 0;
   if (assignmentsData) {
     assignmentsData.forEach((a) => {
-      const pax = a.actual_pax || 1;
+      const pax = a.actualPax || 1;
       totalAssignedPax += pax;
-      if (a.attendance_status === "attending" || a.attendance_status === "checked_in") {
+      if (a.attendanceStatus === "attending" || a.attendanceStatus === "checked_in") {
         confirmedPax += pax;
       }
     });
@@ -67,24 +70,15 @@ export default async function AdminAnalyticsPage() {
     totalAssignedPax > 0 ? Math.round((confirmedPax / totalAssignedPax) * 100) : 0;
 
   // 5. Fetch vendors count
-  const { count: vendorsCount } = await supabase
-    .from("vendors")
-    .select("*", { count: "exact", head: true });
+  const vendorsCount = await prisma.vendor.count();
 
   // Map workspace stats
   const eventCountMap: Record<string, number> = {};
-  if (eventsData) {
-    eventsData.forEach((e) => {
-      eventCountMap[e.wedding_id] = (eventCountMap[e.wedding_id] || 0) + 1;
-    });
-  }
-
   const guestCountMap: Record<string, number> = {};
-  if (guestsData) {
-    guestsData.forEach((g) => {
-      guestCountMap[g.wedding_id] = (guestCountMap[g.wedding_id] || 0) + 1;
-    });
-  }
+  weddings.forEach((w) => {
+    eventCountMap[w.id] = w._count?.events || 0;
+    guestCountMap[w.id] = w._count?.guests || 0;
+  });
 
   // Estimated storage (e.g. baseline ~2.5 MB per workspace + vendors)
   const totalEstimatedStorageMb = Math.round(
@@ -291,12 +285,12 @@ export default async function AdminAnalyticsPage() {
                       </TableCell>
                       <TableCell className="text-xs">
                         <p className="font-semibold text-foreground font-serif">
-                          {w.groom_name} & {w.bride_name}
+                          {w.groomName} & {w.brideName}
                         </p>
                         <p className="text-[10px] text-muted-foreground font-mono">ID: {w.id}</p>
                       </TableCell>
                       <TableCell className="text-xs font-mono text-primary">
-                        /{w.wedding_slug}
+                        /{w.weddingSlug}
                       </TableCell>
                       <TableCell className="text-center font-mono font-bold text-xs">
                         <Badge variant="outline" className="text-[10px]">
@@ -307,7 +301,7 @@ export default async function AdminAnalyticsPage() {
                         {guests} Tamu
                       </TableCell>
                       <TableCell className="text-right text-xs font-mono text-muted-foreground">
-                        {new Date(w.created_at).toLocaleDateString("id-ID")}
+                        {new Date(w.createdAt).toLocaleDateString("id-ID")}
                       </TableCell>
                     </TableRow>
                   );

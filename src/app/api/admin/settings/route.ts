@@ -1,36 +1,41 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getCurrentUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import { invalidateSystemConfigCache } from "@/lib/cloudflare-r2/dynamic-config";
 
 export async function GET() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const adminSupabase = createAdminClient();
-  const { data, error } = await adminSupabase.from("system_settings").select("*");
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (user.role !== "superadmin" && user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden: Superadmin access required" }, { status: 403 });
   }
+
+  const rows = await prisma.systemSetting.findMany();
+  const data = rows.map((r) => ({
+    id: r.id,
+    key: r.key,
+    value: r.value,
+    updated_at: r.updatedAt.toISOString(),
+  }));
 
   return NextResponse.json({ data });
 }
 
-export async function PUT(request: Request) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+export async function POST(request: Request) {
+  return PUT(request);
+}
 
+export async function PUT(request: Request) {
+  const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.role !== "superadmin" && user.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden: Superadmin access required" }, { status: 403 });
   }
 
   try {
@@ -44,20 +49,23 @@ export async function PUT(request: Request) {
       );
     }
 
-    const adminSupabase = createAdminClient();
-    const { data, error } = await adminSupabase
-      .from("system_settings")
-      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" })
-      .select()
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
+    const row = await prisma.systemSetting.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value },
+    });
 
     invalidateSystemConfigCache();
 
-    return NextResponse.json({ success: true, data });
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: row.id,
+        key: row.key,
+        value: row.value,
+        updated_at: row.updatedAt.toISOString(),
+      },
+    });
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal error" },

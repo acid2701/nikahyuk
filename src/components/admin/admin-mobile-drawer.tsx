@@ -1,12 +1,28 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { AdminSidebar } from "./admin-sidebar";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Crown } from "lucide-react";
 
-export function AdminMobileDrawer({ userEmail }: { userEmail: string }) {
+export function AdminMobileDrawer({
+  userEmail,
+  appName = "NikahYuk",
+  logoUrl,
+}: {
+  userEmail: string;
+  appName?: string;
+  logoUrl?: string;
+}) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Close drawer automatically when route/pathname changes (smooth SPA transition)
+  React.useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   React.useEffect(() => {
     if (open) {
@@ -22,18 +38,25 @@ export function AdminMobileDrawer({ userEmail }: { userEmail: string }) {
   return (
     <div className="lg:hidden flex items-center justify-between p-3 border-b border-border bg-card">
       <div className="flex items-center space-x-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-9 w-9 text-foreground hover:bg-accent cursor-pointer"
-          onClick={() => setOpen(true)}
-          aria-label="Buka Menu Admin"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-        <Crown className="h-4 w-4 text-amber-500 fill-amber-500/20" />
-        <span className="font-serif text-sm font-bold text-foreground">
-          NikahYuk Admin
+        <div className="flex items-center space-x-1">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-foreground hover:bg-accent cursor-pointer"
+            onClick={() => setOpen(true)}
+            aria-label="Buka Menu Admin"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+        {logoUrl ? (
+          <img src={logoUrl} alt={appName} className="h-5 w-auto max-w-[80px] object-contain rounded" />
+        ) : (
+          <Crown className="h-4 w-4 text-amber-500 fill-amber-500/20" />
+        )}
+        <span className="font-serif text-sm font-bold text-foreground truncate">
+          {appName} Admin
         </span>
       </div>
 
@@ -62,7 +85,13 @@ export function AdminMobileDrawer({ userEmail }: { userEmail: string }) {
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
-                onNavigate={() => setOpen(false)}
+                onNavigate={() => {
+                  // Slight defer so Next.js Link initiates transition before drawer unmounts
+                  setTimeout(() => setOpen(false), 80);
+                }}
+                className="flex w-full border-r-0 h-auto static"
+                appName={appName}
+                logoUrl={logoUrl}
               />
             </div>
           </div>

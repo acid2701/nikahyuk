@@ -26,9 +26,19 @@ export interface AppSidebarProps {
   weddingId?: string;
   className?: string;
   onNavigate?: () => void;
+  appName?: string;
+  tagline?: string;
+  logoUrl?: string;
 }
 
-export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps) {
+export function AppSidebar({
+  weddingId,
+  className,
+  onNavigate,
+  appName = "NikahYuk",
+  tagline = "Wedding & Event Companion",
+  logoUrl,
+}: AppSidebarProps) {
 
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -118,12 +128,15 @@ export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps
         <div className="space-y-6">
           <div className="px-2 space-y-1">
             <Link href="/dashboard" className="flex items-center space-x-2">
-              <span className="font-serif text-2xl font-bold tracking-tight text-primary">
-                NikahYuk
+              {logoUrl ? (
+                <img src={logoUrl} alt={appName} className="h-7 w-auto max-w-[120px] object-contain rounded" />
+              ) : null}
+              <span className="font-serif text-2xl font-bold tracking-tight text-primary truncate">
+                {appName}
               </span>
             </Link>
-            <p className="text-[11px] text-muted-foreground">
-              Wedding & Event Companion
+            <p className="text-[11px] text-muted-foreground truncate">
+              {tagline}
             </p>
           </div>
 
@@ -140,6 +153,7 @@ export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps
                 <Link
                   key={item.title}
                   href={fullHref}
+                  prefetch={true}
                   onClick={onNavigate}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
@@ -168,7 +182,7 @@ export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps
               <span className="text-xs font-semibold">KlikQRIS Tip Jar</span>
             </div>
             <p className="text-[11px] leading-tight text-muted-foreground">
-              Dukung pengembangan NikahYuk via donasi sukarela.
+              Dukung pengembangan platform via donasi sukarela.
             </p>
             <div className="flex items-center space-x-2 bg-background p-2 rounded border border-border/50">
               <QrCode className="h-6 w-6 text-primary shrink-0" />
@@ -179,8 +193,8 @@ export function AppSidebar({ weddingId, className, onNavigate }: AppSidebarProps
             </div>
           </button>
 
-          <div className="px-2 text-center text-[10px] text-muted-foreground">
-            NikahYuk SaaS v1.0.0
+          <div className="px-2 text-center text-[10px] text-muted-foreground truncate">
+            {appName} SaaS v1.0.0
           </div>
         </div>
       </aside>

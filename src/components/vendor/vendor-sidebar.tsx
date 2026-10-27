@@ -19,10 +19,14 @@ export function VendorSidebar({
   userEmail,
   onNavigate,
   className,
+  appName = "NikahYuk",
+  logoUrl,
 }: {
   userEmail: string;
   onNavigate?: () => void;
   className?: string;
+  appName?: string;
+  logoUrl?: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -73,11 +77,14 @@ export function VendorSidebar({
         {/* BRAND LOGO HEADER IDENTICAL TO USER DASHBOARD */}
         <div className="px-2 space-y-1">
           <Link href="/vendor/dashboard" className="flex items-center space-x-2">
-            <span className="font-serif text-2xl font-bold tracking-tight text-primary">
-              NikahYuk
+            {logoUrl ? (
+              <img src={logoUrl} alt={appName} className="h-7 w-auto max-w-[120px] object-contain rounded" />
+            ) : null}
+            <span className="font-serif text-2xl font-bold tracking-tight text-primary truncate">
+              {appName}
             </span>
           </Link>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-[11px] text-muted-foreground truncate">
             Portal Partner Ecosystem
           </p>
         </div>
@@ -92,6 +99,7 @@ export function VendorSidebar({
               <Link
                 key={item.title}
                 href={item.href}
+                prefetch={true}
                 onClick={onNavigate}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",

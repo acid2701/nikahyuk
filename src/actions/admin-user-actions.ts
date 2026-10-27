@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { invalidateSystemConfigCache } from "@/lib/cloudflare-r2/dynamic-config";
 
@@ -24,80 +25,50 @@ export interface StaffAdminPermissions {
 }
 
 export async function getRegisteredUsersAction(): Promise<UserRowItem[]> {
-  const supabase = await createClient();
-  const {
-    data: { user: currentUser },
-  } = await supabase.auth.getUser();
+  const currentUser = await getCurrentUser();
 
   if (!currentUser) {
     throw new Error("Unauthorized");
   }
 
-  // Fetch all weddings to count workspace per owner
-  const { data: weddings } = await supabase
-    .from("weddings")
-    .select("created_by");
-
-  const countMap: Record<string, number> = {};
-  if (weddings) {
-    weddings.forEach((w) => {
-      countMap[w.created_by] = (countMap[w.created_by] || 0) + 1;
-    });
-  }
-
-  // Query audit logs to extract registered users and their emails/roles
-  const { data: logs } = await supabase
-    .from("audit_logs")
-    .select("user_id, user_display_name, created_at")
-    .order("created_at", { ascending: false });
-
-  const userMap = new Map<string, UserRowItem>();
-
-  // Add current user first
-  userMap.set(currentUser.id, {
-    id: currentUser.id,
-    email: currentUser.email || "user@nikahyuk.com",
-    role: (currentUser.app_metadata?.role as any) || (currentUser.user_metadata?.role as any) || "superadmin",
-    isSuspended: false,
-    createdAt: currentUser.created_at || new Date().toISOString(),
-    weddingsCount: countMap[currentUser.id] || 0,
+  const users = await prisma.user.findMany({
+    include: {
+      _count: {
+        select: { weddings: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
   });
 
-  if (logs) {
-    logs.forEach((log) => {
-      if (log.user_id && !userMap.has(log.user_id)) {
-        userMap.set(log.user_id, {
-          id: log.user_id,
-          email: log.user_display_name,
-          role: "user",
-          isSuspended: false,
-          createdAt: log.created_at,
-          weddingsCount: countMap[log.user_id] || 0,
-        });
-      }
-    });
-  }
-
-  return Array.from(userMap.values());
+  return users.map((u) => ({
+    id: u.id,
+    email: u.email,
+    role: (u.role as any) || "user",
+    isSuspended: false,
+    createdAt: u.createdAt.toISOString(),
+    weddingsCount: u._count.weddings,
+  }));
 }
 
 export async function updateUserRoleAction(
   targetUserId: string,
   newRole: "superadmin" | "admin" | "user"
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     throw new Error("Unauthorized");
   }
 
+  await prisma.user.update({
+    where: { id: targetUserId },
+    data: { role: newRole },
+  });
+
   await recordAuditLog({
     weddingId: "GLOBAL_SYSTEM",
-    userId: user.id,
-    userDisplayName: user.email || "Superadmin",
+    userId: user.userId,
+    userDisplayName: user.fullName || user.email,
     moduleName: "Superadmin User Management",
     actionType: "UPDATE",
     changeDiff: { targetUserId, newRole },
@@ -111,10 +82,7 @@ export async function toggleUserSuspensionAction(
   targetUserId: string,
   suspend: boolean
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     throw new Error("Unauthorized");
@@ -122,8 +90,8 @@ export async function toggleUserSuspensionAction(
 
   await recordAuditLog({
     weddingId: "GLOBAL_SYSTEM",
-    userId: user.id,
-    userDisplayName: user.email || "Superadmin",
+    userId: user.userId,
+    userDisplayName: user.fullName || user.email,
     moduleName: "Superadmin User Management",
     actionType: "UPDATE",
     changeDiff: { targetUserId, suspend },
@@ -134,15 +102,12 @@ export async function toggleUserSuspensionAction(
 }
 
 export async function getStaffAdminPermissionsAction(): Promise<StaffAdminPermissions[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("system_settings")
-    .select("value")
-    .eq("key", "staff_admin_permissions")
-    .maybeSingle();
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "staff_admin_permissions" },
+  });
 
-  if (data && data.value) {
-    return data.value as unknown as StaffAdminPermissions[];
+  if (row && row.value) {
+    return row.value as unknown as StaffAdminPermissions[];
   }
 
   // Default initial staff permissions
@@ -161,34 +126,24 @@ export async function getStaffAdminPermissionsAction(): Promise<StaffAdminPermis
 export async function updateStaffAdminPermissionsAction(
   permissionsList: StaffAdminPermissions[]
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase.from("system_settings").upsert(
-    {
-      key: "staff_admin_permissions",
-      value: permissionsList as any,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "key" }
-  );
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.systemSetting.upsert({
+    where: { key: "staff_admin_permissions" },
+    update: { value: permissionsList as any },
+    create: { key: "staff_admin_permissions", value: permissionsList as any },
+  });
 
   invalidateSystemConfigCache();
 
   await recordAuditLog({
     weddingId: "GLOBAL_SYSTEM",
-    userId: user.id,
-    userDisplayName: user.email || "Superadmin",
+    userId: user.userId,
+    userDisplayName: user.fullName || user.email,
     moduleName: "Superadmin Staff Permissions",
     actionType: "UPDATE",
     changeDiff: { permissionsList },

@@ -1,5 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { prisma } from "@/lib/prisma";
 import { S3Client } from "@aws-sdk/client-s3";
 
 export interface R2Config {
@@ -24,15 +23,6 @@ let cachedStorageRules: StorageRules | null = null;
 let lastFetchedTimestamp = 0;
 const CACHE_TTL_MS = 60 * 1000;
 
-// Helper to get supabase client with admin service_role fallback to bypass RLS on system_settings
-async function getSettingsSupabaseClient() {
-  try {
-    return createAdminClient();
-  } catch (e) {
-    return await createClient();
-  }
-}
-
 export async function getDynamicR2Client(): Promise<{
   s3: S3Client;
   config: R2Config;
@@ -46,19 +36,19 @@ export async function getDynamicR2Client(): Promise<{
     return { s3: cachedS3Client, config: cachedR2Config };
   }
 
-  const supabase = await getSettingsSupabaseClient();
-  const { data, error } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .in("key", ["r2_credentials", "storage_rules"]);
+  const rows = await prisma.systemSetting.findMany({
+    where: {
+      key: { in: ["r2_credentials", "storage_rules"] },
+    },
+  });
 
-  if (error || !data || data.length === 0) {
+  if (!rows || rows.length === 0) {
     throw new Error(
       "Kredensial Cloudflare R2 belum dikonfigurasi di panel Superadmin."
     );
   }
 
-  const r2Row = data.find((r) => r.key === "r2_credentials");
+  const r2Row = rows.find((r) => r.key === "r2_credentials");
   if (!r2Row || !r2Row.value) {
     throw new Error(
       "Kredensial Cloudflare R2 belum dikonfigurasi di panel Superadmin."
@@ -90,7 +80,7 @@ export async function getDynamicR2Client(): Promise<{
     },
   });
 
-  const storageRow = data.find((r) => r.key === "storage_rules");
+  const storageRow = rows.find((r) => r.key === "storage_rules");
   if (storageRow && storageRow.value) {
     cachedStorageRules = storageRow.value as unknown as StorageRules;
   }
@@ -105,14 +95,11 @@ export async function getDynamicStorageRules(): Promise<StorageRules> {
     return cachedStorageRules;
   }
 
-  const supabase = await getSettingsSupabaseClient();
-  const { data, error } = await supabase
-    .from("system_settings")
-    .select("key, value")
-    .eq("key", "storage_rules")
-    .maybeSingle();
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "storage_rules" },
+  });
 
-  if (error || !data || !data.value) {
+  if (!row || !row.value) {
     const defaultRules: StorageRules = {
       maxImageSizeMb: 10,
       maxPdfSizeMb: 20,
@@ -129,7 +116,7 @@ export async function getDynamicStorageRules(): Promise<StorageRules> {
     return defaultRules;
   }
 
-  const rules = data.value as unknown as StorageRules;
+  const rules = row.value as unknown as StorageRules;
   cachedStorageRules = rules;
   return rules;
 }

@@ -1,38 +1,29 @@
-import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { Database } from "@/types/database.types";
+import { jwtVerify } from "jose";
+
+const AUTH_COOKIE_NAME = "nikahyuk_session";
+const AUTH_SECRET_STRING =
+  process.env.AUTH_SECRET || "nikahyuk_default_auth_secret_key_32_bytes_2026!";
+const encodedKey = new TextEncoder().encode(AUTH_SECRET_STRING);
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
+  const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
+  let user: { role?: string; userType?: string } | null = null;
 
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          );
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          );
-        },
-      },
+  if (token) {
+    try {
+      const { payload } = await jwtVerify(token, encodedKey, {
+        algorithms: ["HS256"],
+      });
+      user = {
+        role: payload.role as string,
+        userType: payload.userType as string,
+      };
+    } catch {
+      // Invalid/expired token
+      user = null;
     }
-  );
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  }
 
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
@@ -55,24 +46,19 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // 2. Admin Route Protection
+  // 2. Admin Route Protection (hanya superadmin dan admin)
   if (user && isAdminRoute) {
-    const isSuperadmin =
-      user.app_metadata?.role === "superadmin" ||
-      user.user_metadata?.role === "superadmin";
-
+    const isSuperadmin = user.role === "superadmin" || user.role === "admin";
     if (!isSuperadmin) {
-      url.pathname = user.user_metadata?.user_type === "vendor" ? "/vendor/dashboard" : "/dashboard";
+      url.pathname = user.userType === "vendor" ? "/vendor/dashboard" : "/dashboard";
       return NextResponse.redirect(url);
     }
   }
 
   // 3. Logged-in users hitting Auth pages (/login, /register, /vendor/login)
   if (user && isAuthRoute) {
-    const isSuperadmin =
-      user.app_metadata?.role === "superadmin" ||
-      user.user_metadata?.role === "superadmin";
-    const isVendor = user.user_metadata?.user_type === "vendor";
+    const isSuperadmin = user.role === "superadmin" || user.role === "admin";
+    const isVendor = user.userType === "vendor";
 
     if (isSuperadmin) {
       url.pathname = "/admin";
@@ -85,5 +71,5 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  return supabaseResponse;
+  return NextResponse.next();
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { checkRateLimit, recordFailedAttempt, clearRateLimit } from "@/lib/utils/rate-limiter";
 import bcrypt from "bcryptjs";
 
@@ -19,29 +19,27 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
-
-    const { data: tokenRecord } = await supabase
-      .from("shareable_tokens")
-      .select("*")
-      .eq("token_hash", token)
-      .eq("is_active", true)
-      .single();
+    const tokenRecord = await prisma.shareableToken.findFirst({
+      where: {
+        tokenHash: token,
+        isActive: true,
+      },
+    });
 
     if (!tokenRecord) {
       return NextResponse.json({ error: "Token akses tidak valid atau telah dinonaktifkan." }, { status: 404 });
     }
 
-    if (new Date(tokenRecord.expires_at) < new Date()) {
+    if (new Date(tokenRecord.expiresAt) < new Date()) {
       return NextResponse.json({ error: "Token akses telah kadaluwarsa." }, { status: 410 });
     }
 
-    if (tokenRecord.pin_hash) {
+    if (tokenRecord.pinHash) {
       if (!pin) {
         return NextResponse.json({ error: "PIN diperlukan." }, { status: 401 });
       }
 
-      const match = await bcrypt.compare(pin, tokenRecord.pin_hash);
+      const match = await bcrypt.compare(pin, tokenRecord.pinHash);
       if (!match) {
         const failedResult = recordFailedAttempt(rateLimitKey, 5);
         if (failedResult.isLockedOut) {
@@ -50,26 +48,24 @@ export async function POST(req: NextRequest) {
             { status: 429 }
           );
         }
-        return NextResponse.json({ error: "PIN yang Anda masukkan salah." }, { status: 401 });
+
+        return NextResponse.json(
+          {
+            error: "PIN salah. Silakan coba kembali.",
+          },
+          { status: 401 }
+        );
       }
     }
 
     clearRateLimit(rateLimitKey);
 
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      weddingId: tokenRecord.wedding_id,
-      moduleAccess: tokenRecord.module_access,
+      weddingId: tokenRecord.weddingId,
+      moduleAccess: tokenRecord.moduleAccess,
+      hideInternalNotes: tokenRecord.hideInternalNotes,
     });
-
-    response.cookies.set(`token_session_${token}`, "authenticated", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 7 * 24 * 60 * 60,
-      path: "/",
-    });
-
-    return response;
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Internal error" },

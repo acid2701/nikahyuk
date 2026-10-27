@@ -1,4 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingFeatures } from "@/components/landing/landing-features";
@@ -6,16 +7,11 @@ import { LandingFaq } from "@/components/landing/landing-faq";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
-  const { data: row } = await supabase
-    .from("system_settings")
-    .select("value")
-    .eq("key", "app_branding_config")
-    .single();
+  const row = await prisma.systemSetting.findUnique({
+    where: { key: "app_branding_config" },
+  });
 
   const branding = (row?.value as any) || {};
 

@@ -1,27 +1,36 @@
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { getAppBranding } from "@/lib/branding";
 import { MobilePinGate } from "@/components/modules/view/mobile-pin-gate";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export default async function ViewTokenLayout(props: {
   children: React.ReactNode;
   params: Promise<any>;
 }) {
   const { token } = (await props.params) as { token: string };
-  const supabase = await createClient();
 
-  const { data: tokenRecord } = await supabase
-    .from("shareable_tokens")
-    .select("*, weddings(groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name)")
-    .eq("token_hash", token)
-    .eq("is_active", true)
-    .single();
+  const tokenRecord = await prisma.shareableToken.findFirst({
+    where: {
+      tokenHash: token,
+      isActive: true,
+    },
+    include: {
+      wedding: {
+        select: {
+          groomName: true,
+          brideName: true,
+        },
+      },
+    },
+  });
 
   if (!tokenRecord) {
     notFound();
   }
 
-  const isExpired = new Date(tokenRecord.expires_at) < new Date();
+  const isExpired = new Date(tokenRecord.expiresAt) < new Date();
   if (isExpired) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 text-center">
@@ -35,14 +44,15 @@ export default async function ViewTokenLayout(props: {
     );
   }
 
-  const requiresPin = !!tokenRecord.pin_hash;
+  const requiresPin = !!tokenRecord.pinHash;
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get(`token_session_${token}`);
   const initialAuthenticated = sessionCookie?.value === "authenticated";
 
-  const weddingTitle = tokenRecord.weddings
-    ? `${tokenRecord.weddings.groom_name} & ${tokenRecord.weddings.bride_name}`
-    : "NikahYuk Event Portal";
+  const branding = await getAppBranding();
+  const weddingTitle = tokenRecord.wedding
+    ? `${tokenRecord.wedding.groomName} & ${tokenRecord.wedding.brideName}`
+    : `${branding.appName} Event Portal`;
 
   return (
     <MobilePinGate
@@ -51,7 +61,16 @@ export default async function ViewTokenLayout(props: {
       requiresPin={requiresPin}
       initialAuthenticated={initialAuthenticated}
     >
-      <div className="min-h-screen bg-background max-w-md mx-auto border-x border-border flex flex-col justify-between">
+      <div className="min-h-screen bg-background max-w-md mx-auto border-x border-border/60 flex flex-col justify-between shadow-xs">
+        <header className="h-13 border-b border-border/60 px-4 flex items-center justify-between bg-background/85 sticky top-0 z-10 backdrop-blur-md">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="h-2 w-2 rounded-full bg-primary/70 shrink-0" />
+            <span className="font-serif text-xs font-bold tracking-tight truncate max-w-[220px] text-foreground">
+              {weddingTitle}
+            </span>
+          </div>
+          <ThemeToggle />
+        </header>
         <main className="flex-1 p-4 pb-20">{props.children}</main>
       </div>
     </MobilePinGate>

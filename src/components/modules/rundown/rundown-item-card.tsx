@@ -113,7 +113,7 @@ export function RundownItemCard({
           </div>
         </div>
 
-        <div className="flex items-center space-x-1 justify-end shrink-0">
+        <div className="flex items-center space-x-1 justify-end shrink-0 sm:self-center self-end pt-1 sm:pt-0">
           <TimelineShiftModal
             eventId={eventId}
             weddingId={weddingId}
@@ -125,7 +125,7 @@ export function RundownItemCard({
             variant="ghost"
             size="icon"
             onClick={() => onEdit(item)}
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-9 w-9 text-muted-foreground hover:text-foreground touch-manipulation"
             title="Edit Agenda & Cue Teknis"
           >
             <Edit className="h-4 w-4" />
@@ -135,7 +135,7 @@ export function RundownItemCard({
             variant="ghost"
             size="icon"
             onClick={() => onDelete(item.id, item.activity_title)}
-            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+            className="h-9 w-9 text-destructive hover:bg-destructive/10 touch-manipulation"
             title="Hapus Agenda"
           >
             <Trash2 className="h-4 w-4" />

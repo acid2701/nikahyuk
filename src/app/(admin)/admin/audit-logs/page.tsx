@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,16 +11,48 @@ import {
 } from "@/components/ui/table";
 import { ShieldAlert, User, Clock, FileJson } from "lucide-react";
 
-export default async function AdminAuditLogsPage() {
-  const supabase = await createClient();
+export default async function AdminAuditLogsPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
+  const currentPage = Math.max(1, parseInt(params?.page || "1", 10));
+  const pageSize = 25;
+  const skip = (currentPage - 1) * pageSize;
 
-  const { data: logsData } = await supabase
-    .from("audit_logs")
-    .select("*, weddings(groom_name, bride_name)")
-    .order("created_at", { ascending: false })
-    .limit(100);
+  const [logsData, totalLogs] = await Promise.all([
+    prisma.auditLog.findMany({
+      include: {
+        wedding: {
+          select: {
+            groomName: true,
+            brideName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: pageSize,
+    }),
+    prisma.auditLog.count(),
+  ]);
 
-  const logs = logsData || [];
+  const totalPages = Math.ceil(totalLogs / pageSize) || 1;
+
+  const logs = logsData.map((l) => ({
+    id: l.id,
+    wedding_id: l.weddingId,
+    user_display_name: l.userDisplayName,
+    module_name: l.moduleName,
+    action_type: l.actionType,
+    change_diff: l.changeDiff,
+    created_at: l.createdAt.toISOString(),
+    weddings: l.wedding ? {
+      groom_name: l.wedding.groomName,
+      bride_name: l.wedding.brideName,
+    } : null,
+  }));
 
   return (
     <div className="space-y-6">
@@ -38,14 +70,14 @@ export default async function AdminAuditLogsPage() {
         <CardHeader className="bg-muted/30 pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">100 Log Aktivitas Terbaru</CardTitle>
+              <CardTitle className="text-base font-semibold">Riwayat Log Aktivitas</CardTitle>
               <CardDescription className="text-xs">
                 Tercatat otomatis secara real-time dari seluruh modul aplikasi.
               </CardDescription>
-            </div>
-            <Badge variant="outline" className="font-mono text-xs">
-              {logs.length} Log Terakhir
-            </Badge>
+              </div>
+              <Badge variant="outline" className="font-mono text-xs">
+              {totalLogs} Total Log
+              </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -54,6 +86,8 @@ export default async function AdminAuditLogsPage() {
               Belum ada log aktivitas tercatat di sistem.
             </div>
           ) : (
+            <>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader className="bg-muted/60">
                 <TableRow>
@@ -79,7 +113,7 @@ export default async function AdminAuditLogsPage() {
                   return (
                     <TableRow key={log.id} className="hover:bg-muted/30">
                       <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                        {index + 1}
+                        {(currentPage - 1) * pageSize + index + 1}
                       </TableCell>
                       <TableCell className="text-xs font-mono text-muted-foreground whitespace-nowrap">
                         <span className="flex items-center gap-1">
@@ -97,14 +131,23 @@ export default async function AdminAuditLogsPage() {
                         </p>
                       </TableCell>
                       <TableCell className="text-xs font-medium">
-                        <Badge variant="outline" className="text-[10px] uppercase font-semibold">
+                        <span className="font-mono text-[10px] uppercase font-semibold px-2 py-0.5 rounded border border-border/70 bg-muted/40 text-foreground">
                           {log.module_name}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="text-xs">
-                        <Badge variant={badgeVariant} className="text-[10px] font-bold">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-mono font-medium border ${
+                          badgeVariant === "destructive"
+                            ? "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                            : badgeVariant === "success"
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400"
+                        }`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${
+                            badgeVariant === "destructive" ? "bg-rose-500" : badgeVariant === "success" ? "bg-emerald-500" : "bg-sky-500"
+                          }`} />
                           {log.action_type}
-                        </Badge>
+                        </span>
                       </TableCell>
                       <TableCell className="text-xs">
                         <div className="max-h-20 overflow-y-auto font-mono text-[10px] bg-muted/60 p-2 rounded border border-border/50 flex items-start gap-1">
@@ -119,6 +162,41 @@ export default async function AdminAuditLogsPage() {
                 })}
               </TableBody>
             </Table>
+            </div>
+            {totalPages > 1 ? (
+              <div className="flex items-center justify-between p-4 border-t border-border">
+                <span className="text-xs text-muted-foreground">
+                  Halaman {currentPage} dari {totalPages} ({totalLogs} entri log)
+                </span>
+                <div className="flex items-center gap-2">
+                  {currentPage > 1 ? (
+                    <a
+                      href={`/admin/audit-logs?page=${currentPage - 1}`}
+                      className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                    >
+                      Sebelumnya
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
+                      Sebelumnya
+                    </span>
+                  )}
+                  {currentPage < totalPages ? (
+                    <a
+                      href={`/admin/audit-logs?page=${currentPage + 1}`}
+                      className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                    >
+                      Selanjutnya
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
+                      Selanjutnya
+                    </span>
+                  )}
+                </div>
+              </div>
+            ) : null}
+            </>
           )}
         </CardContent>
       </Card>

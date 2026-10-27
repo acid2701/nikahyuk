@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MilestoneTimeline } from "@/components/modules/budget/milestone-timeline";
 import { DeleteBudgetItemModal } from "@/components/modules/budget/delete-budget-modal";
 import { EditBudgetItemModal } from "@/components/modules/budget/edit-budget-modal";
+import { DataTablePagination } from "@/components/shared/pagination/data-table-pagination";
 import { DollarSign, Trash2, Edit, User, Users, Heart } from "lucide-react";
 
 export interface BudgetItemData {
@@ -31,6 +32,8 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
   const [openDeleteModal, setOpenDeleteModal] = React.useState(false);
   const [editingItem, setEditingItem] = React.useState<BudgetItemData | null>(null);
   const [deletingItem, setDeletingItem] = React.useState<BudgetItemData | null>(null);
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(10);
 
   React.useEffect(() => {
     setItems(initialItems);
@@ -40,6 +43,12 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
     if (sideFilter === "all") return true;
     return item.target_payer === sideFilter;
   });
+
+  const totalPages = Math.ceil(filteredItems.length / pageSize) || 1;
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   // Calculate side totals for strict financial isolation
   const groomTotal = items
@@ -110,14 +119,19 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
           </div>
         </Card>
       ) : (
-        filteredItems.map((item) => {
+        <>
+        {paginatedItems.map((item, index) => {
           const milestones = item.payment_milestones || [];
+          const globalIndex = (currentPage - 1) * pageSize + index + 1;
           return (
             <Card key={item.id} className="border-border/80">
               <CardHeader className="pb-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center space-x-2">
+                      <span className="font-mono text-xs font-semibold px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                        #{globalIndex}
+                      </span>
                       <CardTitle className="text-base font-semibold">
                         {item.item_name}
                       </CardTitle>
@@ -180,7 +194,23 @@ export function BudgetListManager({ weddingId, initialItems }: BudgetListManager
               </CardContent>
             </Card>
           );
-        })
+        })}
+        {totalPages > 1 && (
+          <div className="pt-2">
+            <DataTablePagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={filteredItems.length}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(newSize) => {
+                setPageSize(newSize);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+        )}
+        </>
       )}
 
       {editingItem && (

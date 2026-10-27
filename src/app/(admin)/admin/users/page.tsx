@@ -218,29 +218,34 @@ export default function AdminUsersPage() {
 
                       <TableCell className="text-xs">
                         {isSuperadmin ? (
-                          <Badge variant="default" className="bg-amber-500 text-white font-bold text-[10px]">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                             SUPERADMIN
-                          </Badge>
+                          </span>
                         ) : u.role === "admin" ? (
-                          <Badge variant="default" className="bg-primary text-primary-foreground font-bold text-[10px]">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
                             ADMIN STAFF
-                          </Badge>
+                          </span>
                         ) : (
-                          <Badge variant="secondary" className="text-[10px]">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border border-border/70 bg-muted/40 text-muted-foreground">
+                            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/60" />
                             USER
-                          </Badge>
+                          </span>
                         )}
                       </TableCell>
 
                       <TableCell className="text-xs">
                         {u.isSuspended ? (
-                          <Badge variant="destructive" className="text-[10px] font-semibold">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
                             DITANGGUHKAN
-                          </Badge>
+                          </span>
                         ) : (
-                          <Badge variant="success" className="text-[10px] font-semibold">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                             AKTIF
-                          </Badge>
+                          </span>
                         )}
                       </TableCell>
 

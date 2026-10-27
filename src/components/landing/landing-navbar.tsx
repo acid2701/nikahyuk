@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { Heart, ArrowRight, Sparkles } from "lucide-react";
 
 export interface LandingNavbarProps {
@@ -42,6 +43,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
         </nav>
 
         <div className="flex items-center space-x-3">
+          <ThemeToggle />
           {isLoggedIn ? (
             <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
               <Link href="/dashboard">

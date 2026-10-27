@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export interface PublicAuthConfig {
   googleEnabled: boolean;
@@ -9,25 +9,21 @@ export interface PublicAuthConfig {
 
 export async function GET() {
   const defaultConfig: PublicAuthConfig = {
-    googleEnabled: true,
-    appBaseUrl: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    googleEnabled: false,
+    appBaseUrl: process.env.NEXT_PUBLIC_APP_URL || "https://nikahyuk.pilihmenumu.com",
     googleClientId: "",
   };
 
   try {
-    const supabase = await createClient();
-
-    const { data: row } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "auth_provider_config")
-      .maybeSingle();
+    const row = await prisma.systemSetting.findUnique({
+      where: { key: "auth_provider_config" },
+    });
 
     if (row && row.value) {
       const val = row.value as Record<string, unknown>;
       return NextResponse.json({
         config: {
-          googleEnabled: typeof val.googleEnabled === "boolean" ? val.googleEnabled : true,
+          googleEnabled: typeof val.googleEnabled === "boolean" ? val.googleEnabled : false,
           appBaseUrl: (val.appBaseUrl as string) || defaultConfig.appBaseUrl,
           googleClientId: (val.googleClientId as string) || "",
         },

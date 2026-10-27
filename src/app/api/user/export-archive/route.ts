@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 import * as archiverModule from "archiver";
 import { stringify } from "csv-stringify/sync";
 import { PassThrough } from "stream";
@@ -15,25 +16,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "weddingId diperlukan" }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const user = await getCurrentUser();
 
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Fetch data for CSV tables
-    const { data: guests } = await supabase.from("guests").select("*").eq("wedding_id", weddingId);
-    const { data: vendors } = await supabase.from("vendors").select("*").eq("wedding_id", weddingId);
-    const { data: weddingEvents } = await supabase.from("wedding_events").select("id").eq("wedding_id", weddingId);
+    const guests = await prisma.guest.findMany({ where: { weddingId } });
+    const vendors = await prisma.vendor.findMany({ where: { weddingId } });
+    const weddingEvents = await prisma.weddingEvent.findMany({
+      where: { weddingId },
+      include: {
+        rundowns: true,
+        budgetItems: true,
+        giftsLog: true,
+      },
+    });
 
-    const eventIds = (weddingEvents || []).map((e) => e.id);
-
-    const { data: rundowns } = await supabase.from("rundowns").select("*").in("event_id", eventIds.length > 0 ? eventIds : ["none"]);
-    const { data: budgetItems } = await supabase.from("budget_items").select("*").in("event_id", eventIds.length > 0 ? eventIds : ["none"]);
-    const { data: gifts } = await supabase.from("gifts_log").select("*").in("event_id", eventIds.length > 0 ? eventIds : ["none"]);
+    const rundowns = weddingEvents.flatMap((e) => e.rundowns);
+    const budgetItems = weddingEvents.flatMap((e) => e.budgetItems);
+    const gifts = weddingEvents.flatMap((e) => e.giftsLog);
 
     // Generate CSV strings
     const guestsCsv = stringify(guests || [], { header: true });
@@ -55,7 +58,7 @@ export async function GET(req: NextRequest) {
     archive.append(giftsCsv, { name: "csv/gifts_log.csv" });
 
     // Append README info
-    const readmeText = `NikahYuk — Official Data Export Archive\nExport Date: ${new Date().toISOString()}\nWedding ID: ${weddingId}\nUser ID: ${user.id}\n`;
+    const readmeText = `NikahYuk — Official Data Export Archive\nExport Date: ${new Date().toISOString()}\nWedding ID: ${weddingId}\nUser ID: ${user.userId}\n`;
     archive.append(readmeText, { name: "README.txt" });
 
     await archive.finalize();

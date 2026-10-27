@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { changeUserPasswordAction } from "@/actions/user-profile-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -25,7 +25,6 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
   const { toast } = useToast();
-  const supabase = createClient();
 
   async function handleUpdatePassword(e: React.FormEvent) {
     e.preventDefault();
@@ -60,14 +59,12 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password,
-      });
+      const res = await changeUserPasswordAction(password);
 
-      if (error) {
+      if (!res.success) {
         toast({
           title: "Gagal Mengubah Kata Sandi",
-          description: error.message,
+          description: "Gagal memperbarui kata sandi.",
           variant: "destructive",
         });
       } else {
@@ -81,8 +78,8 @@ export default function ResetPasswordPage() {
       }
     } catch {
       toast({
-        title: "Kesalahan Server",
-        description: "Gagal memperbarui kata sandi.",
+        title: "Kesalahan Jaringan",
+        description: "Gagal menghubungkan ke server.",
         variant: "destructive",
       });
     } finally {

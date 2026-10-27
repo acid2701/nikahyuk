@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 import { MediaUploaderDropzone, UploadedFileMeta } from "@/components/shared/media-uploader/dropzone";
 import { Settings, Sparkles, CheckCircle2, Heart, ArrowRight, UploadCloud, Image as ImageIcon, Key, Globe, ShieldCheck, Copy, Check, Eye, EyeOff } from "lucide-react";
 
@@ -31,7 +32,9 @@ export default function AdminAppSettingsPage() {
   const [contactEmail, setContactEmail] = React.useState("support@nikahyuk.com");
 
   // Google Auth & Dynamic Auth Settings State
-  const [appBaseUrl, setAppBaseUrl] = React.useState("http://localhost:3000");
+  const [appBaseUrl, setAppBaseUrl] = React.useState(
+    typeof window !== "undefined" ? window.location.origin : "https://nikahyuk.pilihmenumu.com"
+  );
   const [googleClientId, setGoogleClientId] = React.useState("");
   const [googleClientSecret, setGoogleClientSecret] = React.useState("");
   const [googleEnabled, setGoogleEnabled] = React.useState(true);
@@ -41,6 +44,7 @@ export default function AdminAppSettingsPage() {
   const [loading, setLoading] = React.useState(false);
   const [authLoading, setAuthLoading] = React.useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
   const loadBranding = React.useCallback(async () => {
     try {
@@ -124,9 +128,10 @@ export default function AdminAppSettingsPage() {
       if (res.ok) {
         toast({
           title: "Branding & Asset R2 Disimpan",
-          description: "Pengaturan logo icon R2 & landing page diperbarui di seluruh platform.",
+          description: "Pengaturan logo icon R2 & branding diperbarui di seluruh platform.",
           variant: "success",
         });
+        router.refresh();
       } else {
         const err = await res.json();
         toast({
@@ -558,7 +563,7 @@ export default function AdminAppSettingsPage() {
                   </span>
                   <div className="flex items-center justify-between gap-2 pt-1">
                     <code className="text-xs font-mono text-muted-foreground truncate">
-                      https://&lt;your-project-ref&gt;.supabase.co/auth/v1/callback
+                      https://nikahyuk.pilihmenumu.com/auth-callback
                     </code>
                   </div>
                 </div>

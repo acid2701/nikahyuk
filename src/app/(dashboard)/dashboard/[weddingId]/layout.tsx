@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAppBranding } from "@/lib/branding";
 import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
 import { DashboardHeader } from "@/components/shared/navigation/dashboard-header";
 import { EventScopeHeader } from "@/components/layout/event-scope-header";
@@ -59,11 +60,18 @@ export default async function WeddingDashboardLayout(props: {
     }
   }
 
+  const branding = await getAppBranding();
+
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       <Suspense fallback={<div className="hidden lg:block w-64 border-r border-border bg-card h-full min-h-screen" />}>
         <div className="hidden lg:block w-64 shrink-0 h-full">
-          <AppSidebar weddingId={weddingId} />
+          <AppSidebar
+            weddingId={weddingId}
+            appName={branding.appName}
+            tagline={branding.tagline}
+            logoUrl={branding.logoUrl}
+          />
         </div>
       </Suspense>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

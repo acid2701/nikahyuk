@@ -1,16 +1,31 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { AppSidebar } from "./app-sidebar";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 
 export interface MobileSidebarDrawerProps {
   weddingId?: string;
+  appName?: string;
+  tagline?: string;
+  logoUrl?: string;
 }
 
-export function MobileSidebarDrawer({ weddingId }: MobileSidebarDrawerProps) {
+export function MobileSidebarDrawer({
+  weddingId,
+  appName,
+  tagline,
+  logoUrl,
+}: MobileSidebarDrawerProps) {
   const [open, setOpen] = React.useState(false);
+  const pathname = usePathname();
+
+  // Close drawer automatically when route changes
+  React.useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
   // Prevent background body scroll when mobile drawer is open
   React.useEffect(() => {
@@ -63,8 +78,13 @@ export function MobileSidebarDrawer({ weddingId }: MobileSidebarDrawerProps) {
             <div className="flex-1 overflow-y-auto">
               <AppSidebar
                 weddingId={weddingId}
-                onNavigate={() => setOpen(false)}
+                onNavigate={() => {
+                  setTimeout(() => setOpen(false), 80);
+                }}
                 className="w-full border-r-0 h-auto"
+                appName={appName}
+                tagline={tagline}
+                logoUrl={logoUrl}
               />
             </div>
           </div>

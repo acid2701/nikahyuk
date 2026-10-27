@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   const defaultBranding = {
@@ -15,13 +15,9 @@ export async function GET() {
   };
 
   try {
-    const supabase = await createClient();
-
-    const { data: row } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "app_branding_config")
-      .single();
+    const row = await prisma.systemSetting.findUnique({
+      where: { key: "app_branding_config" },
+    });
 
     if (row && row.value) {
       return NextResponse.json({

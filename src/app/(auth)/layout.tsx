@@ -1,24 +1,43 @@
 import type { Metadata } from "next";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
+import { getAppBranding } from "@/lib/branding";
 
-export const metadata: Metadata = {
-  title: "Autentikasi - NikahYuk",
-  description: "Masuk atau daftar ke platform NikahYuk Companion SaaS.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getAppBranding();
+  return {
+    title: `Autentikasi - ${branding.appName}`,
+    description: `Masuk atau daftar ke platform ${branding.appName} Companion SaaS.`,
+  };
+}
 
-export default function AuthLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const branding = await getAppBranding();
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-12 sm:px-6 lg:px-8 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
+          {branding.logoUrl ? (
+            <div className="flex justify-center mb-2">
+              <img
+                src={branding.logoUrl}
+                alt={branding.appName}
+                className="h-12 w-auto max-w-[180px] object-contain rounded-lg"
+              />
+            </div>
+          ) : null}
           <h1 className="font-serif text-3xl font-semibold tracking-tight text-primary">
-            NikahYuk
+            {branding.appName}
           </h1>
           <p className="text-sm text-muted-foreground">
-            Wedding & Event Companion SaaS
+            {branding.tagline}
           </p>
         </div>
         {children}

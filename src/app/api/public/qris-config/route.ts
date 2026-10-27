@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    const supabase = await createClient();
-
-    const { data: row } = await supabase
-      .from("system_settings")
-      .select("value")
-      .eq("key", "qris_donasi_config")
-      .single();
+    const row = await prisma.systemSetting.findUnique({
+      where: { key: "qris_donasi_config" },
+    });
 
     if (row && row.value) {
       return NextResponse.json({ config: row.value });
