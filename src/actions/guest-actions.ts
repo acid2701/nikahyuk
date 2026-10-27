@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { sanitizePhoneNumber } from "@/lib/utils/wa-sanitizer";
 import { AttendanceStatusEnum } from "@/types/database.types";
@@ -15,13 +16,54 @@ export interface CreateGuestInput {
   eventId?: string | null;
 }
 
-export async function createGuestAction(input: CreateGuestInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function toGuestDTO(g: any) {
+  if (!g) return null;
+  return {
+    id: g.id,
+    wedding_id: g.weddingId,
+    category_id: g.categoryId || null,
+    full_name: g.fullName,
+    sanitized_phone: g.sanitizedPhone || null,
+    default_pax: g.defaultPax,
+    notes: g.notes || null,
+    created_at: g.createdAt?.toISOString?.() || g.createdAt,
+    updated_at: g.updatedAt?.toISOString?.() || g.updatedAt,
+    weddingId: g.weddingId,
+    categoryId: g.categoryId || null,
+    fullName: g.fullName,
+    sanitizedPhone: g.sanitizedPhone || null,
+    defaultPax: g.defaultPax,
+  };
+}
 
-  if (!user) {
+function toAssignmentDTO(a: any) {
+  if (!a) return null;
+  return {
+    id: a.id,
+    event_id: a.eventId,
+    guest_id: a.guestId,
+    table_id: a.tableId || null,
+    actual_pax: a.actualPax,
+    attendance_status: a.attendanceStatus,
+    souvenir_received: a.souvenirReceived || false,
+    is_walk_in: a.isWalkIn || false,
+    checkin_timestamp: a.checkinTimestamp?.toISOString?.() || a.checkinTimestamp || null,
+    created_at: a.createdAt?.toISOString?.() || a.createdAt,
+    updated_at: a.updatedAt?.toISOString?.() || a.updatedAt,
+    eventId: a.eventId,
+    guestId: a.guestId,
+    tableId: a.tableId || null,
+    actualPax: a.actualPax,
+    attendanceStatus: a.attendanceStatus,
+    souvenirReceived: a.souvenirReceived || false,
+    isWalkIn: a.isWalkIn || false,
+  };
+}
+
+export async function createGuestAction(input: CreateGuestInput) {
+  const sessionUser = await getCurrentUser();
+
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -29,42 +71,38 @@ export async function createGuestAction(input: CreateGuestInput) {
     ? sanitizePhoneNumber(input.contactNumber)
     : null;
 
-  const { data: guest, error } = await supabase
-    .from("guests")
-    .insert({
-      wedding_id: input.weddingId,
-      full_name: input.fullName,
-      sanitized_phone: sanitized || null,
-      default_pax: input.defaultPax || 1,
+  const guest = await prisma.guest.create({
+    data: {
+      weddingId: input.weddingId,
+      fullName: input.fullName.trim(),
+      sanitizedPhone: sanitized || null,
+      defaultPax: input.defaultPax || 1,
       notes: input.notes || null,
-    })
-    .select()
-    .single();
-
-  if (error || !guest) {
-    throw new Error(error?.message || "Gagal membuat data tamu.");
-  }
+    },
+  });
 
   if (input.eventId) {
-    await supabase.from("event_guest_assignments").insert({
-      event_id: input.eventId,
-      guest_id: guest.id,
-      actual_pax: guest.default_pax,
-      attendance_status: "pending",
+    await prisma.eventGuestAssignment.create({
+      data: {
+        eventId: input.eventId,
+        guestId: guest.id,
+        actualPax: guest.defaultPax,
+        attendanceStatus: "pending",
+      },
     });
   }
 
   await recordAuditLog({
     weddingId: input.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Guests",
     actionType: "CREATE",
     changeDiff: { fullName: input.fullName, defaultPax: input.defaultPax },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/guests`);
-  return guest;
+  return toGuestDTO(guest);
 }
 
 export async function updateGuestAction(
@@ -77,12 +115,9 @@ export async function updateGuestAction(
     notes?: string | null;
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -92,34 +127,28 @@ export async function updateGuestAction(
     ? null
     : undefined;
 
-  const { data: guest, error } = await supabase
-    .from("guests")
-    .update({
-      ...(updates.fullName !== undefined && { full_name: updates.fullName }),
-      ...(sanitized !== undefined && { sanitized_phone: sanitized }),
-      ...(updates.defaultPax !== undefined && { default_pax: updates.defaultPax || 1 }),
-      ...(updates.notes !== undefined && { notes: updates.notes || null }),
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", guestId)
-    .select()
-    .single();
+  const dataToUpdate: any = {};
+  if (updates.fullName !== undefined) dataToUpdate.fullName = updates.fullName.trim();
+  if (sanitized !== undefined) dataToUpdate.sanitizedPhone = sanitized;
+  if (updates.defaultPax !== undefined) dataToUpdate.defaultPax = updates.defaultPax || 1;
+  if (updates.notes !== undefined) dataToUpdate.notes = updates.notes || null;
 
-  if (error || !guest) {
-    throw new Error(error?.message || "Gagal memperbarui data tamu.");
-  }
+  const guest = await prisma.guest.update({
+    where: { id: guestId },
+    data: dataToUpdate,
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Guests",
     actionType: "UPDATE",
     changeDiff: { guestId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
-  return guest;
+  return toGuestDTO(guest);
 }
 
 export async function bulkImportGuestsAction(
@@ -127,53 +156,48 @@ export async function bulkImportGuestsAction(
   eventId: string | null,
   guestsList: { fullName: string; contactNumber?: string; defaultPax?: number; notes?: string }[]
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const rows = guestsList.map((g) => ({
-    wedding_id: weddingId,
-    full_name: g.fullName,
-    sanitized_phone: g.contactNumber ? sanitizePhoneNumber(g.contactNumber) : null,
-    default_pax: g.defaultPax || 1,
-    notes: g.notes || null,
-  }));
-
-  const { data: createdGuests, error } = await supabase
-    .from("guests")
-    .insert(rows)
-    .select();
-
-  if (error || !createdGuests) {
-    throw new Error(error?.message || "Gagal mengimpor daftar tamu.");
-  }
+  const createdGuests = await prisma.$transaction(
+    guestsList.map((g) =>
+      prisma.guest.create({
+        data: {
+          weddingId,
+          fullName: g.fullName.trim(),
+          sanitizedPhone: g.contactNumber ? sanitizePhoneNumber(g.contactNumber) : null,
+          defaultPax: g.defaultPax || 1,
+          notes: g.notes || null,
+        },
+      })
+    )
+  );
 
   if (eventId && createdGuests.length > 0) {
-    const assignments = createdGuests.map((cg) => ({
-      event_id: eventId,
-      guest_id: cg.id,
-      actual_pax: cg.default_pax,
-      attendance_status: "pending" as AttendanceStatusEnum,
-    }));
-    await supabase.from("event_guest_assignments").insert(assignments);
+    await prisma.eventGuestAssignment.createMany({
+      data: createdGuests.map((cg) => ({
+        eventId,
+        guestId: cg.id,
+        actualPax: cg.defaultPax,
+        attendanceStatus: "pending",
+      })),
+    });
   }
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Guests Bulk Import",
     actionType: "CREATE",
     changeDiff: { importedCount: createdGuests.length },
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
-  return createdGuests;
+  return createdGuests.map(toGuestDTO);
 }
 
 export async function updateGuestRSVPAction(
@@ -182,66 +206,48 @@ export async function updateGuestRSVPAction(
   status: AttendanceStatusEnum,
   actualPax: number
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: assignment, error } = await supabase
-    .from("event_guest_assignments")
-    .update({
-      attendance_status: status,
-      actual_pax: actualPax,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", assignmentId)
-    .select()
-    .single();
-
-  if (error || !assignment) {
-    throw new Error(error?.message || "Gagal memperbarui RSVP.");
-  }
+  const assignment = await prisma.eventGuestAssignment.update({
+    where: { id: assignmentId },
+    data: {
+      attendanceStatus: status,
+      actualPax,
+    },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Guest RSVP",
     actionType: "UPDATE",
     changeDiff: { assignmentId, status, actualPax },
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
-  return assignment;
+  return toAssignmentDTO(assignment);
 }
 
 export async function deleteGuestAction(guestId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("guests")
-    .delete()
-    .eq("id", guestId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.guest.delete({
+    where: { id: guestId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Guests",
     actionType: "DELETE",
     changeDiff: { guestId },

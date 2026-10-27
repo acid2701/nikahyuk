@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 
 export interface CreateSeatingTableInput {
@@ -12,42 +13,48 @@ export interface CreateSeatingTableInput {
   notes?: string | null;
 }
 
-export async function createSeatingTableAction(input: CreateSeatingTableInput) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+function toTableDTO(t: any) {
+  if (!t) return null;
+  return {
+    id: t.id,
+    event_id: t.eventId,
+    table_number_or_name: t.tableNumberOrName,
+    max_seats: t.maxSeats,
+    notes: t.notes || null,
+    created_at: t.createdAt?.toISOString?.() || t.createdAt,
+    eventId: t.eventId,
+    tableNumberOrName: t.tableNumberOrName,
+    maxSeats: t.maxSeats,
+  };
+}
 
-  if (!user) {
+export async function createSeatingTableAction(input: CreateSeatingTableInput) {
+  const sessionUser = await getCurrentUser();
+
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: table, error } = await supabase
-    .from("event_tables")
-    .insert({
-      event_id: input.eventId,
-      table_number_or_name: input.tableName,
-      max_seats: input.maxSeats,
-      notes: input.notes || null,
-    })
-    .select()
-    .single();
-
-  if (error || !table) {
-    throw new Error(error?.message || "Gagal membuat meja katering/tamu.");
-  }
+  const table = await prisma.eventTable.create({
+    data: {
+      eventId: input.eventId,
+      tableNumberOrName: input.tableName.trim(),
+      maxSeats: input.maxSeats || 10,
+      notes: input.notes?.trim() || null,
+    },
+  });
 
   await recordAuditLog({
     weddingId: input.weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Seating Tables",
     actionType: "CREATE",
     changeDiff: { tableName: input.tableName, maxSeats: input.maxSeats },
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/seating`);
-  return table;
+  return toTableDTO(table);
 }
 
 export async function updateSeatingTableAction(
@@ -59,41 +66,33 @@ export async function updateSeatingTableAction(
     notes?: string | null;
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: table, error } = await supabase
-    .from("event_tables")
-    .update({
-      ...(updates.tableName !== undefined && { table_number_or_name: updates.tableName }),
-      ...(updates.maxSeats !== undefined && { max_seats: updates.maxSeats }),
-      ...(updates.notes !== undefined && { notes: updates.notes || null }),
-    })
-    .eq("id", tableId)
-    .select()
-    .single();
+  const dataToUpdate: any = {};
+  if (updates.tableName !== undefined) dataToUpdate.tableNumberOrName = updates.tableName.trim();
+  if (updates.maxSeats !== undefined) dataToUpdate.maxSeats = updates.maxSeats;
+  if (updates.notes !== undefined) dataToUpdate.notes = updates.notes?.trim() || null;
 
-  if (error || !table) {
-    throw new Error(error?.message || "Gagal memperbarui data meja.");
-  }
+  const table = await prisma.eventTable.update({
+    where: { id: tableId },
+    data: dataToUpdate,
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Seating Tables",
     actionType: "UPDATE",
     changeDiff: { tableId, updates },
   });
 
   revalidatePath(`/dashboard/${weddingId}/seating`);
-  return table;
+  return toTableDTO(table);
 }
 
 export async function assignGuestToTableAction(
@@ -101,70 +100,59 @@ export async function assignGuestToTableAction(
   tableId: string | null,
   weddingId: string
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data: assignment, error } = await supabase
-    .from("event_guest_assignments")
-    .update({
-      table_id: tableId,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", assignmentId)
-    .select()
-    .single();
-
-  if (error || !assignment) {
-    throw new Error(error?.message || "Gagal menetapkan posisi meja tamu.");
-  }
+  const assignment = await prisma.eventGuestAssignment.update({
+    where: { id: assignmentId },
+    data: {
+      tableId,
+    },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Seating Assignment",
     actionType: "UPDATE",
     changeDiff: { assignmentId, tableId },
   });
 
   revalidatePath(`/dashboard/${weddingId}/seating`);
-  return assignment;
+  return {
+    id: assignment.id,
+    event_id: assignment.eventId,
+    guest_id: assignment.guestId,
+    table_id: assignment.tableId,
+    actual_pax: assignment.actualPax,
+    attendance_status: assignment.attendanceStatus,
+  };
 }
 
 export async function deleteSeatingTableAction(tableId: string, weddingId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  await supabase
-    .from("event_guest_assignments")
-    .update({ table_id: null })
-    .eq("table_id", tableId);
+  await prisma.eventGuestAssignment.updateMany({
+    where: { tableId },
+    data: { tableId: null },
+  });
 
-  const { error } = await supabase
-    .from("event_tables")
-    .delete()
-    .eq("id", tableId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.eventTable.delete({
+    where: { id: tableId },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Seating Tables",
     actionType: "DELETE",
     changeDiff: { tableId },
