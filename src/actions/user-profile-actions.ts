@@ -1,53 +1,54 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
+import bcrypt from "bcryptjs";
 
 export async function updateUserProfileDetailAction(input: {
   fullName: string;
   phone?: string;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data, error } = await supabase.auth.updateUser({
+  const updatedUser = await prisma.user.update({
+    where: { id: sessionUser.userId },
     data: {
-      full_name: input.fullName.trim(),
-      phone: input.phone?.trim() || "",
+      fullName: input.fullName.trim(),
+      phone: input.phone?.trim() || null,
     },
   });
 
-  if (error) {
-    throw new Error(error.message || "Gagal memperbarui profil pengguna.");
-  }
-
   await recordAuditLog({
     weddingId: "GLOBAL_SYSTEM",
-    userId: user.id,
-    userDisplayName: input.fullName || user.email || "User",
+    userId: sessionUser.userId,
+    userDisplayName: input.fullName || sessionUser.email || "User",
     moduleName: "User Account Profile",
     actionType: "UPDATE",
     changeDiff: { fullName: input.fullName, phone: input.phone },
   });
 
   revalidatePath("/dashboard/profile");
-  return { success: true, user: data.user };
+  return {
+    success: true,
+    user: {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      fullName: updatedUser.fullName,
+      phone: updatedUser.phone,
+    },
+  };
 }
 
 export async function changeUserPasswordAction(newPassword: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -55,18 +56,18 @@ export async function changeUserPasswordAction(newPassword: string) {
     throw new Error("Kata sandi baru harus minimal 6 karakter.");
   }
 
-  const { data, error } = await supabase.auth.updateUser({
-    password: newPassword,
-  });
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(newPassword, salt);
 
-  if (error) {
-    throw new Error(error.message || "Gagal memperbarui kata sandi.");
-  }
+  await prisma.user.update({
+    where: { id: sessionUser.userId },
+    data: { passwordHash },
+  });
 
   await recordAuditLog({
     weddingId: "GLOBAL_SYSTEM",
-    userId: user.id,
-    userDisplayName: user.email || "User",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "User",
     moduleName: "User Account Security",
     actionType: "UPDATE",
     changeDiff: { action: "PASSWORD_CHANGED" },

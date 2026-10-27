@@ -1,17 +1,40 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
-import { UserRoleEnum, CustomPermissions, Database } from "@/types/database.types";
+import { UserRoleEnum, CustomPermissions } from "@/types/database.types";
+
+function toWeddingDTO(w: any) {
+  if (!w) return null;
+  return {
+    id: w.id,
+    created_by: w.createdBy,
+    groom_name: w.groomName,
+    bride_name: w.brideName,
+    wedding_slug: w.weddingSlug,
+    groom_father_name: w.groomFatherName || null,
+    groom_mother_name: w.groomMotherName || null,
+    bride_father_name: w.brideFatherName || null,
+    bride_mother_name: w.brideMotherName || null,
+    created_at: w.createdAt?.toISOString?.() || w.createdAt,
+    updated_at: w.updatedAt?.toISOString?.() || w.updatedAt,
+    createdBy: w.createdBy,
+    groomName: w.groomName,
+    brideName: w.brideName,
+    weddingSlug: w.weddingSlug,
+    groomFatherName: w.groomFatherName || null,
+    groomMotherName: w.groomMotherName || null,
+    brideFatherName: w.brideFatherName || null,
+    brideMotherName: w.brideMotherName || null,
+  };
+}
 
 export async function createWeddingAction(formData: FormData) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -24,48 +47,44 @@ export async function createWeddingAction(formData: FormData) {
 
   const slug = `${groomName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${brideName.toLowerCase().replace(/[^a-z0-9]/g, "")}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-  const { data: wedding, error } = await supabase
-    .from("weddings")
-    .insert({
-      created_by: user.id,
-      groom_name: groomName,
-      bride_name: brideName,
-      wedding_slug: slug,
-    })
-    .select()
-    .single();
-
-  if (error || !wedding) {
-    throw new Error(error?.message || "Gagal membuat ruang kerja pernikahan.");
-  }
-
-  const today = new Date().toISOString().split("T")[0];
-  await supabase.from("wedding_events").insert([
-    {
-      wedding_id: wedding.id,
-      event_name: "Akad Nikah",
-      event_date: today,
-      event_side: "joint",
+  const wedding = await prisma.wedding.create({
+    data: {
+      createdBy: sessionUser.userId,
+      groomName: groomName.trim(),
+      brideName: brideName.trim(),
+      weddingSlug: slug,
     },
-    {
-      wedding_id: wedding.id,
-      event_name: "Resepsi",
-      event_date: today,
-      event_side: "joint",
-    },
-  ]);
+  });
+
+  const today = new Date();
+  await prisma.weddingEvent.createMany({
+    data: [
+      {
+        weddingId: wedding.id,
+        eventName: "Akad Nikah",
+        eventDate: today,
+        eventSide: "joint",
+      },
+      {
+        weddingId: wedding.id,
+        eventName: "Resepsi",
+        eventDate: today,
+        eventSide: "joint",
+      },
+    ],
+  });
 
   await recordAuditLog({
     weddingId: wedding.id,
-    userId: user.id,
-    userDisplayName: user.email || "Pengantin",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Pengantin",
     moduleName: "Workspace",
     actionType: "CREATE",
     changeDiff: { groom_name: groomName, bride_name: brideName, slug },
   });
 
   revalidatePath("/dashboard");
-  return wedding;
+  return toWeddingDTO(wedding);
 }
 
 export async function inviteCollaboratorAction(
@@ -74,12 +93,9 @@ export async function inviteCollaboratorAction(
   role: UserRoleEnum,
   permissions?: CustomPermissions
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
@@ -92,22 +108,14 @@ export async function inviteCollaboratorAction(
   };
 
   let isRegistered = false;
-  let targetUserId = user.id;
+  let targetUserId = sessionUser.userId;
 
-  if (email.trim().toLowerCase() !== user.email?.trim().toLowerCase()) {
-    const { data: matchedLog } = await supabase
-      .from("audit_logs")
-      .select("user_id")
-      .ilike("user_display_name", email.trim())
-      .not("user_id", "is", null)
-      .limit(1)
-      .maybeSingle();
+  const targetUser = await prisma.user.findUnique({
+    where: { email: email.trim().toLowerCase() },
+  });
 
-    if (matchedLog?.user_id) {
-      targetUserId = matchedLog.user_id;
-      isRegistered = true;
-    }
-  } else {
+  if (targetUser) {
+    targetUserId = targetUser.id;
     isRegistered = true;
   }
 
@@ -117,61 +125,52 @@ export async function inviteCollaboratorAction(
     is_active: isRegistered,
   };
 
-
   // Check if collaborator already exists for this wedding
-  const { data: existingCollab } = await supabase
-    .from("wedding_collaborators")
-    .select("id")
-    .eq("wedding_id", weddingId)
-    .eq("user_id", targetUserId)
-    .maybeSingle();
+  const existingCollab = await prisma.weddingCollaborator.findFirst({
+    where: {
+      weddingId,
+      userId: targetUserId,
+    },
+  });
 
   let collaborator;
   if (existingCollab) {
-    const { data: updated, error: updateErr } = await supabase
-      .from("wedding_collaborators")
-      .update({
+    collaborator = await prisma.weddingCollaborator.update({
+      where: { id: existingCollab.id },
+      data: {
         role,
-        custom_permissions: finalPerms as any,
-      })
-      .eq("id", existingCollab.id)
-      .select()
-      .single();
-
-    if (updateErr) {
-      throw new Error(updateErr.message);
-    }
-    collaborator = updated;
+        customPermissions: finalPerms as any,
+      },
+    });
   } else {
-    const { data: inserted, error: insertErr } = await supabase
-      .from("wedding_collaborators")
-      .insert({
-        wedding_id: weddingId,
-        user_id: targetUserId,
-        role: role,
-        custom_permissions: finalPerms as any,
-      })
-      .select()
-      .single();
-
-
-    if (insertErr) {
-      throw new Error(insertErr.message);
-    }
-    collaborator = inserted;
+    collaborator = await prisma.weddingCollaborator.create({
+      data: {
+        weddingId,
+        userId: targetUserId,
+        role,
+        customPermissions: finalPerms as any,
+      },
+    });
   }
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Owner",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Owner",
     moduleName: "Collaborators",
     actionType: existingCollab ? "UPDATE" : "CREATE",
     changeDiff: { email, role, permissions: defaultPerms },
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
-  return collaborator;
+  return {
+    id: collaborator.id,
+    wedding_id: collaborator.weddingId,
+    user_id: collaborator.userId,
+    role: collaborator.role,
+    custom_permissions: collaborator.customPermissions,
+    created_at: collaborator.createdAt.toISOString(),
+  };
 }
 
 export async function updateCollaboratorPermissionsAction(
@@ -179,68 +178,59 @@ export async function updateCollaboratorPermissionsAction(
   weddingId: string,
   permissions: CustomPermissions
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { data, error } = await supabase
-    .from("wedding_collaborators")
-    .update({
-      custom_permissions: permissions as any,
-    })
-    .eq("id", collaboratorId)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const updated = await prisma.weddingCollaborator.update({
+    where: { id: collaboratorId },
+    data: {
+      customPermissions: permissions as any,
+    },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Owner",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Owner",
     moduleName: "Collaborators",
     actionType: "UPDATE",
     changeDiff: { collaboratorId, permissions },
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
-  return data;
+  return {
+    id: updated.id,
+    wedding_id: updated.weddingId,
+    user_id: updated.userId,
+    role: updated.role,
+    custom_permissions: updated.customPermissions,
+  };
 }
 
 export async function removeCollaboratorAction(
   collaboratorId: string,
   weddingId: string
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const { error } = await supabase
-    .from("wedding_collaborators")
-    .delete()
-    .eq("id", collaboratorId)
-    .eq("wedding_id", weddingId);
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await prisma.weddingCollaborator.deleteMany({
+    where: {
+      id: collaboratorId,
+      weddingId,
+    },
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Owner",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Owner",
     moduleName: "Collaborators",
     actionType: "DELETE",
     changeDiff: { collaboratorId },
@@ -249,7 +239,6 @@ export async function removeCollaboratorAction(
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
   return { success: true };
 }
-
 
 export async function updateWeddingProfileAction(
   weddingId: string,
@@ -263,22 +252,19 @@ export async function updateWeddingProfileAction(
     brideMotherName?: string | null;
   }
 ) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const sessionUser = await getCurrentUser();
 
-  if (!user) {
+  if (!sessionUser) {
     throw new Error("Unauthorized");
   }
 
-  const updatePayload: Database["public"]["Tables"]["weddings"]["Update"] = {};
-  if (updates.groomName !== undefined) updatePayload.groom_name = updates.groomName;
-  if (updates.brideName !== undefined) updatePayload.bride_name = updates.brideName;
-  if (updates.groomFatherName !== undefined) updatePayload.groom_father_name = updates.groomFatherName || null;
-  if (updates.groomMotherName !== undefined) updatePayload.groom_mother_name = updates.groomMotherName || null;
-  if (updates.brideFatherName !== undefined) updatePayload.bride_father_name = updates.brideFatherName || null;
-  if (updates.brideMotherName !== undefined) updatePayload.bride_mother_name = updates.brideMotherName || null;
+  const dataToUpdate: any = {};
+  if (updates.groomName !== undefined) dataToUpdate.groomName = updates.groomName.trim();
+  if (updates.brideName !== undefined) dataToUpdate.brideName = updates.brideName.trim();
+  if (updates.groomFatherName !== undefined) dataToUpdate.groomFatherName = updates.groomFatherName?.trim() || null;
+  if (updates.groomMotherName !== undefined) dataToUpdate.groomMotherName = updates.groomMotherName?.trim() || null;
+  if (updates.brideFatherName !== undefined) dataToUpdate.brideFatherName = updates.brideFatherName?.trim() || null;
+  if (updates.brideMotherName !== undefined) dataToUpdate.brideMotherName = updates.brideMotherName?.trim() || null;
 
   if (updates.weddingSlug !== undefined) {
     const slugCleaned = updates.weddingSlug
@@ -291,39 +277,33 @@ export async function updateWeddingProfileAction(
       throw new Error("Slug harus minimal 3 karakter alfanumerik.");
     }
 
-    const { data: existingSlug } = await supabase
-      .from("weddings")
-      .select("id")
-      .eq("wedding_slug", slugCleaned)
-      .neq("id", weddingId)
-      .maybeSingle();
+    const existingSlug = await prisma.wedding.findFirst({
+      where: {
+        weddingSlug: slugCleaned,
+        NOT: { id: weddingId },
+      },
+    });
 
     if (existingSlug) {
       throw new Error(`Slug '${slugCleaned}' sudah digunakan workspace lain. Silakan pilih slug unik.`);
     }
 
-    updatePayload.wedding_slug = slugCleaned;
+    dataToUpdate.weddingSlug = slugCleaned;
   }
 
-  if (Object.keys(updatePayload).length === 0) {
+  if (Object.keys(dataToUpdate).length === 0) {
     throw new Error("Tidak ada perubahan yang dikirim.");
   }
 
-  const { data, error } = await supabase
-    .from("weddings")
-    .update(updatePayload)
-    .eq("id", weddingId)
-    .select()
-    .single();
-
-  if (error || !data) {
-    throw new Error(error?.message || "Gagal memperbarui profil pernikahan.");
-  }
+  const updated = await prisma.wedding.update({
+    where: { id: weddingId },
+    data: dataToUpdate,
+  });
 
   await recordAuditLog({
     weddingId,
-    userId: user.id,
-    userDisplayName: user.email || "Owner",
+    userId: sessionUser.userId,
+    userDisplayName: sessionUser.email || "Owner",
     moduleName: "Wedding Profile",
     actionType: "UPDATE",
     changeDiff: updates,
@@ -331,5 +311,5 @@ export async function updateWeddingProfileAction(
 
   revalidatePath(`/dashboard/${weddingId}/settings/profile`);
   revalidatePath(`/dashboard/${weddingId}`);
-  return data;
+  return toWeddingDTO(updated);
 }
