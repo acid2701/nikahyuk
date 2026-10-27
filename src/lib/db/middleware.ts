@@ -2,9 +2,21 @@ import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
 const AUTH_COOKIE_NAME = "nikahyuk_session";
-const AUTH_SECRET_STRING =
-  process.env.AUTH_SECRET || "nikahyuk_default_auth_secret_key_32_bytes_2026!";
-const encodedKey = new TextEncoder().encode(AUTH_SECRET_STRING);
+function getAuthSecret(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.trim().length < 32) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "FATAL SECURITY ERROR: AUTH_SECRET must be set and at least 32 characters long in production"
+      );
+    }
+  }
+  return new TextEncoder().encode(
+    secret || "nikahyuk_dev_temporary_fallback_secret_key_32_bytes_safe!"
+  );
+}
+
+const encodedKey = getAuthSecret();
 
 export async function updateSession(request: NextRequest) {
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
@@ -39,6 +51,36 @@ export async function updateSession(request: NextRequest) {
     pathname === "/login" ||
     pathname === "/register" ||
     pathname === "/vendor/login";
+
+  // 0. API Route Protection (Khusus rute /api/*)
+  if (pathname.startsWith("/api/")) {
+    const isPublicApi =
+      pathname.startsWith("/api/public") ||
+      pathname.startsWith("/api/auth/login") ||
+      pathname.startsWith("/api/auth/register") ||
+      pathname.startsWith("/api/auth/logout") ||
+      pathname.startsWith("/api/token/verify");
+
+    if (isPublicApi) {
+      return NextResponse.next();
+    }
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (pathname.startsWith("/api/admin")) {
+      const isSuperadmin = user.role === "superadmin" || user.role === "admin";
+      if (!isSuperadmin) {
+        return NextResponse.json(
+          { error: "Forbidden: Superadmin/Admin role required" },
+          { status: 403 }
+        );
+      }
+    }
+
+    return NextResponse.next();
+  }
 
   // 1. Unauthenticated users trying to access protected routes
   if (!user && isProtectedRoute) {

@@ -11,9 +11,21 @@ export interface SessionPayload {
 }
 
 const AUTH_COOKIE_NAME = "nikahyuk_session";
-const AUTH_SECRET_STRING =
-  process.env.AUTH_SECRET || "nikahyuk_default_auth_secret_key_32_bytes_2026!";
-const encodedKey = new TextEncoder().encode(AUTH_SECRET_STRING);
+function getAuthSecret(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.trim().length < 32) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        "FATAL SECURITY ERROR: AUTH_SECRET must be set and at least 32 characters long in production"
+      );
+    }
+  }
+  return new TextEncoder().encode(
+    secret || "nikahyuk_dev_temporary_fallback_secret_key_32_bytes_safe!"
+  );
+}
+
+const encodedKey = getAuthSecret();
 
 /**
  * Generate signed JWT token

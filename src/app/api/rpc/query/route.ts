@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pool } from "@/lib/pg-pool";
+import { verifySessionToken } from "@/lib/auth/session";
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Mandatory Session Authentication Guard
+    const token = req.cookies.get("nikahyuk_session")?.value;
+    const session = await verifySessionToken(token);
+    if (!session || !session.userId) {
+      return NextResponse.json({ error: "Unauthorized: Sesi login tidak valid" }, { status: 401 });
+    }
+
     const {
       table,
       mutationType,
