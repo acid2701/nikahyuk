@@ -17,7 +17,7 @@ import {
   SlidersHorizontal,
   ExternalLink,
   Ban,
-  Sparkles,
+  Clock,
 } from "lucide-react";
 import { VendorItem } from "./vendor-manager";
 
@@ -102,7 +102,7 @@ export function VendorComparisonMatrix({
       default:
         return (
           <Badge variant="secondary" className="gap-1">
-            <Sparkles className="h-3 w-3 text-amber-500" /> Calon / Survei
+            <Clock className="h-3 w-3 text-amber-500" /> Calon / Survei
           </Badge>
         );
     }

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { UserPlus, ShieldCheck, Sparkles, Layers } from "lucide-react";
+import { UserPlus, ShieldCheck, Layers } from "lucide-react";
 import { UserRoleEnum, CustomPermissions } from "@/types/database.types";
 import { DYNAMIC_ROLE_PRESETS, DynamicRolePreset } from "@/types/presets.types";
 import { CustomRoleManagerModal } from "./custom-role-manager-modal";
@@ -283,7 +283,7 @@ export function CollaboratorInviteModal({
                     type="button"
                     className="text-[11px] text-primary hover:underline font-medium flex items-center gap-1 cursor-pointer"
                   >
-                    <Sparkles className="h-3 w-3 text-amber-500" />
+                    <ShieldCheck className="h-3 w-3 text-primary" />
                     + Kelola / Tambah Peran Kustom
                   </button>
                 }

@@ -8,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Bell, Sparkles, CheckCircle2, Package, Heart } from "lucide-react";
+import { Bell, CheckCircle2, Package, Heart, FileText } from "lucide-react";
 
 export function VendorNotificationBell() {
   const [notifications] = React.useState([
@@ -25,7 +25,7 @@ export function VendorNotificationBell() {
       title: "Tips: Tambahkan Paket Penawaran",
       time: "1 jam lalu",
       desc: "Vendor dengan 3+ paket penawaran mendapat 4x lebih banyak impor dari pengantin.",
-      icon: Sparkles,
+      icon: FileText,
       color: "text-amber-600 bg-amber-500/10",
     },
   ]);

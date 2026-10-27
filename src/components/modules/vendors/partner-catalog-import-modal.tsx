@@ -42,7 +42,7 @@ import {
   Package,
   ChevronLeft,
   ChevronRight,
-  Flame,
+  TrendingUp,
   Check,
   Info,
   Users,
@@ -199,7 +199,7 @@ export function PartnerCatalogImportModal({
               <Star className="h-3 w-3 fill-amber-500" /> Katalog Vendor Rekomendasi Partner
             </Badge>
             <div className="flex items-center space-x-2 text-xs">
-              <Flame className="h-4 w-4 text-amber-500" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               <span className="font-semibold text-foreground">Diurutkan Berdasarkan Popularitas</span>
             </div>
           </div>

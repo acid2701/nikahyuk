@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { QrCode, HeartHandshake, Sparkles, Check, Copy } from "lucide-react";
+import { QrCode, HeartHandshake, Check, Copy } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface DonationQrisModalProps {
@@ -94,7 +94,7 @@ export function DonationQrisModal({
 
           <div className="space-y-0.5 text-center">
             <p className="text-xs font-semibold text-foreground flex items-center justify-center gap-1">
-              <Sparkles className="h-3.5 w-3.5 text-amber-500" /> {config.merchantName}
+              <QrCode className="h-3.5 w-3.5 text-primary" /> {config.merchantName}
             </p>
             <p className="text-[10px] text-muted-foreground">{config.notes}</p>
           </div>

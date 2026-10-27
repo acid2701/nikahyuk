@@ -48,7 +48,7 @@ import {
   ThumbsUp,
   CheckCircle2,
   Award,
-  Sparkles,
+  Clock,
   Ban,
   Printer,
   Star,
@@ -1110,7 +1110,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
                     </Badge>
                   ) : (
                     <Badge variant="secondary" className="text-xs gap-1">
-                      <Sparkles className="h-3 w-3 text-amber-500" /> Calon / Survei
+                      <Clock className="h-3 w-3 text-amber-500" /> Calon / Survei
                     </Badge>
                   )}
                 </div>

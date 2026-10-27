@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
-import { Heart, ArrowRight, Sparkles } from "lucide-react";
+import { Heart, ArrowRight, LayoutDashboard } from "lucide-react";
 
 export interface LandingNavbarProps {
   appName: string;
@@ -47,7 +47,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           {isLoggedIn ? (
             <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
               <Link href="/dashboard">
-                <Sparkles className="h-3.5 w-3.5 text-amber-300" /> Buka Dashboard
+                <LayoutDashboard className="h-3.5 w-3.5" /> Buka Dashboard
               </Link>
             </Button>
           ) : (

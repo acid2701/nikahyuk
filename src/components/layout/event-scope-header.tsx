@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Layers, Sparkles, Lock } from "lucide-react";
+import { Layers, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface SubEventOption {
@@ -85,7 +85,7 @@ export function EventScopeHeader({
                 : "bg-secondary/60 text-secondary-foreground hover:bg-secondary hover:text-foreground"
             )}
           >
-            <Sparkles className="h-3 w-3" />
+            <Layers className="h-3 w-3" />
             Semua Acara (Akumulasi Total)
           </button>
         )}

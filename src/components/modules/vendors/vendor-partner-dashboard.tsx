@@ -57,8 +57,7 @@ import {
   Copy,
   QrCode,
   MessageSquare,
-  Wand2,
-  Flame,
+  Layers,
   Power,
   PowerOff,
   AlertTriangle,
@@ -1883,7 +1882,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                   <div className="text-xl font-bold font-mono text-emerald-600 mt-0.5">{INITIAL_BRIDE_LEADS.length} Total</div>
                 </div>
                 <div className="h-9 w-9 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 border border-emerald-500/20">
-                  <Flame className="h-4 w-4" />
+                  <Users className="h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
@@ -2074,7 +2073,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
               <div className="space-y-1 pt-1">
                 <div className="flex items-center justify-between">
                   <label className="font-semibold text-foreground flex items-center gap-1">
-                    <Wand2 className="h-3.5 w-3.5 text-amber-500" /> Templat Fasilitas 1-Klik:
+                    <Layers className="h-3.5 w-3.5 text-primary" /> Templat Fasilitas 1-Klik:
                   </label>
                   <span className="text-[10px] text-muted-foreground">Klik untuk isi otomatis</span>
                 </div>
