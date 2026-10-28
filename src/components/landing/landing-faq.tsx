@@ -3,25 +3,29 @@
 import * as React from "react";
 import { ChevronDown } from "lucide-react";
 
-export function LandingFaq() {
+export interface LandingFaqProps {
+  appName: string;
+}
+
+export function LandingFaq({ appName }: LandingFaqProps) {
   const [openIndex, setOpenIndex] = React.useState<number | null>(0);
 
   const faqs = [
     {
-      q: "Apakah NikahYuk dapat digunakan secara gratis?",
-      a: "Ya! NikahYuk dapat digunakan secara gratis untuk membuat workspace pernikahan, mengelola sub-event (Akad/Resepsi), rundown acara, anggaran, dan master tamu.",
+      q: `Apakah ${appName} dapat digunakan secara gratis?`,
+      a: `Ya! ${appName} dapat digunakan secara gratis untuk membuat jadwal acara pernikahan, mengelola sub-event (Akad/Resepsi), rundown, anggaran, dan daftar tamu.`,
     },
     {
-      q: "Bagaimana cara panitia/kru lapangan mengakses portal tanpa login?",
-      a: "Melalui fitur Shareable Token, pengantin/WO dapat membuat link publik yang dapat dibuka langsung di HP kru (PWA) tanpa perlu registrasi akun. Akses dapat dilindungi dengan PIN 4-6 digit.",
+      q: "Bagaimana cara panitia atau kru lapangan mengakses jadwal tanpa login?",
+      a: "Melalui fitur Tautan Berbagi (Shareable Link), pasangan pengantin atau WO dapat membuat tautan khusus yang bisa langsung dibuka di browser HP kru tanpa perlu login akun, serta dapat diamankan dengan PIN 4–6 digit.",
     },
     {
-      q: "Apakah fitur check-in tamu tetap bisa berjalan jika sinyal HP hilang?",
-      a: "Bisa! NikahYuk dilengkapi engine Offline Dexie IndexedDB. Saat sinyal HP hilang (offline), check-in tetap tersimpan di memori HP dan otomatis terunggah ke server saat internet pulih.",
+      q: "Apakah fitur buku tamu & check-in tetap berjalan jika sinyal gedung hilang?",
+      a: "Bisa. Sistem dilengkapi penyimpanan offline di memori browser perangkat. Saat sinyal terputus, pencatatan tamu tetap berjalan lancar dan otomatis tersinkronisasi ke pusat saat internet kembali terhubung.",
     },
     {
-      q: "Apakah data pengantin aman dan dapat diunduh (backup)?",
-      a: "Sangat aman. Pengantin memiliki hak penuh atas data mereka dan dapat mengunduh arsip backup lengkap (.zip) berisi seluruh file CSV dan dokumen kapan saja dari modul Data Export.",
+      q: "Apakah data rencana pernikahan kami aman dan bisa diunduh?",
+      a: "Sangat aman. Anda memiliki kendali penuh atas data dan dapat mengunduh salinan berkas lengkap (.zip) berisi arsip CSV dan dokumen pendukung kapan saja melalui menu Ekspor Data.",
     },
   ];
 

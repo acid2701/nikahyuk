@@ -9,44 +9,44 @@ export function LandingFeatures() {
     {
       icon: Clock,
       color: "text-primary bg-primary/10",
-      title: "Live Rundown & Cue Badges",
+      title: "Live Rundown & Aba-Aba Acara",
       description:
-        "Atur agenda susunan acara dengan 1-klik Shift Timeline math, cetak PDF resmi WO via hidden iframe, dan petunjuk audio/lighting cue badges.",
+        "Susun jadwal acara dengan penyesuaian jam otomatis saat agenda mundur. Siap cetak dokumen panduan PDF resmi untuk pegangan kru lapangan.",
     },
     {
       icon: Users,
       color: "text-amber-600 bg-amber-500/10",
-      title: "Master Tamu & WA Blast",
+      title: "Daftar Tamu & Sebar Undangan WA",
       description:
-        "Master guest pool dengan alokasi pax, CSV bulk parser 500+ tamu, status RSVP, dan generator link WhatsApp 1-klik dengan template dinamis.",
+        "Kelola daftar tamu dengan alokasi pax, impor data kontak dari Excel/CSV, pantau konfirmasi kehadiran (RSVP), dan kirim pesan WhatsApp sekali klik.",
     },
     {
       icon: DollarSign,
       color: "text-emerald-600 bg-emerald-500/10",
-      title: "Financial Core & Payment Milestones",
+      title: "Rencana Anggaran & Catatan DP",
       description:
-        "Kelola estimasi anggaran, catat pembayaran bertahap (DP, Pelunasan), kalkulasi HOS (Head of Expenditure), dan lampirkan kuitansi bukti transfer.",
+        "Catat perkiraan biaya per kategori, pantau sisa tagihan dari uang muka (DP) hingga pelunasan, serta simpan foto bukti kuitansi pembayaran.",
     },
     {
       icon: Briefcase,
       color: "text-blue-600 bg-blue-500/10",
-      title: "Vendor Directory & Contract Manager",
+      title: "Direktori & Arsip Kontrak Vendor",
       description:
-        "Direktori vendor pernikahan dikategorikan per bidang jasa, upload kontrak fisik via presigned R2, dan sanitizer WhatsApp nomor HP otomatis.",
+        "Pusatkan daftar vendor pernikahan yang bekerjasama lengkap dengan nomor WhatsApp terhubung dan lampiran berkas kesepakatan kerjasama.",
     },
     {
       icon: Share2,
       color: "text-sky-600 bg-sky-500/10",
-      title: "Shareable Token & Field Crew PWA",
+      title: "Akses Kru & Buku Tamu Tanpa Login",
       description:
-        "Bagikan link PWA publik dengan PIN pengaman 4-6 digit untuk kru lapangan, meja registrasi check-in, dan door greeter tanpa perlu login akun.",
+        "Cukup bagikan tautan khusus yang dilindungi PIN untuk tim meja registrasi, penerima tamu, dan koordinator acara langsung dari layar ponsel.",
     },
     {
       icon: ShieldCheck,
       color: "text-emerald-600 bg-emerald-500/10",
-      title: "Resiliensi Offline & Realtime Sync",
+      title: "Tetap Aktif Saat Sinyal Drop",
       description:
-        "Dukungan penyimpanan browser Dexie IndexedDB untuk lokasi acara dengan sinyal terbatas, serta sinkronisasi otomatis WebSocket CDC saat online.",
+        "Pencatatan kehadiran tamu di lokasi resepsi tetap berjalan lancar meski sinyal hilang, lalu otomatis tersinkronisasi saat koneksi pulih.",
     },
   ];
 

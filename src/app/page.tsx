@@ -4,6 +4,7 @@ import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingFeatures } from "@/components/landing/landing-features";
 import { LandingFaq } from "@/components/landing/landing-faq";
+import { LandingCta } from "@/components/landing/landing-cta";
 import { LandingFooter } from "@/components/landing/landing-footer";
 
 export default async function HomePage() {
@@ -40,7 +41,9 @@ export default async function HomePage() {
 
         <LandingFeatures />
 
-        <LandingFaq />
+        <LandingFaq appName={appName} />
+
+        <LandingCta appName={appName} isLoggedIn={!!user} />
       </main>
 
       <LandingFooter
