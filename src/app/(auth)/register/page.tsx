@@ -174,7 +174,7 @@ export default function RegisterPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-3 justify-center border-t border-border/60 pt-4">
+      <CardFooter className="flex-col gap-2 justify-center border-t border-border/60 pt-4 text-center">
         <p className="text-xs text-muted-foreground">
           Sudah memiliki akun?{" "}
           <Link
@@ -182,15 +182,6 @@ export default function RegisterPage() {
             className="text-foreground font-semibold hover:underline"
           >
             Masuk
-          </Link>
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Mitra Vendor?{" "}
-          <Link
-            href="/vendor/login"
-            className="text-foreground font-semibold hover:underline"
-          >
-            Masuk ke Portal Vendor
           </Link>
         </p>
       </CardFooter>

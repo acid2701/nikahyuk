@@ -38,10 +38,10 @@ export function VendorSidebar({
     setLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      window.location.href = "/vendor/login";
+      window.location.href = "/login";
     } catch (err) {
       console.error("Logout error:", err);
-      window.location.href = "/vendor/login";
+      window.location.href = "/login";
     } finally {
       setLoggingOut(false);
     }

@@ -108,8 +108,7 @@ export async function updateSession(request: NextRequest) {
 
   // 1. Unauthenticated users trying to access protected routes
   if (!user && isProtectedRoute) {
-    const target = isVendorRoute ? "/vendor/login" : "/login";
-    return createRedirect(target);
+    return createRedirect("/login");
   }
 
   // 2. Admin Route Protection (hanya superadmin dan admin)

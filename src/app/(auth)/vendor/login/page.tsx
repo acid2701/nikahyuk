@@ -1,19 +1,9 @@
-import { Metadata } from "next";
-import { VendorLoginForm } from "@/components/modules/vendors/vendor-login-form";
-import { getAppBranding } from "@/lib/branding";
+import { redirect } from "next/navigation";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const branding = await getAppBranding();
-  return {
-    title: `Portal Login Mitra Vendor | ${branding.appName}`,
-    description: `Masuk ke akun vendor Anda di platform ${branding.appName}.`,
-  };
-}
-
+/**
+ * Universal Login Consolidation:
+ * Redirect legacy /vendor/login traffic directly to /login
+ */
 export default function VendorLoginPage() {
-  return (
-    <div className="min-h-screen bg-background py-16 px-4 flex items-center justify-center">
-      <VendorLoginForm />
-    </div>
-  );
+  redirect("/login");
 }

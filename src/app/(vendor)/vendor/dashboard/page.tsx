@@ -17,7 +17,7 @@ export default async function VendorDashboardPage() {
   const { user, partner } = await getCurrentUserVendorPartnerAction();
 
   if (!user) {
-    redirect("/vendor/login");
+    redirect("/login");
   }
 
   return (

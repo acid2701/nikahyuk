@@ -48,12 +48,12 @@ export default async function VendorRegisterPage() {
           <div className="flex items-center gap-2.5 sm:gap-3">
             <ThemeToggle />
             <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex text-xs font-semibold">
-              <Link href="/vendor/login">
-                Masuk Vendor <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              <Link href="/login">
+                Masuk <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm" className="sm:hidden text-xs">
-              <Link href="/vendor/login">Masuk</Link>
+              <Link href="/login">Masuk</Link>
             </Button>
           </div>
         </div>
@@ -130,9 +130,9 @@ export default async function VendorRegisterPage() {
           <div className="flex items-center gap-4">
             <Link href="/" className="hover:text-foreground transition-colors">Beranda</Link>
             <span>•</span>
-            <Link href="/vendor/login" className="hover:text-foreground transition-colors">Masuk Vendor</Link>
+            <Link href="/login" className="hover:text-foreground transition-colors">Masuk</Link>
             <span>•</span>
-            <Link href="/login" className="hover:text-foreground transition-colors">Portal Pengantin</Link>
+            <Link href="/register" className="hover:text-foreground transition-colors">Daftar Pengantin</Link>
           </div>
         </div>
       </footer>

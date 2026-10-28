@@ -227,23 +227,21 @@ export default function LoginPage() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex-col gap-3 justify-center pt-2">
+      <CardFooter className="flex-col gap-2 justify-center pt-2 text-center">
         <p className="text-xs text-muted-foreground">
           Belum memiliki akun?{" "}
           <Link
             href="/register"
             className="text-foreground font-semibold hover:underline"
           >
-            Daftar
+            Daftar Pengantin
           </Link>
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Mitra Vendor?{" "}
+          {" · "}
           <Link
-            href="/vendor/login"
+            href="/vendor-register"
             className="text-foreground font-semibold hover:underline"
           >
-            Masuk ke Portal Vendor
+            Daftar Mitra Vendor
           </Link>
         </p>
       </CardFooter>

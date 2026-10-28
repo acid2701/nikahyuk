@@ -179,8 +179,8 @@ export function PublicVendorRegistrationForm({
         </div>
         <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
           <Button asChild size="lg" className="w-full sm:w-auto text-sm font-semibold gap-2 shadow-sm">
-            <Link href="/vendor/login">
-              Masuk ke Portal Vendor <ArrowRight className="h-4 w-4" />
+            <Link href="/login">
+              Masuk ke Dashboard <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="w-full sm:w-auto text-sm">
@@ -211,10 +211,10 @@ export function PublicVendorRegistrationForm({
           <div className="hidden sm:block text-right">
             <span className="text-xs text-muted-foreground block">Sudah terdaftar?</span>
             <Link
-              href="/vendor/login"
+              href="/login"
               className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
             >
-              Masuk Portal <ArrowRight className="h-3 w-3" />
+              Masuk <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
@@ -396,8 +396,8 @@ export function PublicVendorRegistrationForm({
       <CardFooter className="flex flex-col sm:flex-row items-center justify-between border-t border-border/60 py-4 px-5 sm:px-8 bg-muted/20 gap-3">
         <p className="text-xs text-muted-foreground text-center sm:text-left">
           Sudah memiliki akun mitra vendor?{" "}
-          <Link href="/vendor/login" className="text-primary font-semibold hover:underline">
-            Masuk ke Portal Vendor
+          <Link href="/login" className="text-primary font-semibold hover:underline">
+            Masuk ke Akun
           </Link>
         </p>
 
