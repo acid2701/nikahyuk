@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Crop, ZoomIn, ZoomOut, RotateCw, Check, X } from "lucide-react";
+import { useImageCrop } from "@/hooks/use-image-crop";
 
 interface ImageCropModalProps {
   open: boolean;
@@ -25,11 +26,20 @@ export function ImageCropModal({
   onCancel,
 }: ImageCropModalProps) {
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
-  const [zoom, setZoom] = React.useState<number>(1);
-  const [pan, setPan] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [aspectRatio, setAspectRatio] = React.useState<number | null>(null); // null = free, 1 = 1:1, 16/9 = 16:9, 4/3 = 4:3
-  const [isDragging, setIsDragging] = React.useState<boolean>(false);
-  const [dragStart, setDragStart] = React.useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const {
+    zoom,
+    setZoom,
+    pan,
+    setPan,
+    aspectRatio,
+    setAspectRatio,
+    startDrag,
+    onDrag,
+    endDrag,
+    zoomIn,
+    zoomOut,
+    reset,
+  } = useImageCrop();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const imageRef = React.useRef<HTMLImageElement>(null);
@@ -43,31 +53,25 @@ export function ImageCropModal({
 
     const url = URL.createObjectURL(imageFile);
     setImageSrc(url);
-    setZoom(1);
-    setPan({ x: 0, y: 0 });
+    reset();
 
     return () => {
       URL.revokeObjectURL(url);
     };
-  }, [imageFile]);
+  }, [imageFile, reset]);
 
   // Touch and Mouse drag handling for image repositioning inside crop viewport
   const handlePointerDown = (e: React.PointerEvent) => {
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
+    startDrag(e.clientX, e.clientY);
     (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDragging) return;
-    setPan({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
+    onDrag(e.clientX, e.clientY);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    setIsDragging(false);
+    endDrag();
     try {
       (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
     } catch {
@@ -244,7 +248,7 @@ export function ImageCropModal({
             <div className="flex items-center gap-3 px-2 py-1 bg-background/80 rounded-full border border-border/70">
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.max(0.5, Number((z - 0.1).toFixed(1))))}
+                onClick={zoomOut}
                 className="h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
               >
                 <ZoomOut className="h-3.5 w-3.5" />
@@ -260,17 +264,14 @@ export function ImageCropModal({
               />
               <button
                 type="button"
-                onClick={() => setZoom((z) => Math.min(3, Number((z + 0.1).toFixed(1))))}
+                onClick={zoomIn}
                 className="h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
               >
                 <ZoomIn className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setZoom(1);
-                  setPan({ x: 0, y: 0 });
-                }}
+                onClick={reset}
                 title="Reset Posisi"
                 className="h-6 w-6 rounded-full hover:bg-muted flex items-center justify-center text-muted-foreground"
               >
