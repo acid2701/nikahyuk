@@ -39,6 +39,30 @@ export function AdminSidebar({
   const router = useRouter();
   const [loggingOut, setLoggingOut] = React.useState(false);
 
+  // Eager prefetch all admin routes into Next.js router cache for instant SPA transitions
+  React.useEffect(() => {
+    [
+      "/admin",
+      "/admin/vendor-partners",
+      "/admin/payments",
+      "/admin/analytics",
+      "/admin/users",
+      "/admin/staff-permissions",
+      "/admin/rbac-templates",
+      "/admin/audit-logs",
+      "/admin/storage-config",
+      "/admin/backups",
+      "/admin/app-settings",
+      "/dashboard",
+    ].forEach((url) => {
+      try {
+        router.prefetch(url);
+      } catch {
+        // Safe fallback
+      }
+    });
+  }, [router]);
+
   async function handleLogout() {
     setLoggingOut(true);
     try {

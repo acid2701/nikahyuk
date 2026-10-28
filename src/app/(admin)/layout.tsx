@@ -10,7 +10,6 @@ import { Crown, LogOut } from "lucide-react";
 import { Suspense } from "react";
 import AdminLoading from "./loading";
 
-export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { AdminSidebar } from "./admin-sidebar";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -83,7 +83,9 @@ export function AdminMobileDrawer({
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
-                onNavigate={() => setOpen(false)}
+                onNavigate={() => {
+                  setOpen(false);
+                }}
                 className="w-full border-r-0 h-auto"
                 appName={appName}
                 logoUrl={logoUrl}
