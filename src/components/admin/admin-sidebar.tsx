@@ -128,8 +128,8 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between h-full min-h-screen select-none",
-        className
+        "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between select-none",
+        className ? className : "h-full min-h-screen"
       )}
     >
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">

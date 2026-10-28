@@ -31,7 +31,8 @@ export async function updateSession(request: NextRequest) {
         role: payload.role as string,
         userType: payload.userType as string,
       };
-    } catch {
+    } catch (e) {
+      console.error("MIDDLEWARE JWT ERROR:", e);
       // Invalid/expired token
       user = null;
     }
