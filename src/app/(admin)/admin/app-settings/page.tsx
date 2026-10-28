@@ -287,13 +287,24 @@ export default function AdminAppSettingsPage() {
                 />
 
                 {logoUrl && (
-                  <div className="p-3 bg-muted/40 rounded-lg border border-border flex items-center space-x-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={logoUrl} alt="Logo Preview" className="h-10 w-10 object-contain p-1 bg-white rounded border" />
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate">Asset Logo Terpasang</p>
-                      <p className="text-[10px] text-muted-foreground font-mono truncate">{logoUrl}</p>
+                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={logoUrl} alt="Logo Preview" className="h-10 w-10 shrink-0 object-contain p-1 bg-white rounded-lg border shadow-xs" />
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground truncate">Asset Logo Terpasang</p>
+                        <p className="text-[10px] text-muted-foreground font-mono truncate">{logoUrl}</p>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setLogoUrl("")}
+                      className="h-7 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
+                    >
+                      Hapus
+                    </Button>
                   </div>
                 )}
               </div>
@@ -326,13 +337,24 @@ export default function AdminAppSettingsPage() {
                 />
 
                 {faviconUrl && (
-                  <div className="p-3 bg-muted/40 rounded-lg border border-border flex items-center space-x-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={faviconUrl} alt="Favicon Preview" className="h-8 w-8 object-contain p-1 bg-white rounded border" />
-                    <div className="space-y-0.5 flex-1 min-w-0">
-                      <p className="text-xs font-medium text-foreground truncate">Asset Favicon Terpasang</p>
-                      <p className="text-[10px] text-muted-foreground font-mono truncate">{faviconUrl}</p>
+                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={faviconUrl} alt="Favicon Preview" className="h-8 w-8 shrink-0 object-contain p-1 bg-white rounded-lg border shadow-xs" />
+                      <div className="space-y-0.5 min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground truncate">Asset Favicon Terpasang</p>
+                        <p className="text-[10px] text-muted-foreground font-mono truncate">{faviconUrl}</p>
+                      </div>
                     </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setFaviconUrl("")}
+                      className="h-7 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
+                    >
+                      Hapus
+                    </Button>
                   </div>
                 )}
               </div>
