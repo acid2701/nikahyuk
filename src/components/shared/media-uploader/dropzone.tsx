@@ -473,6 +473,11 @@ export function MediaUploaderDropzone({
           setPendingCropFile(null);
           processAndUploadFile(croppedFile);
         }}
+        onUseOriginal={(originalFile) => {
+          setCropModalOpen(false);
+          setPendingCropFile(null);
+          processAndUploadFile(originalFile);
+        }}
         onCancel={() => {
           setCropModalOpen(false);
           setPendingCropFile(null);

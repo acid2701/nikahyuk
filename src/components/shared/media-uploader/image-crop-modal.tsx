@@ -16,6 +16,7 @@ interface ImageCropModalProps {
   open: boolean;
   imageFile: File | null;
   onConfirmCrop: (croppedFile: File) => void;
+  onUseOriginal?: (originalFile: File) => void;
   onCancel: () => void;
 }
 
@@ -23,6 +24,7 @@ export function ImageCropModal({
   open,
   imageFile,
   onConfirmCrop,
+  onUseOriginal,
   onCancel,
 }: ImageCropModalProps) {
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
@@ -282,24 +284,40 @@ export function ImageCropModal({
         </div>
 
         {/* Modal Actions */}
-        <DialogFooter className="p-4 border-t border-border/80 flex flex-row items-center justify-end gap-2 bg-background">
+        <DialogFooter className="p-4 border-t border-border/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 bg-background">
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="sm"
             onClick={onCancel}
-            className="rounded-full h-9 px-4 text-xs font-semibold border-border/80 hover:bg-muted"
+            className="rounded-full h-9 px-4 text-xs font-semibold text-muted-foreground hover:text-foreground order-3 sm:order-1 w-full sm:w-auto"
           >
             <X className="h-3.5 w-3.5 mr-1" /> Batal
           </Button>
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleApplyCrop}
-            className="rounded-full h-9 px-5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs"
-          >
-            <Check className="h-3.5 w-3.5 mr-1" /> Potong & Unggah
-          </Button>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end order-1 sm:order-2">
+            {onUseOriginal && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (imageFile) onUseOriginal(imageFile);
+                }}
+                className="rounded-full h-9 px-4 text-xs font-semibold border-border/80 hover:bg-muted flex-1 sm:flex-none"
+              >
+                Gunakan Asli
+              </Button>
+            )}
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleApplyCrop}
+              className="rounded-full h-9 px-5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs flex-1 sm:flex-none"
+            >
+              <Check className="h-3.5 w-3.5 mr-1" /> Potong & Unggah
+            </Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
