@@ -109,6 +109,8 @@ export function MediaUploaderDropzone({
 
   const effectiveMaxImageMb = dynamicRules.maxImageSizeMb || 2;
   const effectiveMaxPdfMb = dynamicRules.maxPdfSizeMb || 3;
+  const allowsPdf = allowedMimeTypes.includes("application/pdf");
+  const allowsImage = allowedMimeTypes.some((t) => t.startsWith("image/"));
 
   async function processAndUploadFile(file: File) {
     const isPdf = file.type === "application/pdf";
@@ -445,8 +447,16 @@ export function MediaUploaderDropzone({
                     </>
                   )}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1 font-mono">
-                  Mendukung Gambar (Maksimal {effectiveMaxImageMb} MB) & Dokumen PDF (Maksimal {effectiveMaxPdfMb} MB)
+                <p className="text-xs text-muted-foreground mt-1">
+                  {allowsImage && allowsPdf ? (
+                    `Mendukung Gambar (maks. ${effectiveMaxImageMb} MB) & Dokumen PDF (maks. ${effectiveMaxPdfMb} MB)`
+                  ) : allowsImage ? (
+                    `Format Gambar (maks. ${effectiveMaxImageMb} MB) • Auto-Crop & WebP`
+                  ) : allowsPdf ? (
+                    `Dokumen PDF (maks. ${effectiveMaxPdfMb} MB)`
+                  ) : (
+                    `Maksimal ${effectiveMaxImageMb} MB`
+                  )}
                 </p>
               </div>
             </div>

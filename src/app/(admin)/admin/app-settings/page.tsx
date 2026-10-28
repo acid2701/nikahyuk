@@ -272,21 +272,7 @@ export default function AdminAppSettingsPage() {
                   )}
                 </div>
 
-                <MediaUploaderDropzone
-                  weddingId="system"
-                  folder="documents"
-                  allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
-                  onUploadSuccess={handleLogoUploaded}
-                  onUploadError={(msg) =>
-                    toast({
-                      title: "Gagal Upload Logo",
-                      description: msg,
-                      variant: "destructive",
-                    })
-                  }
-                />
-
-                {logoUrl && (
+                {logoUrl ? (
                   <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -296,16 +282,43 @@ export default function AdminAppSettingsPage() {
                         <p className="text-[10px] text-muted-foreground font-mono truncate">{logoUrl}</p>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setLogoUrl("")}
-                      className="h-7 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
-                    >
-                      Hapus
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold"
+                      >
+                        <a href={logoUrl} target="_blank" rel="noopener noreferrer">
+                          Lihat
+                        </a>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setLogoUrl("")}
+                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                      >
+                        Ganti / Hapus
+                      </Button>
+                    </div>
                   </div>
+                ) : (
+                  <MediaUploaderDropzone
+                    weddingId="system"
+                    folder="documents"
+                    allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/svg+xml"]}
+                    onUploadSuccess={handleLogoUploaded}
+                    onUploadError={(msg) =>
+                      toast({
+                        title: "Gagal Upload Logo",
+                        description: msg,
+                        variant: "destructive",
+                      })
+                    }
+                  />
                 )}
               </div>
 
@@ -322,21 +335,7 @@ export default function AdminAppSettingsPage() {
                   )}
                 </div>
 
-                <MediaUploaderDropzone
-                  weddingId="system"
-                  folder="documents"
-                  allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]}
-                  onUploadSuccess={handleFaviconUploaded}
-                  onUploadError={(msg) =>
-                    toast({
-                      title: "Gagal Upload Favicon",
-                      description: msg,
-                      variant: "destructive",
-                    })
-                  }
-                />
-
-                {faviconUrl && (
+                {faviconUrl ? (
                   <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
                     <div className="flex items-center space-x-3 min-w-0 flex-1">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -346,16 +345,43 @@ export default function AdminAppSettingsPage() {
                         <p className="text-[10px] text-muted-foreground font-mono truncate">{faviconUrl}</p>
                       </div>
                     </div>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setFaviconUrl("")}
-                      className="h-7 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 shrink-0"
-                    >
-                      Hapus
-                    </Button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold"
+                      >
+                        <a href={faviconUrl} target="_blank" rel="noopener noreferrer">
+                          Lihat
+                        </a>
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setFaviconUrl("")}
+                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                      >
+                        Ganti / Hapus
+                      </Button>
+                    </div>
                   </div>
+                ) : (
+                  <MediaUploaderDropzone
+                    weddingId="system"
+                    folder="documents"
+                    allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]}
+                    onUploadSuccess={handleFaviconUploaded}
+                    onUploadError={(msg) =>
+                      toast({
+                        title: "Gagal Upload Favicon",
+                        description: msg,
+                        variant: "destructive",
+                      })
+                    }
+                  />
                 )}
               </div>
             </div>
