@@ -174,7 +174,9 @@ export function AdminSidebar({
                       href={item.href}
                       prefetch={true}
                       onClick={() => {
-                        if (onNavigate) onNavigate();
+                        if (onNavigate) {
+                          onNavigate();
+                        }
                       }}
                       className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
                         isActive

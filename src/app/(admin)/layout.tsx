@@ -7,6 +7,10 @@ import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { Crown, LogOut } from "lucide-react";
+import { Suspense } from "react";
+import AdminLoading from "./loading";
+
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -88,7 +92,9 @@ export default async function AdminLayout({
         </header>
 
         <main className="flex-1 overflow-y-auto p-3 sm:p-6 max-w-6xl w-full mx-auto space-y-6 min-w-0">
-          {children}
+          <Suspense fallback={<AdminLoading />}>
+            {children}
+          </Suspense>
         </main>
       </div>
     </div>
