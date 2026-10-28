@@ -62,6 +62,19 @@ export default async function VendorRegisterPage() {
       {/* 2. RESPONSIVE HERO VALUE PROPOSITION */}
       <section className="relative overflow-hidden pt-8 pb-6 sm:pt-12 sm:pb-10 px-4 sm:px-6 lg:px-8 bg-muted/20 border-b border-border/60">
         <div className="max-w-4xl mx-auto text-center space-y-4">
+          {/* Account Type Pill Toggle */}
+          <div className="flex items-center justify-center p-1 bg-muted/80 rounded-full border border-border/60 max-w-xs mx-auto">
+            <Link
+              href="/register"
+              className="flex-1 py-1 px-3 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground text-center transition-colors"
+            >
+              Calon Pengantin
+            </Link>
+            <span className="flex-1 py-1 px-3 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs text-center">
+              Mitra Vendor
+            </span>
+          </div>
+
           <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-3 py-1 font-medium mx-auto inline-flex items-center gap-1.5">
             <Briefcase className="h-3.5 w-3.5" /> Program Kemitraan Vendor B2B
           </Badge>
