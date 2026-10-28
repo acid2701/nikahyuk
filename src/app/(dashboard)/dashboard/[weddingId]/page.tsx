@@ -168,66 +168,66 @@ export default async function WeddingOverviewPage(props: {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+      <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
               Sub-Events Pernikahan
             </CardTitle>
-            <Calendar className="h-4 w-4 text-primary" />
+            <Calendar className="h-4 w-4 text-[#00f0a0]" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{events.length} Sub-Event</div>
-            <p className="text-[11px] text-muted-foreground mt-1 truncate">
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">{events.length} Sub-Event</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
               Aktif: {activeEvent?.event_name || "None"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
               RSVP Guest Summary
             </CardTitle>
             <Users className="h-4 w-4 text-emerald-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-emerald-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-[#00f0a0]">
               {confirmedPax} Pax Hadir
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Pending: {pendingPax} Pax ({rawGuests.length} Entri Tamu)
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Pending: {pendingPax} Pax ({rawGuests.length} Tamu)
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Progres Pembayaran Anggaran
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Progres Anggaran Terbayar
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-primary" />
+            <DollarSign className="h-4 w-4 text-blue-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold font-mono text-foreground">
+          <CardContent className="p-0 pt-1">
+            <div className="text-lg sm:text-xl font-bold font-mono text-foreground truncate">
               Rp {totalBudgetPaid.toLocaleString("id-ID")}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Dari target Rp {totalBudgetEst.toLocaleString("id-ID")}
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Target Rp {totalBudgetEst.toLocaleString("id-ID")}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
               Vendor Terhubung
             </CardTitle>
-            <Briefcase className="h-4 w-4 text-primary" />
+            <Briefcase className="h-4 w-4 text-purple-500" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{vendorsCount || 0} Vendor</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
+          <CardContent className="p-0 pt-1">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">{vendorsCount || 0} Vendor</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
               Mitra & Kontrak Terkait
             </p>
           </CardContent>

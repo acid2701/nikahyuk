@@ -165,7 +165,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-xs transition-all" disabled={loading}>
             {loading ? "Memproses Pendaftaran..." : "Daftar Akun Pengantin"}
           </Button>
         </form>

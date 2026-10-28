@@ -59,11 +59,13 @@ export default async function AdminLayout({
           <div className="flex items-center space-x-3">
             <ThemeToggle />
             <AdminNotificationBell />
-            <div className="hidden sm:block text-right pl-2 border-l border-border/50">
-              <p className="text-xs font-mono font-medium text-foreground leading-none">{email}</p>
-              <div className="flex items-center justify-end space-x-1 mt-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Superadmin</span>
+            <div className="hidden sm:block text-right pl-3 border-l border-border/50">
+              <p className="text-xs font-mono font-semibold text-foreground leading-none">{email}</p>
+              <div className="flex items-center justify-end space-x-1.5 mt-1.5">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00f0a0]/15 text-emerald-600 dark:text-[#00f0a0] border border-[#00f0a0]/30">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#00f0a0] animate-pulse" />
+                  SUPERADMIN
+                </span>
               </div>
             </div>
           </div>

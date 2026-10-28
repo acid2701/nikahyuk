@@ -134,7 +134,7 @@ export default function LoginPage() {
         <Button
           type="button"
           variant="outline"
-          className="w-full flex items-center justify-center gap-2"
+          className="w-full h-11 rounded-full border-border/80 text-xs font-semibold flex items-center justify-center gap-2 hover:bg-muted transition-all"
           onClick={handleGoogleLogin}
           disabled={loading}
         >
@@ -218,7 +218,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" className="w-full h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-xs transition-all" disabled={loading}>
             {loading ? "Memproses..." : "Masuk"}
           </Button>
         </form>
