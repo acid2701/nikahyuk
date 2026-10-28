@@ -33,7 +33,7 @@ export default function AdminAppSettingsPage() {
 
   // Google Auth & Dynamic Auth Settings State
   const [appBaseUrl, setAppBaseUrl] = React.useState(
-    typeof window !== "undefined" ? window.location.origin : "https://nikahyuk.pilihmenumu.com"
+    typeof window !== "undefined" ? window.location.origin : "https://nikahyu.my.id"
   );
   const [googleClientId, setGoogleClientId] = React.useState("");
   const [googleClientSecret, setGoogleClientSecret] = React.useState("");
@@ -568,14 +568,14 @@ export default function AdminAppSettingsPage() {
                   </span>
                   <div className="space-y-2 min-w-0">
                     <code className="text-xs font-mono text-muted-foreground break-all select-all block p-2 rounded bg-muted/50 border border-border/50">
-                      {appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyuk.pilihmenumu.com"}
+                      {appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyu.my.id"}
                     </code>
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
                       className="w-full sm:w-auto h-8 px-3 text-xs gap-1.5 font-medium"
-                      onClick={() => handleCopyCallbackUrl(appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyuk.pilihmenumu.com")}
+                      onClick={() => handleCopyCallbackUrl(appBaseUrl ? appBaseUrl.replace(/\/$/, "") : "https://nikahyu.my.id")}
                     >
                       <Copy className="h-3.5 w-3.5" /> Salin Origin
                     </Button>

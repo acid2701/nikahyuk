@@ -10,7 +10,7 @@ export interface PublicAuthConfig {
 export async function GET() {
   const defaultConfig: PublicAuthConfig = {
     googleEnabled: false,
-    appBaseUrl: process.env.NEXT_PUBLIC_APP_URL || "https://nikahyuk.pilihmenumu.com",
+    appBaseUrl: process.env.NEXT_PUBLIC_APP_URL || "https://nikahyu.my.id",
     googleClientId: "",
   };
 
