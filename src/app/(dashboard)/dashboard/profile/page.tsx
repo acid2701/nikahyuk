@@ -1,55 +1,67 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { UserProfileForm } from "@/components/modules/profile/user-profile-form";
 import { ChangePasswordForm } from "@/components/modules/profile/change-password-form";
 import { UserWorkspacesCard, WorkspaceItem } from "@/components/modules/profile/user-workspaces-card";
 
 export default async function GlobalUserProfilePage() {
-  const db = await createClient();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const session = await getCurrentUser();
+
+  if (!session) {
+    redirect("/login");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.userId },
+  });
 
   if (!user) {
     redirect("/login");
   }
 
-  const fullName = user.user_metadata?.full_name || user.user_metadata?.name || "";
-  const phone = user.user_metadata?.phone || "";
-  const provider = user.app_metadata?.provider || user.identities?.[0]?.provider || "email";
-  const isOAuthUser = provider === "google";
+  const fullName = user.fullName || "";
+  const phone = user.phone || "";
+  const provider = "email";
+  const isOAuthUser = false;
 
   // Fetch owned weddings
-  const { data: ownedWeddings } = await db
-    .from("weddings")
-    .select("id, groom_name, bride_name, wedding_slug")
-    .eq("created_by", user.id);
+  const ownedWeddings = await prisma.wedding.findMany({
+    where: { createdBy: user.id },
+    select: { id: true, groomName: true, brideName: true, weddingSlug: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   // Fetch collaborated weddings
-  const { data: colabs } = await db
-    .from("wedding_collaborators")
-    .select("role, weddings(id, groom_name, bride_name, wedding_slug)")
-    .eq("user_id", user.id);
+  const colabs = await prisma.weddingCollaborator.findMany({
+    where: { userId: user.id },
+    select: {
+      role: true,
+      wedding: {
+        select: { id: true, groomName: true, brideName: true, weddingSlug: true },
+      },
+    },
+  });
 
   const workspacesMap = new Map<string, WorkspaceItem>();
 
   (ownedWeddings || []).forEach((w) => {
     workspacesMap.set(w.id, {
       id: w.id,
-      groom_name: w.groom_name,
-      bride_name: w.bride_name,
-      wedding_slug: w.wedding_slug,
+      groom_name: w.groomName,
+      bride_name: w.brideName,
+      wedding_slug: w.weddingSlug,
       role: "owner",
     });
   });
 
   (colabs || []).forEach((c: any) => {
-    if (c.weddings && !workspacesMap.has(c.weddings.id)) {
-      workspacesMap.set(c.weddings.id, {
-        id: c.weddings.id,
-        groom_name: c.weddings.groom_name,
-        bride_name: c.weddings.bride_name,
-        wedding_slug: c.weddings.wedding_slug,
+    if (c.wedding && !workspacesMap.has(c.wedding.id)) {
+      workspacesMap.set(c.wedding.id, {
+        id: c.wedding.id,
+        groom_name: c.wedding.groomName,
+        bride_name: c.wedding.brideName,
+        wedding_slug: c.wedding.weddingSlug,
         role: c.role || "wo",
       });
     }
@@ -73,7 +85,7 @@ export default async function GlobalUserProfilePage() {
         initialFullName={fullName}
         initialPhone={phone}
         provider={provider}
-        createdAt={user.created_at || new Date().toISOString()}
+        createdAt={user.createdAt ? user.createdAt.toISOString() : new Date().toISOString()}
       />
 
       <ChangePasswordForm isOAuthUser={isOAuthUser} />

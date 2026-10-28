@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, CalendarCheck, MapPin, Gift, Share2 } from "lucide-react";
 import Link from "next/link";
@@ -13,21 +13,28 @@ export default async function WeddingOverviewPage(props: {
   const searchParams = (await props.searchParams) || {};
   const urlEventId = searchParams.eventId as string | undefined;
 
-  const db = await createClient();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+  });
 
-  const { data: wedding } = await db
-    .from("weddings")
-    .select("*")
-    .eq("id", weddingId)
-    .single();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: eventsData } = await db
-    .from("wedding_events")
-    .select("*")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+    event_side: e.eventSide,
+    event_type: e.eventSide,
+    event_date: e.eventDate,
+    start_time: e.timeStart,
+    end_time: e.timeEnd,
+    venue_name: e.locationName,
+    location_name: e.locationName,
+    venue_address: e.locationMapsUrl,
+  }));
 
-  const events = eventsData || [];
   const activeEvent = events.find((e) => e.id === urlEventId) || events[0];
 
   let daysUntilWedding: number | null = null;
@@ -46,69 +53,74 @@ export default async function WeddingOverviewPage(props: {
     return isNaN(parsed.getTime()) ? str : parsed.toLocaleDateString("id-ID", { dateStyle: "medium" });
   };
 
-  const { data: budgetItems } = activeEvent
-    ? await db
-        .from("budget_items")
-        .select("estimated_cost, payment_milestones(amount, payment_status)")
-        .eq("event_id", activeEvent.id)
-    : { data: [] };
+  const budgetItems = activeEvent
+    ? await prisma.budgetItem.findMany({
+        where: { eventId: activeEvent.id },
+        include: { milestones: true },
+      })
+    : [];
 
   let totalBudgetEst = 0;
   let totalBudgetPaid = 0;
 
-  (budgetItems || []).forEach((item: any) => {
-    totalBudgetEst += Number(item.estimated_cost || 0);
-    const milestones = item.payment_milestones || [];
-    milestones.forEach((m: any) => {
-      if (m.payment_status === "paid") {
+  budgetItems.forEach((item) => {
+    totalBudgetEst += Number(item.estimatedCost || 0);
+    (item.milestones || []).forEach((m) => {
+      if (m.paymentStatus === "paid") {
         totalBudgetPaid += Number(m.amount || 0);
       }
     });
   });
 
-  const { data: guestsData } = await db
-    .from("guests")
-    .select("*, event_guest_assignments(*)")
-    .eq("wedding_id", weddingId);
+  const rawGuests = await prisma.guest.findMany({
+    where: { weddingId },
+    include: { assignments: true },
+  });
 
-  const guests = guestsData || [];
   let confirmedPax = 0;
   let pendingPax = 0;
 
-  guests.forEach((g: any) => {
-    const assignment = (g.event_guest_assignments || []).find((a: any) => a.event_id === activeEvent?.id);
-    if (assignment?.attendance_status === "attending" || assignment?.attendance_status === "checked_in") {
-      confirmedPax += assignment.actual_pax || g.default_pax || 1;
+  rawGuests.forEach((g) => {
+    const assignment = (g.assignments || []).find((a) => a.eventId === activeEvent?.id);
+    if (assignment?.attendanceStatus === "attending" || assignment?.attendanceStatus === "checked_in") {
+      confirmedPax += assignment.actualPax || g.defaultPax || 1;
     } else {
-      pendingPax += g.default_pax || 1;
+      pendingPax += g.defaultPax || 1;
     }
   });
 
-  const { data: nextRundowns } = activeEvent
-    ? await db
-        .from("rundowns")
-        .select("*")
-        .eq("event_id", activeEvent.id)
-        .order("sort_order", { ascending: true })
-        .limit(3)
-    : { data: [] };
+  const rawNextRundowns = activeEvent
+    ? await prisma.rundown.findMany({
+        where: { eventId: activeEvent.id },
+        orderBy: { sortOrder: "asc" },
+        take: 3,
+      })
+    : [];
 
-  const { count: vendorsCount } = await db
-    .from("vendors")
-    .select("*", { count: "exact", head: true })
-    .eq("wedding_id", weddingId);
+  const nextRundowns = rawNextRundowns.map((r) => ({
+    id: r.id,
+    start_time: r.timeStart,
+    end_time: r.timeEnd,
+    activity_name: r.activityTitle,
+    location_zone: r.location,
+    person_in_charge: r.picName,
+  }));
 
-  const { data: giftsData } = activeEvent
-    ? await db
-        .from("gifts_log")
-        .select("amount, gift_type")
-        .eq("event_id", activeEvent.id)
-    : { data: [] };
+  const vendorsCount = await prisma.vendor.count({
+    where: { weddingId },
+  });
+
+  const giftsData = activeEvent
+    ? await prisma.giftLog.findMany({
+        where: { eventId: activeEvent.id },
+        select: { cashAmount: true, giftType: true },
+      })
+    : [];
 
   let totalGiftsCash = 0;
   let totalGiftsItems = 0;
-  (giftsData || []).forEach((g: any) => {
-    if (g.gift_type === "cash") totalGiftsCash += g.amount || 0;
+  giftsData.forEach((g) => {
+    if (g.giftType === "cash") totalGiftsCash += Number(g.cashAmount || 0);
     else totalGiftsItems++;
   });
 
@@ -120,7 +132,7 @@ export default async function WeddingOverviewPage(props: {
           <div className="flex items-center space-x-2">
             <Heart className="h-5 w-5 text-primary fill-primary/20" />
             <h1 className="font-serif text-2xl font-bold tracking-tight text-foreground">
-              {wedding?.groom_name || "Pengantin Pria"} & {wedding?.bride_name || "Pengantin Wanita"}
+              {wedding?.groomName || "Pengantin Pria"} & {wedding?.brideName || "Pengantin Wanita"}
             </h1>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -184,7 +196,7 @@ export default async function WeddingOverviewPage(props: {
               {confirmedPax} Pax Hadir
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Pending: {pendingPax} Pax ({guests.length} Entri Tamu)
+              Pending: {pendingPax} Pax ({rawGuests.length} Entri Tamu)
             </p>
           </CardContent>
         </Card>

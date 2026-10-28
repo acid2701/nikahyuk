@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,26 +18,23 @@ export interface WorkspaceItem {
 }
 
 export default async function DashboardSelectorPage() {
-  const db = await createClient();
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login");
   }
 
   // 1. Fetch Weddings Owned by User
-  const { data: ownedWeddings } = await db
-    .from("weddings")
-    .select("*")
-    .eq("created_by", user.id);
+  const ownedWeddings = await prisma.wedding.findMany({
+    where: { createdBy: user.userId },
+    orderBy: { createdAt: "desc" },
+  });
 
   // 2. Fetch Weddings where User is Invited as Collaborator
-  const { data: collabRows } = await db
-    .from("wedding_collaborators")
-    .select("*, weddings(*)")
-    .eq("user_id", user.id);
+  const collabRows = await prisma.weddingCollaborator.findMany({
+    where: { userId: user.userId },
+    include: { wedding: true },
+  });
 
   const workspacesMap = new Map<string, WorkspaceItem>();
 
@@ -44,9 +42,9 @@ export default async function DashboardSelectorPage() {
   (ownedWeddings || []).forEach((w) => {
     workspacesMap.set(w.id, {
       id: w.id,
-      groom_name: w.groom_name,
-      bride_name: w.bride_name,
-      wedding_slug: w.wedding_slug,
+      groom_name: w.groomName,
+      bride_name: w.brideName,
+      wedding_slug: w.weddingSlug,
       roleLabel: "Owner / Pasangan",
       isOwner: true,
     });
@@ -54,8 +52,8 @@ export default async function DashboardSelectorPage() {
 
   // Add Collaborator Weddings
   (collabRows || []).forEach((c: any) => {
-    if (c.weddings && !workspacesMap.has(c.weddings.id)) {
-      const perms = c.custom_permissions || {};
+    if (c.wedding && !workspacesMap.has(c.wedding.id)) {
+      const perms = (c.customPermissions as any) || {};
       const roleName =
         perms.role_name ||
         (c.role === "wo"
@@ -64,11 +62,11 @@ export default async function DashboardSelectorPage() {
           ? "Partner"
           : "Panitia Keluarga");
 
-      workspacesMap.set(c.weddings.id, {
-        id: c.weddings.id,
-        groom_name: c.weddings.groom_name,
-        bride_name: c.weddings.bride_name,
-        wedding_slug: c.weddings.wedding_slug,
+      workspacesMap.set(c.wedding.id, {
+        id: c.wedding.id,
+        groom_name: c.wedding.groomName,
+        bride_name: c.wedding.brideName,
+        wedding_slug: c.wedding.weddingSlug,
         roleLabel: roleName,
         isOwner: false,
       });
