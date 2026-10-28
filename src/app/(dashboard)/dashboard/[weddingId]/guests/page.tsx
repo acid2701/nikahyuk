@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GuestTableView } from "@/components/modules/guests/guest-table-view";
 import { Users, UserCheck, UserX, Clock } from "lucide-react";
@@ -24,17 +24,22 @@ export default async function GuestsPage(props: {
     return <AccessDeniedCard moduleTitle="Master Tamu & RSVP" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true, locationName: true, locationMapsUrl: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name, location_name, location_maps_url")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+    location_name: e.locationName,
+    location_maps_url: e.locationMapsUrl,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
@@ -42,16 +47,48 @@ export default async function GuestsPage(props: {
     events?.find((e) => e.id === effectiveEventId) || events?.[0];
   const activeEventId = activeEvent?.id || null;
 
+  const rawGuests = await prisma.guest.findMany({
+    where: { weddingId },
+    include: {
+      assignments: {
+        include: {
+          table: { select: { tableNumberOrName: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-  const { data: guestsData } = await db
-    .from("guests")
-    .select("*, event_guest_assignments(*, event_tables(table_number_or_name))")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: false });
-
-  const guests = (guestsData || []).map((g: any) => ({
-    ...g,
-    assignments: g.event_guest_assignments || [],
+  const guests = rawGuests.map((g) => ({
+    id: g.id,
+    wedding_id: g.weddingId,
+    full_name: g.fullName,
+    sanitized_phone: g.sanitizedPhone,
+    default_pax: g.defaultPax,
+    notes: g.notes,
+    created_at: g.createdAt.toISOString(),
+    assignments: g.assignments.map((a) => ({
+      id: a.id,
+      event_id: a.eventId,
+      guest_id: a.guestId,
+      table_id: a.tableId,
+      attendance_status: a.attendanceStatus,
+      actual_pax: a.actualPax,
+      invitation_slug: g.id,
+      table: a.table ? { table_number_or_name: a.table.tableNumberOrName } : null,
+      event_tables: a.table ? { table_number_or_name: a.table.tableNumberOrName } : null,
+    })),
+    event_guest_assignments: g.assignments.map((a) => ({
+      id: a.id,
+      event_id: a.eventId,
+      guest_id: a.guestId,
+      table_id: a.tableId,
+      attendance_status: a.attendanceStatus,
+      actual_pax: a.actualPax,
+      invitation_slug: g.id,
+      table: a.table ? { table_number_or_name: a.table.tableNumberOrName } : null,
+      event_tables: a.table ? { table_number_or_name: a.table.tableNumberOrName } : null,
+    })),
   }));
 
   let totalGuestsCount = guests.length;

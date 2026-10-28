@@ -1,22 +1,21 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { MobileGuestLookup } from "@/components/modules/view/mobile-guest-lookup";
 
 export default async function ViewGuestsPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const db = await createClient();
 
-  const { data: tokenRecord } = await db
-    .from("shareable_tokens")
-    .select("wedding_id")
-    .eq("token_hash", token)
-    .single();
+  const tokenRecord = await prisma.shareableToken.findUnique({
+    where: { tokenHash: token },
+    select: { weddingId: true },
+  });
 
   if (!tokenRecord) return null;
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id")
-    .eq("wedding_id", tokenRecord.wedding_id);
+  const events = await prisma.weddingEvent.findMany({
+    where: { weddingId: tokenRecord.weddingId },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   const activeEventId = events && events.length > 0 ? events[0].id : null;
 
@@ -28,17 +27,20 @@ export default async function ViewGuestsPage(props: { params: Promise<any> }) {
     );
   }
 
-  const { data: assignmentsData } = await db
-    .from("event_guest_assignments")
-    .select("id, actual_pax, attendance_status, guests(full_name), event_tables(table_number_or_name)")
-    .eq("event_id", activeEventId);
+  const rawAssignments = await prisma.eventGuestAssignment.findMany({
+    where: { eventId: activeEventId },
+    include: {
+      guest: { select: { fullName: true } },
+      table: { select: { tableNumberOrName: true } },
+    },
+  });
 
-  const guests = (assignmentsData || []).map((d: any) => ({
+  const guests = rawAssignments.map((d) => ({
     id: d.id,
-    fullName: d.guests?.full_name || "Tamu",
-    pax: d.actual_pax || 1,
-    tableName: d.event_tables?.table_number_or_name || null,
-    attendanceStatus: d.attendance_status,
+    fullName: d.guest?.fullName || "Tamu",
+    pax: d.actualPax || 1,
+    tableName: d.table?.tableNumberOrName || null,
+    attendanceStatus: d.attendanceStatus,
   }));
 
   return <MobileGuestLookup token={token} guests={guests} />;

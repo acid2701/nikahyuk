@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { PreweddingChecklistManager } from "@/components/modules/checklist/prewedding-checklist-manager";
 import {
   getCollaboratorSecurityContext,
@@ -23,17 +23,20 @@ export default async function PreweddingChecklistsPage(props: {
     );
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 

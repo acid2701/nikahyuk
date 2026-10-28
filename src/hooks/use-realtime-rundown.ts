@@ -4,32 +4,20 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/db/client";
 
 export function useRealtimeRundown(eventId: string | null) {
-  const [lastRundownEvent, setLastRundownEvent] = useState<any>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!eventId) return;
 
-    const db = createClient();
-    const channel = db
-      .channel(`realtime-rundown-${eventId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "rundowns",
-          filter: `event_id=eq.${eventId}`,
-        },
-        (payload) => {
-          setLastRundownEvent(payload);
-        }
-      )
-      .subscribe();
+    // Smart Polling: poll updates every 8 seconds when window/tab is active
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        setTick((prev) => prev + 1);
+      }
+    }, 8000);
 
-    return () => {
-      db.removeChannel(channel);
-    };
+    return () => clearInterval(interval);
   }, [eventId]);
 
-  return lastRundownEvent;
+  return tick > 0 ? { timestamp: Date.now(), eventId } : null;
 }

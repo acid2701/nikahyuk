@@ -4,32 +4,20 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/db/client";
 
 export function useRealtimeCheckin(eventId: string | null) {
-  const [lastCheckinEvent, setLastCheckinEvent] = useState<any>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!eventId) return;
 
-    const db = createClient();
-    const channel = db
-      .channel(`realtime-checkin-${eventId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "event_guest_assignments",
-          filter: `event_id=eq.${eventId}`,
-        },
-        (payload) => {
-          setLastCheckinEvent(payload);
-        }
-      )
-      .subscribe();
+    // Smart Polling: poll updates every 8 seconds when window/tab is active
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        setTick((prev) => prev + 1);
+      }
+    }, 8000);
 
-    return () => {
-      db.removeChannel(channel);
-    };
+    return () => clearInterval(interval);
   }, [eventId]);
 
-  return lastCheckinEvent;
+  return tick > 0 ? { timestamp: Date.now(), eventId } : null;
 }

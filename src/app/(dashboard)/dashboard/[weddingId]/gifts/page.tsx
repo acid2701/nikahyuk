@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { GiftManager } from "@/components/modules/gifts/gift-manager";
 import {
   getCollaboratorSecurityContext,
@@ -21,17 +21,20 @@ export default async function GiftsPage(props: {
     return <AccessDeniedCard moduleTitle="Log Kado & Angpao" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
@@ -51,13 +54,21 @@ export default async function GiftsPage(props: {
     );
   }
 
-  const { data: giftsData } = await db
-    .from("gifts_log")
-    .select("*")
-    .eq("event_id", activeEventId)
-    .order("created_at", { ascending: false });
+  const rawGifts = await prisma.giftLog.findMany({
+    where: { eventId: activeEventId },
+    orderBy: { receivedAt: "desc" },
+  });
 
-  const gifts = giftsData || [];
+  const gifts = rawGifts.map((g) => ({
+    id: g.id,
+    event_id: g.eventId,
+    guest_id: g.guestId,
+    gift_type: g.giftType,
+    cash_amount: g.cashAmount ? Number(g.cashAmount) : null,
+    item_description: g.itemDescription,
+    received_by: g.receivedBy,
+    received_at: g.receivedAt.toISOString(),
+  }));
 
   return (
     <div className="space-y-6">

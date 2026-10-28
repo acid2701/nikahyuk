@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { ShareTokenManager } from "@/components/modules/share/share-token-manager";
 import { getCollaboratorSecurityContext } from "@/lib/auth/collaborator-security";
 import { AccessDeniedCard } from "@/components/shared/access-denied-card";
@@ -12,16 +12,22 @@ export default async function SharePage(props: { params: Promise<any> }) {
     return <AccessDeniedCard moduleTitle="Berbagi Link (Share)" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawTokens = await prisma.shareableToken.findMany({
+    where: { weddingId },
+    orderBy: { createdAt: "desc" },
+  });
 
-
-  const { data: tokensData } = await db
-    .from("shareable_tokens")
-    .select("*")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: false });
-
-  const tokens = tokensData || [];
+  const tokens = rawTokens.map((t) => ({
+    id: t.id,
+    wedding_id: t.weddingId,
+    token_hash: t.tokenHash,
+    pin_hash: t.pinHash,
+    module_access: t.moduleAccess,
+    hide_internal_notes: t.hideInternalNotes,
+    expires_at: t.expiresAt.toISOString(),
+    is_active: t.isActive,
+    created_at: t.createdAt.toISOString(),
+  }));
 
   return (
     <div className="space-y-6">

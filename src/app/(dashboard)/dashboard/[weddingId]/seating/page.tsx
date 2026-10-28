@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { SeatingManager } from "@/components/modules/seating/seating-manager";
 import {
   getCollaboratorSecurityContext,
@@ -22,17 +22,20 @@ export default async function SeatingPage(props: {
     return <AccessDeniedCard moduleTitle="Penataan Tempat Duduk" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
@@ -52,31 +55,49 @@ export default async function SeatingPage(props: {
     );
   }
 
-  const { data: tablesData } = await db
-    .from("event_tables")
-    .select("*, event_guest_assignments(*, guests(full_name))")
-    .eq("event_id", activeEventId)
-    .order("created_at", { ascending: true });
+  const rawTables = await prisma.eventTable.findMany({
+    where: { eventId: activeEventId },
+    include: {
+      assignments: {
+        include: {
+          guest: { select: { fullName: true } },
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const tables = (tablesData || []).map((t: any) => ({
-    ...t,
-    assignments: (t.event_guest_assignments || []).map((a: any) => ({
+  const tables = rawTables.map((t) => ({
+    id: t.id,
+    event_id: t.eventId,
+    table_number_or_name: t.tableNumberOrName,
+    capacity: t.maxSeats,
+    max_seats: t.maxSeats,
+    table_shape: "round",
+    table_type: "guest",
+    notes: t.notes,
+    created_at: t.createdAt.toISOString(),
+    assignments: t.assignments.map((a) => ({
       id: a.id,
-      actual_pax: a.actual_pax,
-      guest: a.guests,
+      actual_pax: a.actualPax,
+      guest: { full_name: a.guest.fullName },
     })),
   }));
 
-  const { data: unassignedData } = await db
-    .from("event_guest_assignments")
-    .select("id, actual_pax, guests(full_name)")
-    .eq("event_id", activeEventId)
-    .is("table_id", null);
+  const rawUnassigned = await prisma.eventGuestAssignment.findMany({
+    where: {
+      eventId: activeEventId,
+      tableId: null,
+    },
+    include: {
+      guest: { select: { fullName: true } },
+    },
+  });
 
-  const unassignedGuests = (unassignedData || []).map((u: any) => ({
+  const unassignedGuests = rawUnassigned.map((u) => ({
     assignmentId: u.id,
-    fullName: u.guests?.full_name || "Tamu",
-    pax: u.actual_pax || 1,
+    fullName: u.guest?.fullName || "Tamu",
+    pax: u.actualPax || 1,
   }));
 
   return (

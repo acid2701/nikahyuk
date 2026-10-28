@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth/session";
 import { getAppBranding } from "@/lib/branding";
 import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
 import { DashboardHeader } from "@/components/shared/navigation/dashboard-header";
@@ -12,49 +13,44 @@ export default async function WeddingDashboardLayout(props: {
   params: Promise<any>;
 }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const db = await createClient();
-
-  const {
-    data: { user },
-  } = await db.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: wedding } = await db
-    .from("weddings")
-    .select("*")
-    .eq("id", weddingId)
-    .single();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+  });
 
   if (!wedding) {
     notFound();
   }
 
-  const { data: eventsData } = await db
-    .from("wedding_events")
-    .select("id, event_name, event_date, event_side")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const eventsData = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true, eventDate: true, eventSide: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   const events: SubEventOption[] = (eventsData || []).map((e) => ({
     id: e.id,
-    event_name: e.event_name,
-    event_date: e.event_date,
-    event_side: e.event_side as "groom" | "bride" | "joint",
+    event_name: e.eventName,
+    event_date: e.eventDate instanceof Date ? e.eventDate.toISOString().split("T")[0] : String(e.eventDate),
+    event_side: (e.eventSide || "joint") as "groom" | "bride" | "joint",
   }));
 
   let allowedEventIds: string[] | null = null;
-  const { data: collaborator } = await db
-    .from("wedding_collaborators")
-    .select("custom_permissions")
-    .eq("wedding_id", weddingId)
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const collaborator = await prisma.weddingCollaborator.findFirst({
+    where: {
+      weddingId,
+      userId: user.userId,
+    },
+    select: { customPermissions: true },
+  });
 
-  if (collaborator && collaborator.custom_permissions) {
-    const perms = collaborator.custom_permissions as any;
+  if (collaborator && collaborator.customPermissions) {
+    const perms = collaborator.customPermissions as any;
     if (Array.isArray(perms.allowed_event_ids)) {
       allowedEventIds = perms.allowed_event_ids;
     }
@@ -78,8 +74,8 @@ export default async function WeddingDashboardLayout(props: {
         <Suspense fallback={<header className="h-14 border-b border-border bg-card" />}>
           <DashboardHeader
             weddingId={weddingId}
-            groomName={wedding.groom_name}
-            brideName={wedding.bride_name}
+            groomName={wedding.groomName}
+            brideName={wedding.brideName}
             userEmail={user.email || "user@nikahyuk.com"}
             events={events}
           />

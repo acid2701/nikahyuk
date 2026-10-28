@@ -1,22 +1,21 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { MobileRundownView } from "@/components/modules/view/mobile-rundown-view";
 
 export default async function ViewRundownPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const db = await createClient();
 
-  const { data: tokenRecord } = await db
-    .from("shareable_tokens")
-    .select("wedding_id")
-    .eq("token_hash", token)
-    .single();
+  const tokenRecord = await prisma.shareableToken.findUnique({
+    where: { tokenHash: token },
+    select: { weddingId: true },
+  });
 
   if (!tokenRecord) return null;
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id")
-    .eq("wedding_id", tokenRecord.wedding_id);
+  const events = await prisma.weddingEvent.findMany({
+    where: { weddingId: tokenRecord.weddingId },
+    select: { id: true },
+    orderBy: { createdAt: "asc" },
+  });
 
   const activeEventId = events && events.length > 0 ? events[0].id : null;
 
@@ -28,28 +27,32 @@ export default async function ViewRundownPage(props: { params: Promise<any> }) {
     );
   }
 
-  const { data: rundownsData } = await db
-    .from("rundowns")
-    .select("*, rundown_cues(*)")
-    .eq("event_id", activeEventId)
-    .order("sort_order", { ascending: true });
+  const rawRundowns = await prisma.rundown.findMany({
+    where: { eventId: activeEventId },
+    include: { cues: true },
+    orderBy: { sortOrder: "asc" },
+  });
 
-  const rundowns = (rundownsData || []).map((d: any) => ({
+  const rundowns = rawRundowns.map((d) => ({
     id: d.id,
-    timeStart: d.time_start,
-    timeEnd: d.time_end,
-    activityTitle: d.activity_title,
-    picName: d.pic_name,
+    timeStart: d.timeStart,
+    timeEnd: d.timeEnd,
+    activityTitle: d.activityTitle,
+    picName: d.picName,
     location: d.location,
-    isCompleted: d.is_completed,
-    cues: d.rundown_cues || [],
+    isCompleted: d.isCompleted,
+    cues: d.cues.map((c) => ({
+      id: c.id,
+      cueType: c.cueType,
+      instruction: c.instruction,
+    })),
   }));
 
   return (
     <MobileRundownView
       token={token}
       eventId={activeEventId}
-      initialRundowns={rundowns}
+      initialRundowns={rundowns as any}
     />
   );
 }

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { RundownManager } from "@/components/modules/rundown/rundown-manager";
 import {
   getCollaboratorSecurityContext,
@@ -21,17 +21,20 @@ export default async function RundownPage(props: {
     return <AccessDeniedCard moduleTitle="Live Rundown" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
@@ -51,19 +54,49 @@ export default async function RundownPage(props: {
     );
   }
 
-  const { data: wedding } = await db
-    .from("weddings")
-    .select("groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name")
-    .eq("id", weddingId)
-    .single();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+    select: { groomName: true, brideName: true },
+  });
 
-  const { data: rundownsData } = await db
-    .from("rundowns")
-    .select("*, rundown_cues(*)")
-    .eq("event_id", activeEventId)
-    .order("sort_order", { ascending: true });
+  const rawRundowns = await prisma.rundown.findMany({
+    where: { eventId: activeEventId },
+    include: { cues: true },
+    orderBy: { sortOrder: "asc" },
+  });
 
-  const rundowns = rundownsData || [];
+  const rundowns = rawRundowns.map((r) => ({
+    id: r.id,
+    event_id: r.eventId,
+    time_start: r.timeStart,
+    time_end: r.timeEnd,
+    activity_title: r.activityTitle,
+    pic_name: r.picName,
+    location: r.location,
+    contingency_plan: r.contingencyPlan,
+    is_internal_only: r.isInternalOnly,
+    is_completed: r.isCompleted,
+    sort_order: r.sortOrder,
+    created_at: r.createdAt.toISOString(),
+    rundown_cues: r.cues.map((c) => ({
+      id: c.id,
+      rundown_id: c.rundownId,
+      cue_type: c.cueType,
+      cue_title: c.instruction,
+      cue_notes: c.instruction,
+      instruction: c.instruction,
+      created_at: c.createdAt.toISOString(),
+    })),
+  }));
+
+  const weddingProps = {
+    groom_name: wedding?.groomName || "Pengantin Pria",
+    bride_name: wedding?.brideName || "Pengantin Wanita",
+    groom_father_name: "",
+    groom_mother_name: "",
+    bride_father_name: "",
+    bride_mother_name: "",
+  };
 
   return (
     <div className="space-y-6">
@@ -81,12 +114,12 @@ export default async function RundownPage(props: {
         eventId={activeEventId}
         eventName={activeEvent?.event_name || "Sub-Event"}
         weddingDetails={{
-          groomName: wedding?.groom_name,
-          brideName: wedding?.bride_name,
-          groomFatherName: wedding?.groom_father_name,
-          groomMotherName: wedding?.groom_mother_name,
-          brideFatherName: wedding?.bride_father_name,
-          brideMotherName: wedding?.bride_mother_name,
+          groomName: wedding?.groomName,
+          brideName: wedding?.brideName,
+          groomFatherName: "",
+          groomMotherName: "",
+          brideFatherName: "",
+          brideMotherName: "",
         }}
         initialRundowns={rundowns as any}
       />

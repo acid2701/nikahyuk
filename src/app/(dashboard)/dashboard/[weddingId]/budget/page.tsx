@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BudgetFormModal } from "@/components/modules/budget/budget-form-modal";
 import { BudgetPresetDialog } from "@/components/modules/budget/budget-preset-dialog";
@@ -26,39 +26,77 @@ export default async function BudgetPage(props: {
     return <AccessDeniedCard moduleTitle="Anggaran & Pembayaran" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId, effectiveEventIds } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
   const activeEvent =
     effectiveEventId
-      ? events?.find((e) => e.id === effectiveEventId)
+      ? events.find((e) => e.id === effectiveEventId)
       : null;
 
   const activeEventId = activeEvent?.id;
   const eventIds = effectiveEventIds;
 
-  let budgetItems: any[] = [];
-
+  let rawItems: any[] = [];
 
   if (eventIds.length > 0) {
-    const { data: items } = await db
-      .from("budget_items")
-      .select("*, payment_milestones(*, payment_attachments(*))")
-      .in("event_id", eventIds)
-      .order("created_at", { ascending: false });
-    budgetItems = items || [];
+    rawItems = await prisma.budgetItem.findMany({
+      where: { eventId: { in: eventIds } },
+      include: {
+        milestones: {
+          include: {
+            attachments: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
   }
+
+  const budgetItems = rawItems.map((item) => ({
+    id: item.id,
+    event_id: item.eventId,
+    category_id: item.categoryId,
+    vendor_id: item.vendorId,
+    item_name: item.itemName,
+    estimated_cost: Number(item.estimatedCost || 0),
+    target_payer: item.targetPayer,
+    notes: item.notes,
+    created_at: item.createdAt.toISOString(),
+    payment_milestones: item.milestones.map((m: any) => ({
+      id: m.id,
+      budget_item_id: m.budgetItemId,
+      milestone_name: m.milestoneName,
+      amount: Number(m.amount || 0),
+      due_date: m.dueDate ? (m.dueDate instanceof Date ? m.dueDate.toISOString().split("T")[0] : String(m.dueDate)) : null,
+      payment_status: m.paymentStatus,
+      paid_at: m.paidAt ? m.paidAt.toISOString() : null,
+      created_at: m.createdAt.toISOString(),
+      payment_attachments: m.attachments.map((a: any) => ({
+        id: a.id,
+        milestone_id: a.milestoneId,
+        file_name: a.documentTitle,
+        file_url: a.r2FileKey,
+        file_size: Number(a.fileSizeBytes),
+        mime_type: a.mimeType,
+        created_at: a.uploadedAt.toISOString(),
+      })),
+    })),
+  }));
 
   let totalTargetAmount = 0;
   let totalPaidAmount = 0;

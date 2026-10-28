@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
 import { CollaboratorCardItem } from "@/components/modules/settings/collaborator-card-item";
 import { CollaboratorInviteModal } from "@/components/modules/settings/collaborator-invite-modal";
@@ -9,28 +9,41 @@ export default async function CollaboratorsPage(props: {
   params: Promise<any>;
 }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const db = await createClient();
 
-  const { data: wedding } = await db
-    .from("weddings")
-    .select("groom_name, bride_name")
-    .eq("id", weddingId)
-    .maybeSingle();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+    select: { groomName: true, brideName: true },
+  });
 
   const weddingTitle = wedding
-    ? `${wedding.groom_name} & ${wedding.bride_name}`
+    ? `${wedding.groomName} & ${wedding.brideName}`
     : "Pernikahan";
 
-  const { data: collaborators } = await db
-    .from("wedding_collaborators")
-    .select("*")
-    .eq("wedding_id", weddingId);
+  const rawCollaborators = await prisma.weddingCollaborator.findMany({
+    where: { weddingId },
+    include: { user: { select: { email: true } } },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const collaborators = rawCollaborators.map((c) => ({
+    id: c.id,
+    wedding_id: c.weddingId,
+    user_id: c.userId,
+    email: c.user?.email || "user@nikahyuk.com",
+    role: c.role,
+    custom_permissions: c.customPermissions,
+    created_at: c.createdAt.toISOString(),
+  }));
+
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   return (
     <div className="space-y-6 max-w-4xl">

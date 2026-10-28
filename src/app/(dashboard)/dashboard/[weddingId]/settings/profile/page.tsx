@@ -1,16 +1,13 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Heart, Calendar } from "lucide-react";
 import { WeddingProfileForm } from "@/components/modules/settings/wedding-profile-form";
 
 export default async function WeddingProfileSettingsPage(props: { params: Promise<any> }) {
   const { weddingId } = (await props.params) as { weddingId: string };
-  const db = await createClient();
 
-  const { data: wedding } = await db
-    .from("weddings")
-    .select("*")
-    .eq("id", weddingId)
-    .single();
+  const wedding = await prisma.wedding.findUnique({
+    where: { id: weddingId },
+  });
 
   if (!wedding) {
     return <div>Workspace tidak ditemukan.</div>;
@@ -29,13 +26,13 @@ export default async function WeddingProfileSettingsPage(props: { params: Promis
 
       <WeddingProfileForm
         weddingId={weddingId}
-        groomName={wedding.groom_name}
-        brideName={wedding.bride_name}
-        weddingSlug={wedding.wedding_slug}
-        groomFatherName={wedding.groom_father_name}
-        groomMotherName={wedding.groom_mother_name}
-        brideFatherName={wedding.bride_father_name}
-        brideMotherName={wedding.bride_mother_name}
+        groomName={wedding.groomName}
+        brideName={wedding.brideName}
+        weddingSlug={wedding.weddingSlug}
+        groomFatherName=""
+        groomMotherName=""
+        brideFatherName=""
+        brideMotherName=""
       />
 
       <div className="p-3 rounded-lg border border-border bg-card/40 space-y-1 max-w-sm">
@@ -43,7 +40,7 @@ export default async function WeddingProfileSettingsPage(props: { params: Promis
           <Calendar className="h-3 w-3" /> Tanggal Pembuatan Workspace
         </span>
         <p className="font-mono text-sm font-semibold text-foreground">
-          {new Date(wedding.created_at).toLocaleDateString("id-ID", {
+          {new Date(wedding.createdAt).toLocaleDateString("id-ID", {
             weekday: "long",
             year: "numeric",
             month: "long",

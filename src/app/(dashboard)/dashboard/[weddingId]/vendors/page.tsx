@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { VendorManager } from "@/components/modules/vendors/vendor-manager";
 import {
   getCollaboratorSecurityContext,
@@ -22,50 +22,73 @@ export default async function VendorsPage(props: {
     return <AccessDeniedCard moduleTitle="Vendor Hub & Kontrak" weddingId={weddingId} />;
   }
 
-  const db = await createClient();
+  const rawEvents = await prisma.weddingEvent.findMany({
+    where: { weddingId },
+    select: { id: true, eventName: true },
+    orderBy: { createdAt: "asc" },
+  });
 
-  const { data: events } = await db
-    .from("wedding_events")
-    .select("id, event_name")
-    .eq("wedding_id", weddingId)
-    .order("created_at", { ascending: true });
+  const events = rawEvents.map((e) => ({
+    id: e.id,
+    event_name: e.eventName,
+  }));
 
   const { effectiveEventId } = resolveEffectiveEventIds(
     urlEventId,
-    events || [],
+    events,
     allowedEventIds
   );
 
   const activeEvent = effectiveEventId
-    ? events?.find((e) => e.id === effectiveEventId)
+    ? events.find((e) => e.id === effectiveEventId)
     : null;
   const activeEventId = activeEvent?.id;
 
   // Auto-heal/link missing R2 brochure documents for partner vendors imported previously
   await autoLinkMissingPartnerDocumentsAction(weddingId);
 
-  let query = db
-    .from("vendors")
-    .select("*, vendor_documents(*)")
-    .eq("wedding_id", weddingId);
-
+  const whereCondition: any = { weddingId };
   if (activeEventId) {
-    query = query.or(`event_id.eq.${activeEventId},event_id.is.null`);
+    whereCondition.OR = [{ eventId: activeEventId }, { eventId: null }];
   }
 
-  let { data: vendorsData, error: queryError } = await query.order("created_at", { ascending: false });
+  const rawVendors = await prisma.vendor.findMany({
+    where: { weddingId },
+    include: { documents: true },
+    orderBy: { createdAt: "desc" },
+  });
 
-  // Graceful fallback if event_id column is missing in schema
-  if (queryError && queryError.message?.includes("event_id")) {
-    const fallbackQuery = await db
-      .from("vendors")
-      .select("*, vendor_documents(*)")
-      .eq("wedding_id", weddingId)
-      .order("created_at", { ascending: false });
-    vendorsData = fallbackQuery.data;
-  }
-
-  const vendors = vendorsData || [];
+  const vendors = rawVendors.map((v) => ({
+    id: v.id,
+    wedding_id: v.weddingId,
+    event_id: activeEventId || null,
+    vendor_name: v.vendorName,
+    category: v.category,
+    contact_person: v.picName || "",
+    pic_name: v.picName,
+    phone_number: v.sanitizedPhone || "",
+    sanitized_phone: v.sanitizedPhone,
+    instagram: "",
+    service_status: "confirmed",
+    contract_amount: v.contractValue ? Number(v.contractValue) : null,
+    contract_value: v.contractValue ? Number(v.contractValue) : null,
+    notes: "",
+    created_at: v.createdAt.toISOString(),
+    vendor_documents: v.documents.map((d) => ({
+      id: d.id,
+      vendor_id: d.vendorId,
+      document_type: "contract",
+      document_title: d.documentTitle,
+      file_name: d.documentTitle,
+      file_url: d.r2FileKey,
+      r2_file_key: d.r2FileKey,
+      file_size: Number(d.fileSizeBytes),
+      file_size_bytes: Number(d.fileSizeBytes),
+      mime_type: d.mimeType,
+      created_at: d.uploadedAt.toISOString(),
+      uploaded_at: d.uploadedAt.toISOString(),
+    })),
+  }));
 
   return (
     <div className="space-y-6">

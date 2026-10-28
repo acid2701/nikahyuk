@@ -1,36 +1,30 @@
 import Link from "next/link";
-import { createClient } from "@/lib/db/server";
+import { prisma } from "@/lib/prisma";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserCheck, Clock, Users, ShieldCheck, Heart } from "lucide-react";
 
 export default async function ViewTokenPage(props: { params: Promise<any> }) {
   const { token } = (await props.params) as { token: string };
-  const db = await createClient();
 
-  const { data: tokenRecord } = await db
-    .from("shareable_tokens")
-    .select("*, weddings(groom_name, bride_name, groom_father_name, groom_mother_name, bride_father_name, bride_mother_name)")
-    .eq("token_hash", token)
-    .single();
+  const tokenRecord = await prisma.shareableToken.findUnique({
+    where: { tokenHash: token },
+    include: {
+      wedding: {
+        select: {
+          groomName: true,
+          brideName: true,
+        },
+      },
+    },
+  });
 
-  const groomName = tokenRecord?.weddings?.groom_name || "Mempelai Pria";
-  const brideName = tokenRecord?.weddings?.bride_name || "Mempelai Wanita";
+  const groomName = tokenRecord?.wedding?.groomName || "Mempelai Pria";
+  const brideName = tokenRecord?.wedding?.brideName || "Mempelai Wanita";
 
-  const groomParents = [
-    tokenRecord?.weddings?.groom_father_name,
-    tokenRecord?.weddings?.groom_mother_name,
-  ]
-    .filter(Boolean)
-    .join(" & ");
+  const groomParents = "";
+  const brideParents = "";
 
-  const brideParents = [
-    tokenRecord?.weddings?.bride_father_name,
-    tokenRecord?.weddings?.bride_mother_name,
-  ]
-    .filter(Boolean)
-    .join(" & ");
-
-  const moduleAccess = (tokenRecord?.module_access as any) || {
+  const moduleAccess = (tokenRecord?.moduleAccess as any) || {
     canCheckin: true,
     canViewRundown: true,
     canViewGuests: true,
