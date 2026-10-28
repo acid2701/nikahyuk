@@ -3,8 +3,8 @@ import { getVendorPartnersAdminAction } from "@/actions/vendor-partner-actions";
 import { VendorPartnerApprovalManager } from "@/components/modules/admin/vendor-partner-approval-manager";
 
 export const metadata: Metadata = {
-  title: "Moderasi & Approval Mitra Vendor | Admin NikahYuk",
-  description: "Halaman peninjauan dan persetujuan mitra vendor pendaftaran publik NikahYuk SaaS.",
+  title: "Moderasi & Approval Mitra Vendor | Control Plane",
+  description: "Daftar pengajuan verifikasi kemitraan vendor pernikahan.",
 };
 
 export default async function AdminVendorPartnersPage() {

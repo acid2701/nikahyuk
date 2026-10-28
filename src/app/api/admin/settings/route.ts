@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { invalidateSystemConfigCache } from "@/lib/cloudflare-r2/dynamic-config";
@@ -56,6 +57,11 @@ export async function PUT(request: Request) {
     });
 
     invalidateSystemConfigCache();
+
+    // Invalidate whole Next.js layout cache so branding changes apply globally & instantly
+    if (key === "app_branding_config") {
+      revalidatePath("/", "layout");
+    }
 
     return NextResponse.json({
       success: true,

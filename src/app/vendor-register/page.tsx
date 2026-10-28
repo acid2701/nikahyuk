@@ -36,8 +36,8 @@ export default async function VendorRegisterPage() {
               </div>
             )}
             <div className="flex flex-col">
-              <span className="font-sans text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
-                NikahYuk Vendor
+              <span className="font-sans text-2xl font-bold tracking-tight text-primary">
+                {branding.appName} Vendor
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono hidden sm:inline">
                 Mitra Vendor Portal

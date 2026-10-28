@@ -97,7 +97,7 @@ export default function ResetPasswordPage() {
           Buat Kata Sandi Baru
         </CardTitle>
         <CardDescription>
-          Masukkan kata sandi baru yang aman untuk akun NikahYuk Anda.
+          Masukkan kata sandi baru yang aman untuk akun Anda.
         </CardDescription>
       </CardHeader>
       <CardContent>

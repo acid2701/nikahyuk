@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { getAppBranding } from "@/lib/branding";
 
-export const metadata: Metadata = {
-  title: "Dashboard Workspace - NikahYuk",
-  description: "Kelola acara pernikahan, rundown live, anggaran, dan daftar tamu.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getAppBranding();
+  return {
+    title: `Dashboard Workspace - ${branding.appName}`,
+    description: `Kelola acara pernikahan, rundown live, anggaran, dan daftar tamu di ${branding.appName}.`,
+  };
+}
 
 export default function DashboardRootLayout({
   children,

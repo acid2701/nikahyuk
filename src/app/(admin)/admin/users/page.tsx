@@ -178,7 +178,7 @@ export default function AdminUsersPage() {
             <div>
               <CardTitle className="text-base font-semibold">Daftar Pengguna ({totalItems})</CardTitle>
               <CardDescription className="text-xs">
-                Akun yang terdaftar di platform NikahYuk SaaS.
+                Akun yang terdaftar di platform SaaS.
               </CardDescription>
             </div>
           </div>

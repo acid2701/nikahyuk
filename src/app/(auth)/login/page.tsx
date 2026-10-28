@@ -88,10 +88,10 @@ export default function LoginPage() {
           ? "Berhasil Masuk Portal Vendor"
           : "Berhasil Masuk",
         description: isSuperadmin
-          ? "Selamat datang di Superadmin Control Plane NikahYuk!"
+          ? "Selamat datang di Superadmin Control Plane!"
           : isVendor
-          ? "Selamat datang di Dashboard Mandiri Mitra Vendor NikahYuk!"
-          : "Selamat datang kembali di NikahYuk!",
+          ? "Selamat datang di Dashboard Mandiri Mitra Vendor!"
+          : "Selamat datang kembali!",
         variant: "success",
       });
 

@@ -21,21 +21,25 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { getAppBranding } from "@/lib/branding";
 
 export async function generateMetadata(props: {
   params: Promise<{ vendorId: string }>;
 }): Promise<Metadata> {
   const { vendorId } = await props.params;
-  const partner = await getPublicVendorPartnerByIdAction(vendorId);
+  const [partner, branding] = await Promise.all([
+    getPublicVendorPartnerByIdAction(vendorId),
+    getAppBranding(),
+  ]);
 
   if (!partner) {
     return {
-      title: "Vendor Tidak Ditemukan - NikahYuk",
+      title: `Vendor Tidak Ditemukan - ${branding.appName}`,
     };
   }
 
   return {
-    title: `${partner.company_name} (${partner.category}) - Vendor & Event Partner NikahYuk`,
+    title: `${partner.company_name} (${partner.category}) - Vendor & Event Partner ${branding.appName}`,
     description: `Katalog & penawaran paket acara resmi dari ${partner.company_name} di ${partner.city}, ${partner.province}. Layanan Pernikahan, Lamaran, Birthday, Corporate Event & Spesial Gathering.`,
   };
 }
@@ -44,7 +48,10 @@ export default async function PublicVendorPage(props: {
   params: Promise<{ vendorId: string }>;
 }) {
   const { vendorId } = await props.params;
-  const partner = await getPublicVendorPartnerByIdAction(vendorId);
+  const [partner, branding] = await Promise.all([
+    getPublicVendorPartnerByIdAction(vendorId),
+    getAppBranding(),
+  ]);
 
   if (!partner) {
     notFound();
@@ -58,7 +65,10 @@ export default async function PublicVendorPage(props: {
       {/* Top Public Header */}
       <header className="border-b border-border bg-card sticky top-0 z-20 h-14 px-4 sm:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="font-sans text-xl font-bold text-primary">NikahYuk</span>
+          {branding.logoUrl ? (
+            <img src={branding.logoUrl} alt={branding.appName} className="h-6 w-auto max-w-[100px] object-contain rounded" />
+          ) : null}
+          <span className="font-sans text-xl font-bold text-primary">{branding.appName}</span>
           <span className="text-xs text-muted-foreground hidden sm:inline">• Partner & Event Catalog</span>
         </Link>
 
@@ -66,7 +76,7 @@ export default async function PublicVendorPage(props: {
           {partner.sanitized_phone && (
             <WAButton
               phone={partner.sanitized_phone}
-              templateString="Halo {nama_vendor}, saya tertarik berkonsultasi untuk paket penawaran acara di NikahYuk."
+              templateString={`Halo {nama_vendor}, saya tertarik berkonsultasi untuk paket penawaran acara di ${branding.appName}.`}
               variables={{ nama_vendor: partner.company_name }}
               label="Tanya via WA"
               size="sm"
@@ -106,7 +116,7 @@ export default async function PublicVendorPage(props: {
               </p>
 
               <p className="text-xs text-foreground/80 leading-relaxed max-w-2xl whitespace-pre-line pt-1">
-                {partner.description || "Mitra vendor & penyelenggara acara terverifikasi ekosistem NikahYuk SaaS."}
+                {partner.description || `Mitra vendor & penyelenggara acara terverifikasi ekosistem ${branding.appName} SaaS.`}
               </p>
 
               <div className="flex items-center space-x-3 text-xs pt-2">
@@ -219,7 +229,7 @@ export default async function PublicVendorPage(props: {
 
       {/* Public Footer */}
       <footer className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © 2026 NikahYuk SaaS Partner Ecosystem • All Rights Reserved.
+        © {new Date().getFullYear()} {branding.appName} SaaS Partner Ecosystem • All Rights Reserved.
       </footer>
     </div>
   );

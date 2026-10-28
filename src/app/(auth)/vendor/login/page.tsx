@@ -1,10 +1,14 @@
 import { Metadata } from "next";
 import { VendorLoginForm } from "@/components/modules/vendors/vendor-login-form";
+import { getAppBranding } from "@/lib/branding";
 
-export const metadata: Metadata = {
-  title: "Portal Login Mitra Vendor | NikahYuk SaaS",
-  description: "Masuk ke akun vendor Anda untuk mengelola paket penawaran interaktif dan profil usaha.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const branding = await getAppBranding();
+  return {
+    title: `Portal Login Mitra Vendor | ${branding.appName}`,
+    description: `Masuk ke akun vendor Anda di platform ${branding.appName}.`,
+  };
+}
 
 export default function VendorLoginPage() {
   return (

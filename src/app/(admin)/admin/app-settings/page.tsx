@@ -131,7 +131,10 @@ export default function AdminAppSettingsPage() {
           description: "Pengaturan logo icon R2 & branding diperbarui di seluruh platform.",
           variant: "success",
         });
-        router.refresh();
+        // Hard reload current page after brief moment to reflect immediate favicon, title and logo
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } else {
         const err = await res.json();
         toast({
