@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { HardDrive, ShieldCheck, HeartHandshake, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { HardDrive, ShieldCheck, HeartHandshake, ArrowRight, Eye, EyeOff, Activity, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminStorageConfigPage() {
@@ -23,11 +23,18 @@ export default function AdminStorageConfigPage() {
   const [bucketName, setBucketName] = React.useState("");
   const [publicCdnDomain, setPublicCdnDomain] = React.useState("");
 
-  const [maxImageSizeMb, setMaxImageSizeMb] = React.useState(10);
-  const [maxPdfSizeMb, setMaxPdfSizeMb] = React.useState(20);
-  const [imageQualityRatio, setImageQualityRatio] = React.useState(0.8);
+  // Allow empty string or number so backspace completely clears the field
+  const [maxImageSizeMb, setMaxImageSizeMb] = React.useState<number | "">(10);
+  const [maxPdfSizeMb, setMaxPdfSizeMb] = React.useState<number | "">(20);
+  const [imageQualityRatio, setImageQualityRatio] = React.useState<number | "">(0.8);
 
   const [loading, setLoading] = React.useState(false);
+  const [testingConnection, setTestingConnection] = React.useState(false);
+  const [testResult, setTestResult] = React.useState<{
+    success: boolean;
+    message: string;
+    latencyMs?: number;
+  } | null>(null);
   const { toast } = useToast();
 
   const loadConfig = React.useCallback(async () => {
@@ -111,11 +118,15 @@ export default function AdminStorageConfigPage() {
     e.preventDefault();
     setLoading(true);
 
+    const numericMaxImage = maxImageSizeMb === "" ? 10 : Number(maxImageSizeMb);
+    const numericMaxPdf = maxPdfSizeMb === "" ? 20 : Number(maxPdfSizeMb);
+    const numericQuality = imageQualityRatio === "" ? 0.8 : Number(imageQualityRatio);
+
     const rulesValue = {
-      maxImageSizeMb,
-      maxPdfSizeMb,
+      maxImageSizeMb: numericMaxImage,
+      maxPdfSizeMb: numericMaxPdf,
       targetImageFormat: "webp",
-      imageQualityRatio,
+      imageQualityRatio: numericQuality,
       allowedMimeTypes: [
         "image/jpeg",
         "image/png",
@@ -153,6 +164,53 @@ export default function AdminStorageConfigPage() {
       });
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleTestR2Connection() {
+    setTestingConnection(true);
+    setTestResult(null);
+
+    try {
+      const res = await fetch("/api/admin/storage/test-connection", {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setTestResult({
+          success: true,
+          message: data.message,
+          latencyMs: data.details?.latencyMs,
+        });
+        toast({
+          title: "Koneksi R2 Berhasil",
+          description: data.message,
+          variant: "success",
+        });
+      } else {
+        setTestResult({
+          success: false,
+          message: data.error || "Gagal menghubungkan ke Cloudflare R2.",
+        });
+        toast({
+          title: "Koneksi R2 Gagal",
+          description: data.error || "Periksa kredensial dan simpan terlebih dahulu.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      setTestResult({
+        success: false,
+        message: err?.message || "Kesalahan jaringan saat melakukan ping ke R2.",
+      });
+      toast({
+        title: "Kesalahan Jaringan",
+        description: "Tidak dapat menghubungi server API.",
+        variant: "destructive",
+      });
+    } finally {
+      setTestingConnection(false);
     }
   }
 
@@ -264,10 +322,51 @@ export default function AdminStorageConfigPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={loading}>
+            <CardFooter className="flex flex-col gap-2">
+              <Button type="submit" className="w-full" disabled={loading || testingConnection}>
                 {loading ? "Menyimpan..." : "Simpan Kredensial R2"}
               </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full border-border/80 text-xs gap-2"
+                onClick={handleTestR2Connection}
+                disabled={testingConnection || loading}
+              >
+                {testingConnection ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                    Sedang Menguji Koneksi S3...
+                  </>
+                ) : (
+                  <>
+                    <Activity className="w-3.5 h-3.5 text-primary" />
+                    Uji / Test Koneksi Cloudflare R2
+                  </>
+                )}
+              </Button>
+
+              {/* Live Test Feedback Banner */}
+              {testResult && (
+                <div
+                  className={`w-full p-2.5 rounded-lg border text-xs flex items-start gap-2 mt-1 ${
+                    testResult.success
+                      ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
+                      : "bg-destructive/10 border-destructive/30 text-destructive dark:text-red-400"
+                  }`}
+                >
+                  {testResult.success ? (
+                    <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+                  ) : (
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  )}
+                  <div className="flex-1 space-y-0.5 leading-snug">
+                    <p className="font-semibold">{testResult.success ? "Status Terhubung" : "Koneksi Gagal"}</p>
+                    <p className="opacity-90">{testResult.message}</p>
+                  </div>
+                </div>
+              )}
             </CardFooter>
           </form>
         </Card>
@@ -291,10 +390,13 @@ export default function AdminStorageConfigPage() {
                   type="number"
                   min={1}
                   max={50}
+                  placeholder="Contoh: 2"
                   value={maxImageSizeMb}
-                  onChange={(e) => setMaxImageSizeMb(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setMaxImageSizeMb(val === "" ? "" : Number(val));
+                  }}
                   disabled={loading}
-                  required
                 />
               </div>
 
@@ -306,10 +408,13 @@ export default function AdminStorageConfigPage() {
                   type="number"
                   min={1}
                   max={100}
+                  placeholder="Contoh: 10"
                   value={maxPdfSizeMb}
-                  onChange={(e) => setMaxPdfSizeMb(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setMaxPdfSizeMb(val === "" ? "" : Number(val));
+                  }}
                   disabled={loading}
-                  required
                 />
               </div>
 
@@ -329,10 +434,13 @@ export default function AdminStorageConfigPage() {
                   step="0.05"
                   min="0.1"
                   max="1.0"
+                  placeholder="Contoh: 0.8"
                   value={imageQualityRatio}
-                  onChange={(e) => setImageQualityRatio(Number(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setImageQualityRatio(val === "" ? "" : Number(val));
+                  }}
                   disabled={loading}
-                  required
                 />
               </div>
             </CardContent>
