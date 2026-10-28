@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuthRoleRedirect } from "@/hooks/use-auth-role-redirect";
 
 export default function LoginPage() {
   const [email, setEmail] = React.useState("");
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
+  const { redirectByRole } = useAuthRoleRedirect();
   const { toast } = useToast();
 
   const [authConfig, setAuthConfig] = React.useState<{
@@ -95,13 +97,7 @@ export default function LoginPage() {
         variant: "success",
       });
 
-      const targetPath = isSuperadmin
-        ? "/admin"
-        : isVendor
-        ? "/vendor/dashboard"
-        : "/dashboard";
-      router.push(targetPath);
-      router.refresh();
+      redirectByRole(data.user);
     } catch {
       toast({
         title: "Kesalahan Jaringan",

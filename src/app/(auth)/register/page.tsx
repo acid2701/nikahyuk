@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { AccountTypeToggle } from "@/components/shared/auth/account-type-toggle";
+import { useAuthRoleRedirect } from "@/hooks/use-auth-role-redirect";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = React.useState("");
@@ -25,6 +27,7 @@ export default function RegisterPage() {
   const [brideName, setBrideName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const router = useRouter();
+  const { redirectByRole } = useAuthRoleRedirect();
   const { toast } = useToast();
 
   async function handleRegister(e: React.FormEvent) {
@@ -55,8 +58,7 @@ export default function RegisterPage() {
         variant: "success",
       });
 
-      router.push("/dashboard");
-      router.refresh();
+      redirectByRole(data.user);
     } catch (err) {
       toast({
         title: "Gagal Mendaftar",
@@ -71,18 +73,8 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md shadow-lg border-border/80">
       <CardHeader className="space-y-3 text-center">
-        {/* Account Type Pill Toggle */}
-        <div className="flex items-center justify-center p-1 bg-muted/60 rounded-full border border-border/60 max-w-xs mx-auto">
-          <span className="flex-1 py-1 px-3 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs text-center">
-            Calon Pengantin
-          </span>
-          <Link
-            href="/vendor-register"
-            className="flex-1 py-1 px-3 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground text-center transition-colors"
-          >
-            Mitra Vendor
-          </Link>
-        </div>
+        {/* Reusable Account Type Pill Toggle */}
+        <AccountTypeToggle activeTab="couple" />
 
         <div>
           <CardTitle className="font-sans text-2xl font-bold tracking-tight">

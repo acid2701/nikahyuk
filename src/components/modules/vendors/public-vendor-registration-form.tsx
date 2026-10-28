@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { AccountTypeToggle } from "@/components/shared/auth/account-type-toggle";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -194,18 +195,8 @@ export function PublicVendorRegistrationForm({
   return (
     <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-sm max-w-2xl w-full mx-auto rounded-2xl overflow-hidden transition-all">
       <CardHeader className="pb-5 pt-6 px-5 sm:px-8 border-b border-border/60 bg-muted/10 space-y-3">
-        {/* Account Type Pill Toggle */}
-        <div className="flex items-center justify-center p-1 bg-muted/80 rounded-full border border-border/60 max-w-xs mx-auto w-full">
-          <Link
-            href="/register"
-            className="flex-1 py-1 px-3 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground text-center transition-colors"
-          >
-            Calon Pengantin
-          </Link>
-          <span className="flex-1 py-1 px-3 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs text-center">
-            Mitra Vendor
-          </span>
-        </div>
+        {/* Reusable Account Type Pill Toggle */}
+        <AccountTypeToggle activeTab="vendor" />
 
         <div className="text-center space-y-1">
           <CardTitle className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-foreground">
