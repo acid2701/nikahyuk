@@ -37,11 +37,11 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt={appName} className="h-8 w-8 object-contain" />
           ) : (
-            <div className="h-9 w-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Heart className="h-5 w-5 fill-primary" />
+            <div className="h-9 w-9 rounded-full bg-[#00f0a0] flex items-center justify-center text-black font-black text-sm">
+              <Heart className="h-5 w-5 fill-black stroke-black" />
             </div>
           )}
-          <span className="font-serif text-xl font-bold tracking-tight text-foreground">
+          <span className="font-display text-2xl font-black tracking-tight text-foreground uppercase">
             {appName}
           </span>
         </Link>

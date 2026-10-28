@@ -26,7 +26,7 @@ export function LandingHero({
       <div className="absolute bottom-10 right-10 w-[300px] h-[200px] bg-accent/30 blur-[100px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-4xl mx-auto text-center px-4 space-y-6">
-        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.08] uppercase">
           {heroTitle}
         </h1>
 

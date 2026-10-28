@@ -123,7 +123,7 @@ export default function LoginPage() {
   return (
     <Card className="shadow-sm border-border/70">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-xl font-semibold text-center">
+        <CardTitle className="font-display text-2xl font-black text-center uppercase tracking-tight">
           Masuk ke Akun
         </CardTitle>
         <CardDescription className="text-center">

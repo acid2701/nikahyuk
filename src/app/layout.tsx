@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Playfair_Display } from "next/font/google";
+import { Inter, Titillium_Web } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/shared/theme/theme-provider";
 import { getAppBranding } from "@/lib/branding";
 import "./globals.css";
 
-const plusJakartaSans = Plus_Jakarta_Sans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
 });
 
-const playfairDisplay = Playfair_Display({
+const titilliumWeb = Titillium_Web({
   subsets: ["latin"],
-  variable: "--font-serif",
+  weight: ["400", "600", "700", "900"],
+  variable: "--font-display",
   display: "swap",
 });
 
@@ -43,7 +44,7 @@ export default function RootLayout({
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${playfairDisplay.variable} h-full antialiased`}
+      className={`${inter.variable} ${titilliumWeb.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
         <ThemeProvider

@@ -71,8 +71,8 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md shadow-lg border-border/80">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="font-serif text-2xl font-bold">
-          Daftar NikahYuk
+        <CardTitle className="font-display text-2xl font-black uppercase tracking-tight">
+          Daftar Akun Pengantin
         </CardTitle>
         <CardDescription className="text-xs">
           Buat akun pasangan pengantin Anda untuk mengelola seluruh kebutuhan pernikahan.
