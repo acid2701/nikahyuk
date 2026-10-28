@@ -36,8 +36,8 @@ export default async function VendorRegisterPage() {
               </div>
             )}
             <div className="flex flex-col">
-              <span className="font-serif text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
-                {branding.appName}
+              <span className="font-sans text-lg font-bold tracking-tight group-hover:text-primary transition-colors">
+                NikahYuk Vendor
               </span>
               <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono hidden sm:inline">
                 Mitra Vendor Portal
@@ -66,7 +66,7 @@ export default async function VendorRegisterPage() {
             <Briefcase className="h-3.5 w-3.5" /> Program Kemitraan Vendor B2B
           </Badge>
 
-          <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
+          <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
             Perluas Jangkauan Usaha Pernikahan Anda Bersama <span className="text-primary">{branding.appName}</span>
           </h1>
 

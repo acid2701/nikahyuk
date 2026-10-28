@@ -46,7 +46,7 @@ export default async function RundownPage(props: {
   if (!activeEventId) {
     return (
       <div className="space-y-4 p-8 text-center border border-dashed rounded-lg">
-        <h2 className="font-serif text-lg font-bold">Belum Ada Sub-Event</h2>
+        <h2 className="font-sans text-lg font-bold">Belum Ada Sub-Event</h2>
         <p className="text-xs text-muted-foreground">
           Mohon tambahkan sub-event (misal: Akad Nikah / Resepsi / Lamaran) terlebih dahulu di modul Acara.
         </p>

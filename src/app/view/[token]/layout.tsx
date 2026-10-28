@@ -35,7 +35,7 @@ export default async function ViewTokenLayout(props: {
     return (
       <div className="min-h-screen flex items-center justify-center p-6 text-center">
         <div className="space-y-2">
-          <h1 className="font-serif text-xl font-bold text-rose-600">Tautan Akses Expired</h1>
+          <h1 className="font-sans text-xl font-bold text-rose-600">Tautan Akses Expired</h1>
           <p className="text-xs text-muted-foreground">
             Tautan akses publik ini telah melewati masa berlaku. Silakan hubungi pengantin/WO untuk tautan baru.
           </p>
@@ -65,7 +65,7 @@ export default async function ViewTokenLayout(props: {
         <header className="h-13 border-b border-border/60 px-4 flex items-center justify-between bg-background/85 sticky top-0 z-10 backdrop-blur-md">
           <div className="flex items-center space-x-2 min-w-0">
             <span className="h-2 w-2 rounded-full bg-primary/70 shrink-0" />
-            <span className="font-serif text-xs font-bold tracking-tight truncate max-w-[220px] text-foreground">
+            <span className="font-sans text-xs font-bold tracking-tight truncate max-w-[220px] text-foreground">
               {weddingTitle}
             </span>
           </div>

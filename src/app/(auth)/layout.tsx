@@ -33,7 +33,7 @@ export default async function AuthLayout({
               />
             </div>
           ) : null}
-          <h1 className="font-serif text-3xl font-semibold tracking-tight text-primary">
+          <h1 className="font-sans text-3xl font-bold tracking-tight text-primary">
             {branding.appName}
           </h1>
           <p className="text-sm text-muted-foreground">

@@ -36,7 +36,7 @@ export default async function ViewTokenPage(props: { params: Promise<any> }) {
         <div className="inline-flex items-center justify-center p-2 rounded-full bg-rose-500/10 text-rose-500 mb-1">
           <Heart className="h-5 w-5 fill-rose-500" />
         </div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           {groomName} & {brideName}
         </h1>
 

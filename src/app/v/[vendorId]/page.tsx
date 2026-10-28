@@ -58,7 +58,7 @@ export default async function PublicVendorPage(props: {
       {/* Top Public Header */}
       <header className="border-b border-border bg-card sticky top-0 z-20 h-14 px-4 sm:px-6 flex items-center justify-between">
         <Link href="/" className="flex items-center space-x-2">
-          <span className="font-serif text-xl font-bold text-primary">NikahYuk</span>
+          <span className="font-sans text-xl font-bold text-primary">NikahYuk</span>
           <span className="text-xs text-muted-foreground hidden sm:inline">• Partner & Event Catalog</span>
         </Link>
 
@@ -87,7 +87,7 @@ export default async function PublicVendorPage(props: {
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-serif text-3xl font-bold text-foreground">
+                <h1 className="font-sans text-3xl font-bold text-foreground">
                   {partner.company_name}
                 </h1>
                 {partner.is_verified && (
@@ -139,7 +139,7 @@ export default async function PublicVendorPage(props: {
 
         {/* Packages List Header */}
         <div className="space-y-1 pt-2">
-          <h2 className="font-serif text-xl font-bold text-foreground flex items-center gap-2">
+          <h2 className="font-sans text-xl font-bold text-foreground flex items-center gap-2">
             <Package className="h-5 w-5 text-amber-500" /> Paket Penawaran Resmi ({activePackages.length} Paket)
           </h2>
           <p className="text-xs text-muted-foreground">
@@ -163,7 +163,7 @@ export default async function PublicVendorPage(props: {
                 <CardContent className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-2 flex-1 min-w-0">
                     <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                      <h3 className="font-serif font-bold text-lg text-foreground">
+                      <h3 className="font-sans font-bold text-lg text-foreground">
                         {pkg.package_name}
                       </h3>
                       {pkg.capacity_pax && pkg.capacity_pax > 0 ? (
