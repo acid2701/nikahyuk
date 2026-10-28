@@ -55,7 +55,7 @@ export function AdminMobileDrawer({
         ) : (
           <Crown className="h-4 w-4 text-amber-500 fill-amber-500/20" />
         )}
-        <span className="font-serif text-sm font-bold text-foreground truncate">
+        <span className="font-sans text-sm font-bold text-foreground truncate">
           {appName} Admin
         </span>
       </div>
@@ -68,14 +68,17 @@ export function AdminMobileDrawer({
           />
 
           <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-card border-r border-border/80 shadow-lg flex flex-col z-50 animate-in slide-in-from-left duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="font-serif font-bold text-sm text-primary">
-                Superadmin Control Plane
-              </span>
+            <div className="flex items-center justify-between p-4 border-b border-border/70">
+              <div className="flex items-center gap-1.5">
+                <Crown className="h-4 w-4 text-[#ff385c]" />
+                <span className="font-sans font-bold text-sm text-foreground">
+                  Control Plane
+                </span>
+              </div>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
                 onClick={() => setOpen(false)}
               >
                 <X className="h-4 w-4" />
