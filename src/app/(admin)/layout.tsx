@@ -39,15 +39,17 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      <AdminMobileDrawer userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
       <AdminSidebar userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden">
         {/* Top Admin Header */}
         <header className="h-14 border-b border-border/60 bg-background/95 backdrop-blur-xs px-3 sm:px-6 flex items-center justify-between sticky top-0 z-20 shrink-0">
           <div className="flex items-center space-x-2.5">
-            <div className="p-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
-              <Crown className="h-4 w-4" />
+            <div className="flex items-center space-x-1">
+              <AdminMobileDrawer userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
+              <div className="p-1.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                <Crown className="h-4 w-4" />
+              </div>
             </div>
             <div className="flex items-center space-x-1.5 font-mono text-xs">
               <span className="font-semibold text-foreground">Control Plane</span>

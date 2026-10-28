@@ -36,29 +36,16 @@ export function AdminMobileDrawer({
   }, [open]);
 
   return (
-    <div className="lg:hidden flex items-center justify-between p-3 border-b border-border bg-card">
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center space-x-1">
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-foreground hover:bg-accent cursor-pointer"
-            onClick={() => setOpen(true)}
-            aria-label="Buka Menu Admin"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-        {logoUrl ? (
-          <img src={logoUrl} alt={appName} className="h-5 w-auto max-w-[80px] object-contain rounded" />
-        ) : (
-          <Crown className="h-4 w-4 text-amber-500 fill-amber-500/20" />
-        )}
-        <span className="font-sans text-sm font-bold text-foreground truncate">
-          {appName} Admin
-        </span>
-      </div>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full"
+        onClick={() => setOpen(true)}
+        aria-label="Buka Menu Admin"
+      >
+        <Menu className="h-4 w-4" />
+      </Button>
 
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -88,10 +75,7 @@ export function AdminMobileDrawer({
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
-                onNavigate={() => {
-                  // Slight defer so Next.js Link initiates transition before drawer unmounts
-                  setTimeout(() => setOpen(false), 80);
-                }}
+                onNavigate={() => setOpen(false)}
                 className="flex w-full border-r-0 h-auto static"
                 appName={appName}
                 logoUrl={logoUrl}
@@ -100,6 +84,6 @@ export function AdminMobileDrawer({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
