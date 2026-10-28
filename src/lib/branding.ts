@@ -19,7 +19,7 @@ export const DEFAULT_BRANDING: AppBranding = {
   heroTitle: "Kelola Pernikahan Impian Anda dengan Mudah & Terstruktur",
   heroSubtitle:
     "Platform all-in-one terdepan untuk Pasangan Pengantin & Wedding Organizer (WO) di Indonesia. Dari Live Rundown, RSVP Tamu & WA Blast, hingga Anggaran Finansial.",
-  ctaButtonText: "Mulai Workspace Gratis",
+  ctaButtonText: "Mulai Gratis",
   contactEmail: "support@nikahyu.my.id",
 };
 

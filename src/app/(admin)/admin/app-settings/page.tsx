@@ -28,7 +28,7 @@ export default function AdminAppSettingsPage() {
   const [heroSubtitle, setHeroSubtitle] = React.useState(
     "Platform all-in-one terdepan untuk Pasangan Pengantin & Wedding Organizer (WO) di Indonesia. Dari Live Rundown, RSVP Tamu & WA Blast, hingga Anggaran Finansial."
   );
-  const [ctaButtonText, setCtaButtonText] = React.useState("Mulai Workspace Gratis");
+  const [ctaButtonText, setCtaButtonText] = React.useState("Mulai Gratis");
   const [contactEmail, setContactEmail] = React.useState("support@nikahyu.my.id");
 
   // Google Auth & Dynamic Auth Settings State

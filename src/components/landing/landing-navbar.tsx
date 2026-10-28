@@ -85,9 +85,9 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
               <Button asChild variant="ghost" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold hover:bg-muted">
                 <Link href="/login">Masuk</Link>
               </Button>
-              <Button asChild size="sm" className="h-9 px-5 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] gap-1.5 text-xs font-semibold shadow-xs">
+              <Button asChild size="sm" className="hidden sm:inline-flex h-9 px-5 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] gap-1.5 text-xs font-semibold shadow-xs">
                 <Link href="/register">
-                  Daftar Gratis <ArrowRight className="h-3.5 w-3.5" />
+                  Mulai Gratis <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </>
