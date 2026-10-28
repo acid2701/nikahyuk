@@ -64,71 +64,91 @@ export function AppSidebar({
 
   const baseUrl = weddingId ? `/dashboard/${weddingId}` : "/dashboard";
 
-  const navigationItems = [
+  const navigationGroups = [
     {
-      title: "Ringkasan",
-      href: baseUrl,
-      icon: LayoutDashboard,
+      label: "Utama",
+      items: [
+        {
+          title: "Ringkasan",
+          href: baseUrl,
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Sub-Events Hub",
+          href: `${baseUrl}/events`,
+          icon: Calendar,
+        },
+      ],
     },
     {
-      title: "Sub-Events Hub",
-      href: `${baseUrl}/events`,
-      icon: Calendar,
+      label: "Hari-H & Tamu",
+      items: [
+        {
+          title: "Live Rundown",
+          href: `${baseUrl}/rundown`,
+          icon: Clock,
+        },
+        {
+          title: "Master Tamu & RSVP",
+          href: `${baseUrl}/guests`,
+          icon: Users,
+        },
+        {
+          title: "Penataan Meja",
+          href: `${baseUrl}/seating`,
+          icon: LayoutGrid,
+        },
+        {
+          title: "Log Kado & Angpao",
+          href: `${baseUrl}/gifts`,
+          icon: Gift,
+        },
+      ],
     },
     {
-      title: "Checklist Persiapan",
-      href: `${baseUrl}/checklists`,
-      icon: CheckSquare,
+      label: "Persiapan & Biaya",
+      items: [
+        {
+          title: "Checklist Persiapan",
+          href: `${baseUrl}/checklists`,
+          icon: CheckSquare,
+        },
+        {
+          title: "Anggaran (Budget)",
+          href: `${baseUrl}/budget`,
+          icon: DollarSign,
+        },
+        {
+          title: "Vendor Hub & SPK",
+          href: `${baseUrl}/vendors`,
+          icon: Briefcase,
+        },
+      ],
     },
     {
-      title: "Live Rundown",
-      href: `${baseUrl}/rundown`,
-      icon: Clock,
-    },
-    {
-      title: "Anggaran (Budget)",
-      href: `${baseUrl}/budget`,
-      icon: DollarSign,
-    },
-    {
-      title: "Vendor Hub",
-      href: `${baseUrl}/vendors`,
-      icon: Briefcase,
-    },
-    {
-      title: "Master Tamu & RSVP",
-      href: `${baseUrl}/guests`,
-      icon: Users,
-    },
-    {
-      title: "Penataan Tempat Duduk",
-      href: `${baseUrl}/seating`,
-      icon: LayoutGrid,
-    },
-    {
-      title: "Berbagi Link (Share)",
-      href: `${baseUrl}/share`,
-      icon: Share2,
-    },
-    {
-      title: "Log Kado & Angpao",
-      href: `${baseUrl}/gifts`,
-      icon: Gift,
-    },
-    {
-      title: "Profil Pernikahan",
-      href: `${baseUrl}/settings/profile`,
-      icon: User,
-    },
-    {
-      title: "Profil Saya (Akun)",
-      href: `${baseUrl}/settings/user-profile`,
-      icon: User,
-    },
-    {
-      title: "Kolaborator",
-      href: `${baseUrl}/settings/collaborators`,
-      icon: Settings,
+      label: "Akses & Akun",
+      items: [
+        {
+          title: "Berbagi Link (Share)",
+          href: `${baseUrl}/share`,
+          icon: Share2,
+        },
+        {
+          title: "Kolaborator",
+          href: `${baseUrl}/settings/collaborators`,
+          icon: Settings,
+        },
+        {
+          title: "Profil Pernikahan",
+          href: `${baseUrl}/settings/profile`,
+          icon: User,
+        },
+        {
+          title: "Profil Akun",
+          href: `${baseUrl}/settings/user-profile`,
+          icon: User,
+        },
+      ],
     },
   ];
 
@@ -139,76 +159,91 @@ export function AppSidebar({
       <DonationQrisModal open={openDonationModal} onOpenChange={setOpenDonationModal} />
       <aside
         className={cn(
-          "w-64 border-r border-border bg-card flex flex-col justify-between h-full min-h-screen p-4 select-none",
+          "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between h-full min-h-screen select-none",
           className
         )}
       >
-        <div className="space-y-6">
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
           <div className="px-2 space-y-1">
-            <Link href="/dashboard" className="flex items-center space-x-2">
+            <Link href="/dashboard" className="flex items-center space-x-2.5">
               {logoUrl ? (
                 <img src={logoUrl} alt={appName} className="h-7 w-auto max-w-[120px] object-contain rounded" />
-              ) : null}
-              <span className="font-serif text-2xl font-bold tracking-tight text-primary truncate">
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-[#ff385c] flex items-center justify-center text-white shrink-0 shadow-xs">
+                  <span className="text-xs font-black">N</span>
+                </div>
+              )}
+              <span className="font-sans text-xl font-bold tracking-tight text-foreground truncate">
                 {appName}
               </span>
             </Link>
-            <p className="text-[11px] text-muted-foreground truncate">
+            <p className="text-[11px] text-muted-foreground truncate pl-0.5">
               {tagline}
             </p>
           </div>
 
-          <nav className="space-y-1">
-            {navigationItems.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== baseUrl && pathname.startsWith(item.href));
-              const Icon = item.icon;
+          <nav className="space-y-4">
+            {navigationGroups.map((group) => (
+              <div key={group.label} className="space-y-1">
+                <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                  {group.label}
+                </p>
+                <div className="space-y-0.5">
+                  {group.items.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== baseUrl && pathname.startsWith(item.href));
+                    const Icon = item.icon;
+                    const fullHref = eventId ? `${item.href}?eventId=${eventId}` : item.href;
 
-              const fullHref = eventId ? `${item.href}?eventId=${eventId}` : item.href;
-
-              return (
-                <Link
-                  key={item.title}
-                  href={fullHref}
-                  prefetch={true}
-                  onClick={onNavigate}
-                  className={cn(
-                    "flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-primary text-primary-foreground font-semibold shadow-sm"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-
-                  <Icon className="h-4 w-4 shrink-0" />
-                  <span>{item.title}</span>
-                </Link>
-              );
-            })}
+                    return (
+                      <Link
+                        key={item.title}
+                        href={fullHref}
+                        prefetch={true}
+                        onClick={onNavigate}
+                        className={cn(
+                          "group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150",
+                          isActive
+                            ? "bg-[#ff385c]/10 text-[#ff385c] font-semibold"
+                            : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                        )}
+                      >
+                        {isActive && (
+                          <span className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full bg-[#ff385c]" />
+                        )}
+                        <Icon
+                          className={cn(
+                            "h-4 w-4 shrink-0 transition-colors",
+                            isActive ? "text-[#ff385c]" : "text-muted-foreground group-hover:text-foreground"
+                          )}
+                        />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </nav>
         </div>
 
-        <div className="pt-4 border-t border-border space-y-3">
+        <div className="p-3.5 border-t border-border/70 space-y-2.5 shrink-0 bg-background/50">
           <button
             type="button"
             onClick={() => setOpenDonationModal(true)}
-            className="w-full text-left rounded-lg p-3 bg-secondary/60 hover:bg-secondary border border-border/80 text-secondary-foreground space-y-2 transition-all cursor-pointer group"
+            className="w-full text-left rounded-xl p-2.5 bg-muted/60 hover:bg-muted border border-border/70 text-foreground space-y-1.5 transition-all cursor-pointer group"
           >
-            <div className="flex items-center space-x-2">
-              <HeartHandshake className="h-4 w-4 text-primary shrink-0 group-hover:scale-110 transition-transform" />
-              <span className="text-xs font-semibold">KlikQRIS Tip Jar</span>
-            </div>
-            <p className="text-[11px] leading-tight text-muted-foreground">
-              Dukung pengembangan platform via donasi sukarela.
-            </p>
-            <div className="flex items-center space-x-2 bg-background p-2 rounded border border-border/50">
-              <QrCode className="h-6 w-6 text-primary shrink-0" />
-              <div className="text-[10px] leading-none">
-                <p className="font-semibold text-foreground">Scan QRIS</p>
-                <p className="text-muted-foreground mt-0.5">Semua e-Wallet/Bank</p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-1.5">
+                <HeartHandshake className="h-3.5 w-3.5 text-[#ff385c] shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="text-[11px] font-semibold">Tip Jar & Donasi</span>
               </div>
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-[#ff385c]/10 text-[#ff385c] font-bold">QRIS</span>
             </div>
+            <p className="text-[10px] leading-tight text-muted-foreground line-clamp-1">
+              Dukung maintenance platform ini.
+            </p>
           </button>
 
           <Button
@@ -217,15 +252,11 @@ export function AppSidebar({
             size="sm"
             onClick={handleLogout}
             disabled={loggingOut}
-            className="w-full text-xs gap-2 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-medium"
+            className="w-full h-8 rounded-full text-xs gap-1.5 text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10 font-medium transition-all"
           >
             <LogOut className="h-3.5 w-3.5" />
-            {loggingOut ? "Keluar..." : "Keluar (Logout)"}
+            {loggingOut ? "Keluar..." : "Keluar"}
           </Button>
-
-          <div className="px-2 text-center text-[10px] text-muted-foreground truncate">
-            {appName} SaaS v1.0.0
-          </div>
         </div>
       </aside>
     </>
