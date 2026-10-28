@@ -14,8 +14,11 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
+  const siteUrl = "https://nikahyu.my.id";
+  const ogImage = branding.logoUrl || `${siteUrl}/favicon.ico`;
 
   return {
+    metadataBase: new URL(siteUrl),
     title: {
       default: `${branding.appName} — ${branding.tagline}`,
       template: `%s | ${branding.appName}`,
@@ -25,6 +28,28 @@ export async function generateMetadata(): Promise<Metadata> {
       icon: branding.faviconUrl || "/favicon.ico",
       shortcut: branding.faviconUrl || "/favicon.ico",
       apple: branding.logoUrl || branding.faviconUrl || "/favicon.ico",
+    },
+    openGraph: {
+      type: "website",
+      locale: "id_ID",
+      url: siteUrl,
+      siteName: branding.appName,
+      title: `${branding.appName} — ${branding.tagline}`,
+      description: branding.heroSubtitle || branding.tagline,
+      images: [
+        {
+          url: ogImage,
+          width: 800,
+          height: 600,
+          alt: branding.appName,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${branding.appName} — ${branding.tagline}`,
+      description: branding.heroSubtitle || branding.tagline,
+      images: [ogImage],
     },
   };
 }
