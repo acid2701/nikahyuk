@@ -159,7 +159,7 @@ export default function AdminStorageConfigPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-serif font-bold tracking-tight flex items-center gap-2">
+        <h2 className="text-2xl font-sans font-bold tracking-tight flex items-center gap-2">
           <HardDrive className="h-6 w-6 text-primary" />
           Pengaturan Storage & Infrastruktur System
         </h2>

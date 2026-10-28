@@ -32,7 +32,7 @@ export default async function SharePage(props: { params: Promise<any> }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Shareable Token Manager & Access Controls
         </h1>
         <p className="text-sm text-muted-foreground">

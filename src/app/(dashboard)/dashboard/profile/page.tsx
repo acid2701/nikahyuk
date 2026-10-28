@@ -72,7 +72,7 @@ export default async function GlobalUserProfilePage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto py-4">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Pengaturan Profil Akun Saya
         </h1>
         <p className="text-sm text-muted-foreground">

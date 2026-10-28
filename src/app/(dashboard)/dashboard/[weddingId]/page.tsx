@@ -131,7 +131,7 @@ export default async function WeddingOverviewPage(props: {
         <div className="space-y-1">
           <div className="flex items-center space-x-2">
             <Heart className="h-5 w-5 text-primary fill-primary/20" />
-            <h1 className="font-serif text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">
               {wedding?.groomName || "Pengantin Pria"} & {wedding?.brideName || "Pengantin Wanita"}
             </h1>
           </div>
@@ -147,7 +147,7 @@ export default async function WeddingOverviewPage(props: {
             H-Day Countdown
           </span>
           {daysUntilWedding !== null ? (
-            <span className="font-serif text-xl font-black text-primary">
+            <span className="font-sans text-xl font-black text-primary">
               {daysUntilWedding > 0
                 ? `H-${daysUntilWedding} Hari`
                 : daysUntilWedding === 0
@@ -239,7 +239,7 @@ export default async function WeddingOverviewPage(props: {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-serif font-bold">
+              <CardTitle className="text-base font-sans font-bold">
                 Rangkaian Sub-Events Pernikahan ({events.length})
               </CardTitle>
               <CardDescription className="text-xs mt-0.5">
@@ -312,7 +312,7 @@ export default async function WeddingOverviewPage(props: {
         <Card className="border-border/70 shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-serif font-bold">
+              <CardTitle className="text-base font-sans font-bold">
                 Agenda Rundown Berikutnya ({activeEvent?.event_name || "Semua Acara"})
               </CardTitle>
               <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary">
@@ -353,7 +353,7 @@ export default async function WeddingOverviewPage(props: {
         {/* Quick Access Modul Grid */}
         <Card className="border-border/70 shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base font-serif font-bold">Pintas Akses Cepat Modul</CardTitle>
+            <CardTitle className="text-base font-sans font-bold">Pintas Akses Cepat Modul</CardTitle>
             <CardDescription className="text-xs">
               Akses instan ke seluruh fitur perencanaan acara pernikahan Anda.
             </CardDescription>

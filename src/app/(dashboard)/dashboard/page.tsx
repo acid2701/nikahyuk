@@ -85,7 +85,7 @@ export default async function DashboardSelectorPage() {
       <div className="max-w-3xl w-full space-y-6">
         <div className="text-center space-y-2">
           <Heart className="h-10 w-10 text-primary mx-auto" />
-          <h1 className="font-serif text-3xl font-bold tracking-tight">
+          <h1 className="font-sans text-3xl font-bold tracking-tight">
             Pilih Workspace Pernikahan
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -102,7 +102,7 @@ export default async function DashboardSelectorPage() {
               >
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between gap-2">
-                    <CardTitle className="font-serif text-lg font-bold">
+                    <CardTitle className="font-sans text-lg font-bold">
                       {w.groom_name} & {w.bride_name}
                     </CardTitle>
                     <Badge

@@ -88,7 +88,7 @@ export default async function AdminAnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-sans text-2xl font-bold tracking-tight flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-primary" />
           Analitik Penggunaan SaaS & Resource Platform
         </h1>

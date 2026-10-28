@@ -67,7 +67,7 @@ export default function AdminPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-sans text-2xl font-bold tracking-tight flex items-center gap-2">
           <HeartHandshake className="h-6 w-6 text-primary" />
           Keuangan & Donasi KlikQRIS
         </h1>
@@ -81,7 +81,7 @@ export default function AdminPaymentsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-lg font-serif flex items-center gap-2">
+                <CardTitle className="text-lg font-sans font-bold flex items-center gap-2">
                   <QrCode className="h-5 w-5 text-primary" /> Pengaturan Barcode KlikQRIS
                 </CardTitle>
                 <CardDescription>

@@ -16,7 +16,7 @@ export default async function WeddingProfileSettingsPage(props: { params: Promis
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Profil Pernikahan & Pasangan
         </h1>
         <p className="text-sm text-muted-foreground">

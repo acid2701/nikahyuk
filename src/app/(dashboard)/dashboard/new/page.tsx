@@ -43,7 +43,11 @@ export default function NewWeddingPage() {
         variant: "success",
       });
 
-      router.push(`/dashboard/${newWedding.id}`);
+      if (newWedding?.id) {
+        router.push(`/dashboard/${newWedding.id}`);
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch (err) {
       toast({
@@ -68,7 +72,7 @@ export default function NewWeddingPage() {
         <Card className="shadow-md border-border/80">
           <CardHeader className="text-center space-y-1 pb-3">
             <Heart className="h-8 w-8 text-primary mx-auto mb-1 fill-primary/10" />
-            <CardTitle className="font-serif text-2xl">Buat Workspace Pernikahan</CardTitle>
+            <CardTitle className="font-sans font-bold text-2xl">Buat Workspace Pernikahan</CardTitle>
             <CardDescription className="text-xs">
               Isi nama calon pengantin pria dan wanita untuk menginisialisasi ruang kerja baru.
             </CardDescription>

@@ -73,7 +73,7 @@ export default async function GiftsPage(props: {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Log Kado & Angpao (Gifts Logger)
         </h1>
         <p className="text-sm text-muted-foreground">

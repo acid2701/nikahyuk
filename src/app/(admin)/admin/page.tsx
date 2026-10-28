@@ -37,8 +37,8 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
-          Superadmin Platform Control Plane
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
+          Superadmin Overview
         </h1>
         <p className="text-sm text-muted-foreground">
           Ringkasan kesehatan infrastruktur, persetujuan mitra vendor, statistik ruang kerja SaaS, dan Storage R2.

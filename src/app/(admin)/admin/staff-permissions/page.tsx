@@ -120,7 +120,7 @@ export default function StaffPermissionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight flex items-center gap-2">
+        <h1 className="font-sans text-2xl font-bold tracking-tight flex items-center gap-2">
           <UserCheck className="h-6 w-6 text-emerald-500" />
           Manajemen Hak Akses Staf Admin (RBAC Granular)
         </h1>

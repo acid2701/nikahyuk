@@ -40,7 +40,7 @@ export default async function AuditLogsPage(props: {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Audit Trail & Activity Log Timeline
         </h1>
         <p className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export default async function AuditLogsPage(props: {
         </Card>
       ) : (
         <Card className="border-border/80 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-w-0">
           <Table>
             <TableHeader className="bg-muted/60">
               <TableRow>
@@ -132,33 +132,33 @@ export default async function AuditLogsPage(props: {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between p-4 border-t border-border">
-              <span className="text-xs text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t border-border/70 gap-3">
+              <span className="text-xs text-muted-foreground order-2 sm:order-1">
                 Halaman {currentPage} dari {totalPages} ({totalLogs} entri log)
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 order-1 sm:order-2">
                 {currentPage > 1 ? (
                   <a
                     href={`/dashboard/${weddingId}/audit-logs?page=${currentPage - 1}`}
-                    className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                    className="inline-flex items-center justify-center rounded-full text-xs font-semibold border border-border/80 bg-background hover:bg-muted text-foreground h-8 px-4 transition-all"
                   >
                     Sebelumnya
                   </a>
                 ) : (
-                  <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
+                  <span className="inline-flex items-center justify-center rounded-full text-xs font-semibold border border-border/50 bg-background text-muted-foreground opacity-40 cursor-not-allowed h-8 px-4">
                     Sebelumnya
                   </span>
                 )}
                 {currentPage < totalPages ? (
                   <a
                     href={`/dashboard/${weddingId}/audit-logs?page=${currentPage + 1}`}
-                    className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background hover:bg-accent hover:text-accent-foreground h-8 px-3"
+                    className="inline-flex items-center justify-center rounded-full text-xs font-semibold border border-border/80 bg-background hover:bg-muted text-foreground h-8 px-4 transition-all"
                   >
-                    Selanjutnya
+                    Berikutnya
                   </a>
                 ) : (
-                  <span className="inline-flex items-center justify-center rounded-md text-xs font-medium border border-input bg-background opacity-50 cursor-not-allowed h-8 px-3">
-                    Selanjutnya
+                  <span className="inline-flex items-center justify-center rounded-full text-xs font-semibold border border-border/50 bg-background text-muted-foreground opacity-40 cursor-not-allowed h-8 px-4">
+                    Berikutnya
                   </span>
                 )}
               </div>

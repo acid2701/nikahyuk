@@ -119,7 +119,7 @@ export default function RbacTemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight font-serif flex items-center gap-2">
+        <h2 className="text-2xl font-bold tracking-tight font-sans flex items-center gap-2">
           <ShieldCheck className="h-6 w-6 text-emerald-500" />
           Master Template Hak Akses (RBAC Defaults)
         </h2>

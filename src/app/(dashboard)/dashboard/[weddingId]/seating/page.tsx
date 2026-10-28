@@ -118,7 +118,7 @@ export default async function SeatingPage(props: {
       </div>
 
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Penataan Tempat Duduk & Meteran Kapasitas (Seating Allocation)
         </h1>
         <p className="text-sm text-muted-foreground">

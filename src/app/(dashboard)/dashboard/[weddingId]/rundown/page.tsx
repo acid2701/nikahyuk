@@ -101,7 +101,7 @@ export default async function RundownPage(props: {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-serif text-2xl font-bold tracking-tight">
+        <h1 className="font-sans text-2xl font-bold tracking-tight">
           Live Rundown, Technical Cues & 1-Click Shift Timeline Engine
         </h1>
         <p className="text-sm text-muted-foreground">

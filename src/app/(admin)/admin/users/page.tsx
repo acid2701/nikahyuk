@@ -148,7 +148,7 @@ export default function AdminUsersPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-2xl font-bold tracking-tight flex items-center gap-2">
+          <h1 className="font-sans text-2xl font-bold tracking-tight flex items-center gap-2">
             <Users className="h-6 w-6 text-primary" />
             Manajemen User Pendaftar Platform
           </h1>
