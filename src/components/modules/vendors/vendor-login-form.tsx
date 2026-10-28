@@ -134,9 +134,9 @@ export function VendorLoginForm() {
 
       <CardFooter className="flex-col gap-2 justify-center border-t border-border/60 py-3 bg-muted/20">
         <p className="text-xs text-muted-foreground">
-          Belum mendaftarkan usaha vendor Anda?{" "}
-          <Link href="/vendor-register" className="text-amber-600 font-semibold hover:underline">
-            Daftar Mitra Vendor (30 Detik)
+          Belum terdaftar sebagai vendor?{" "}
+          <Link href="/vendor-register" className="text-foreground font-semibold hover:underline">
+            Daftar
           </Link>
         </p>
       </CardFooter>

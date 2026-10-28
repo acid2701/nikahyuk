@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, Building2 } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function RegisterPage() {
   const [fullName, setFullName] = React.useState("");
@@ -179,24 +179,20 @@ export default function RegisterPage() {
           Sudah memiliki akun?{" "}
           <Link
             href="/login"
-            className="text-primary font-medium hover:underline"
+            className="text-foreground font-semibold hover:underline"
           >
-            Masuk di sini
+            Masuk
           </Link>
         </p>
-
-        <div className="w-full pt-3 border-t border-dashed border-border text-center space-y-1.5">
-          <p className="text-[11px] text-muted-foreground font-medium">
-            Pemilik Usaha Vendor Pernikahan?
-          </p>
+        <p className="text-xs text-muted-foreground">
+          Mitra Vendor?{" "}
           <Link
-            href="/vendor-register"
-            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-2 rounded-md transition-colors w-full border border-amber-500/30"
+            href="/vendor/login"
+            className="text-foreground font-semibold hover:underline"
           >
-            <Building2 className="h-4 w-4 text-amber-600" />
-            Daftarkan Usaha Vendor Anda di Sini →
+            Masuk ke Portal Vendor
           </Link>
-        </div>
+        </p>
       </CardFooter>
     </Card>
   );
