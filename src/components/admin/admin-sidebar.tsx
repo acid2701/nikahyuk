@@ -20,6 +20,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export function AdminSidebar({
   userEmail,
@@ -126,9 +127,10 @@ export function AdminSidebar({
 
   return (
     <aside
-      className={`w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex-col justify-between h-screen sticky top-0 shrink-0 select-none ${
-        className || "hidden lg:flex"
-      }`}
+      className={cn(
+        "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none",
+        className ? className : "hidden lg:flex"
+      )}
     >
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
         <div className="px-2 space-y-1.5">

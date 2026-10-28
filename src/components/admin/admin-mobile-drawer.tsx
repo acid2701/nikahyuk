@@ -38,10 +38,15 @@ export function AdminMobileDrawer({
   return (
     <>
       <Button
+        type="button"
         variant="ghost"
         size="icon"
-        className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full"
-        onClick={() => setOpen(true)}
+        className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full shrink-0 flex items-center justify-center z-30"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
         aria-label="Buka Menu Admin"
       >
         <Menu className="h-4 w-4" />
@@ -76,7 +81,7 @@ export function AdminMobileDrawer({
               <AdminSidebar
                 userEmail={userEmail}
                 onNavigate={() => setOpen(false)}
-                className="flex w-full border-r-0 h-auto static"
+                className="flex w-full border-r-0 h-auto static min-h-0"
                 appName={appName}
                 logoUrl={logoUrl}
               />
