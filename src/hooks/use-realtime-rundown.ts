@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/db/client";
 
 export function useRealtimeRundown(eventId: string | null) {
   const [tick, setTick] = useState(0);
