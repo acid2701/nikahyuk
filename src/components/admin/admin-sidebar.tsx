@@ -128,8 +128,8 @@ export function AdminSidebar({
   return (
     <aside
       className={cn(
-        "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none",
-        className ? className : "hidden lg:flex"
+        "w-64 border-r border-border/70 bg-card/95 backdrop-blur-xs flex flex-col justify-between select-none",
+        className ? className : "hidden lg:flex h-screen sticky top-0 shrink-0"
       )}
     >
       <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">

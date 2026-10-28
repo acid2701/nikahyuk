@@ -37,20 +37,14 @@ export function AdminMobileDrawer({
 
   return (
     <>
-      <Button
+      <button
         type="button"
-        variant="ghost"
-        size="icon"
-        className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full shrink-0 flex items-center justify-center z-30"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen(true);
-        }}
+        className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full shrink-0 flex items-center justify-center transition-colors"
+        onClick={() => setOpen(true)}
         aria-label="Buka Menu Admin"
       >
         <Menu className="h-4 w-4" />
-      </Button>
+      </button>
 
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -59,29 +53,30 @@ export function AdminMobileDrawer({
             onClick={() => setOpen(false)}
           />
 
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[80vw] bg-card border-r border-border/80 shadow-lg flex flex-col z-50 animate-in slide-in-from-left duration-200">
-            <div className="flex items-center justify-between p-4 border-b border-border/70">
-              <div className="flex items-center gap-1.5">
-                <Crown className="h-4 w-4 text-[#ff385c]" />
+          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border/80 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-200">
+            <div className="flex items-center justify-between p-3.5 border-b border-border/70 shrink-0">
+              <div className="flex items-center gap-2">
+                <div className="h-6 w-6 rounded-full bg-[#ff385c]/10 text-[#ff385c] border border-[#ff385c]/20 flex items-center justify-center">
+                  <Crown className="h-3.5 w-3.5" />
+                </div>
                 <span className="font-sans font-bold text-sm text-foreground">
                   Control Plane
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground cursor-pointer"
+              <button
+                type="button"
+                className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center transition-colors cursor-pointer"
                 onClick={() => setOpen(false)}
               >
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
 
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
                 onNavigate={() => setOpen(false)}
-                className="flex w-full border-r-0 h-auto static min-h-0"
+                className="w-full border-r-0 h-auto"
                 appName={appName}
                 logoUrl={logoUrl}
               />
