@@ -6,7 +6,7 @@ import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { AdminMobileDrawer } from "@/components/admin/admin-mobile-drawer";
 import { AdminNotificationBell } from "@/components/admin/admin-notification-bell";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
-import { Crown } from "lucide-react";
+import { Crown, LogOut } from "lucide-react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -62,8 +62,18 @@ export default async function AdminLayout({
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2 sm:space-x-3">
             <ThemeToggle />
+            <form action="/api/auth/logout" method="POST" className="sm:hidden">
+              <button
+                type="submit"
+                className="h-8 px-2.5 rounded-full text-xs font-semibold text-rose-500 hover:bg-rose-500/10 border border-rose-500/20 flex items-center gap-1 cursor-pointer"
+                title="Keluar dari Akun"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Logout</span>
+              </button>
+            </form>
             <AdminNotificationBell />
             <div className="hidden sm:block text-right pl-3 border-l border-border/50">
               <p className="text-xs font-semibold text-foreground leading-none">{email}</p>

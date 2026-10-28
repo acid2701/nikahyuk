@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
 import { AdminSidebar } from "./admin-sidebar";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
@@ -17,7 +18,12 @@ export function AdminMobileDrawer({
   logoUrl?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
   const pathname = usePathname();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close drawer automatically when route/pathname changes (smooth SPA transition)
   React.useEffect(() => {
@@ -40,20 +46,22 @@ export function AdminMobileDrawer({
       <button
         type="button"
         className="lg:hidden h-8 w-8 text-foreground hover:bg-muted cursor-pointer rounded-full shrink-0 flex items-center justify-center transition-colors"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen((prev) => !prev);
+        }}
         aria-label="Buka Menu Admin"
       >
         <Menu className="h-4 w-4" />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
+      {open && mounted && createPortal(
+        <div className="fixed inset-0 z-[9999] lg:hidden">
           <div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity animate-in fade-in"
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
             onClick={() => setOpen(false)}
           />
 
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border/80 shadow-2xl flex flex-col z-50 animate-in slide-in-from-left duration-200">
+          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border/80 shadow-2xl flex flex-col z-[10000]">
             <div className="flex items-center justify-between p-3.5 border-b border-border/70 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-[#ff385c]/10 text-[#ff385c] border border-[#ff385c]/20 flex items-center justify-center">
@@ -82,7 +90,8 @@ export function AdminMobileDrawer({
               />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
