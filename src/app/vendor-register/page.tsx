@@ -3,9 +3,8 @@ import Link from "next/link";
 import { getAppBranding } from "@/lib/branding";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { PublicVendorRegistrationForm } from "@/components/modules/vendors/public-vendor-registration-form";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Briefcase, Users, Layers, ShieldCheck, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -59,77 +58,8 @@ export default async function VendorRegisterPage() {
         </div>
       </header>
 
-      {/* 2. RESPONSIVE HERO VALUE PROPOSITION */}
-      <section className="relative overflow-hidden pt-8 pb-6 sm:pt-12 sm:pb-10 px-4 sm:px-6 lg:px-8 bg-muted/20 border-b border-border/60">
-        <div className="max-w-4xl mx-auto text-center space-y-4">
-          {/* Account Type Pill Toggle */}
-          <div className="flex items-center justify-center p-1 bg-muted/80 rounded-full border border-border/60 max-w-xs mx-auto">
-            <Link
-              href="/register"
-              className="flex-1 py-1 px-3 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground text-center transition-colors"
-            >
-              Calon Pengantin
-            </Link>
-            <span className="flex-1 py-1 px-3 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs text-center">
-              Mitra Vendor
-            </span>
-          </div>
-
-          <Badge className="bg-primary/10 text-primary border-primary/20 text-xs px-3 py-1 font-medium mx-auto inline-flex items-center gap-1.5">
-            <Briefcase className="h-3.5 w-3.5" /> Program Kemitraan Vendor B2B
-          </Badge>
-
-          <h1 className="font-sans text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-            Perluas Jangkauan Usaha Pernikahan Anda Bersama <span className="text-primary">{branding.appName}</span>
-          </h1>
-
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Terhubung langsung dengan ribuan calon pasangan pengantin yang sedang merencanakan hari bahagia mereka. Promosikan paket, portofolio brosur digital, dan terima pesanan tanpa potongan rumit.
-          </p>
-
-          {/* Value Prop Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 max-w-3xl mx-auto text-left">
-            <div className="p-3.5 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 shrink-0">
-                <ShieldCheck className="h-4 w-4" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-xs font-semibold text-foreground">0% Komisi Pendaftaran</h4>
-                <p className="text-[11px] text-muted-foreground leading-normal">
-                  Daftar instan gratis tanpa biaya langganan awal tersembunyi.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-primary/10 text-primary shrink-0">
-                <Users className="h-4 w-4" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-xs font-semibold text-foreground">Akses Calon Pengantin</h4>
-                <p className="text-[11px] text-muted-foreground leading-normal">
-                  Klien menjangkau nomor WhatsApp resmi Anda secara langsung.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl border border-border/70 bg-card/60 backdrop-blur-xs flex items-start gap-3">
-              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 shrink-0">
-                <Layers className="h-4 w-4" />
-              </div>
-              <div className="space-y-0.5">
-                <h4 className="text-xs font-semibold text-foreground">Katalog Brosur R2</h4>
-                <p className="text-[11px] text-muted-foreground leading-normal">
-                  Upload file PDF dan pricelist berkecepatan tinggi Cloudflare R2.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 3. MAIN FORM CONTAINER (RESPONSIVE FOR ALL SCREEN SIZES) */}
-      <main className="flex-1 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      {/* 2. MAIN FORM CONTAINER (CLEAN & CENTERED) */}
+      <main className="flex-1 py-6 sm:py-10 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
         <PublicVendorRegistrationForm
           appName={branding.appName}
           logoUrl={branding.logoUrl}

@@ -192,35 +192,29 @@ export function PublicVendorRegistrationForm({
   }
 
   return (
-    <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-sm max-w-3xl w-full mx-auto rounded-xl overflow-hidden transition-all">
-      <CardHeader className="pb-6 pt-7 px-5 sm:px-8 border-b border-border/60 bg-muted/15">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Badge className="bg-primary/10 text-primary border-primary/20 text-[11px] px-2.5 py-0.5">
-                Kemitraan Vendor {appName}
-              </Badge>
-              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-                <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Bebas Biaya Registrasi
-              </span>
-            </div>
-            <CardTitle className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Formulir Pendaftaran Mitra Vendor
-            </CardTitle>
-          </div>
-          <div className="hidden sm:block text-right">
-            <span className="text-xs text-muted-foreground block">Sudah terdaftar?</span>
-            <Link
-              href="/login"
-              className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
-            >
-              Masuk <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
+    <Card className="border-border/80 bg-card/90 backdrop-blur-sm shadow-sm max-w-2xl w-full mx-auto rounded-2xl overflow-hidden transition-all">
+      <CardHeader className="pb-5 pt-6 px-5 sm:px-8 border-b border-border/60 bg-muted/10 space-y-3">
+        {/* Account Type Pill Toggle */}
+        <div className="flex items-center justify-center p-1 bg-muted/80 rounded-full border border-border/60 max-w-xs mx-auto w-full">
+          <Link
+            href="/register"
+            className="flex-1 py-1 px-3 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground text-center transition-colors"
+          >
+            Calon Pengantin
+          </Link>
+          <span className="flex-1 py-1 px-3 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs text-center">
+            Mitra Vendor
+          </span>
         </div>
-        <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-2">
-          Hanya butuh 1 menit untuk mendaftarkan layanan pernikahan Anda. Calon pengantin dapat langsung menghubungi via WhatsApp resmi usaha Anda.
-        </CardDescription>
+
+        <div className="text-center space-y-1">
+          <CardTitle className="font-sans text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Daftar Akun Mitra Vendor
+          </CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            Daftarkan layanan pernikahan Anda untuk menjangkau calon pasangan pengantin.
+          </CardDescription>
+        </div>
       </CardHeader>
 
       <CardContent className="p-5 sm:p-8">
