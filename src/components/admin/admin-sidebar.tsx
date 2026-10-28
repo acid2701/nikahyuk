@@ -173,11 +173,7 @@ export function AdminSidebar({
                       key={item.href}
                       href={item.href}
                       prefetch={true}
-                      onClick={() => {
-                        if (onNavigate) {
-                          onNavigate();
-                        }
-                      }}
+                      onClick={onNavigate}
                       className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
                         isActive
                           ? "bg-[#ff385c]/10 text-[#ff385c] font-semibold"
@@ -212,11 +208,7 @@ export function AdminSidebar({
           <Button asChild variant="outline" size="sm" className="w-full h-8 rounded-full text-xs gap-1.5 font-medium border-border/80 hover:bg-muted">
             <Link
               href="/dashboard"
-              onClick={() => {
-                if (onNavigate) {
-                  onNavigate();
-                }
-              }}
+              onClick={onNavigate}
             >
               <ArrowLeft className="h-3.5 w-3.5" /> Dashboard Pengantin
             </Link>

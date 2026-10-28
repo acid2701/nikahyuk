@@ -34,10 +34,10 @@ export function AdminMobileDrawer({
     if (open) {
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [open]);
 
@@ -83,7 +83,9 @@ export function AdminMobileDrawer({
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
-                onNavigate={() => setOpen(false)}
+                onNavigate={() => {
+                  setTimeout(() => setOpen(false), 50);
+                }}
                 className="w-full border-r-0 h-auto"
                 appName={appName}
                 logoUrl={logoUrl}
