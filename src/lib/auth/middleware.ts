@@ -38,8 +38,21 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  const url = request.nextUrl.clone();
-  const pathname = url.pathname;
+  const pathname = request.nextUrl.pathname;
+
+  // Safe redirect helper ensuring public canonical domain is preserved
+  const createRedirect = (targetPath: string) => {
+    const forwardedHost = request.headers.get("x-forwarded-host");
+    const forwardedProto = request.headers.get("x-forwarded-proto") || "https";
+    const host = forwardedHost || request.headers.get("host");
+
+    if (host && !host.includes("localhost") && !host.includes("127.0.0.1")) {
+      return NextResponse.redirect(new URL(targetPath, `${forwardedProto}://${host}`));
+    }
+
+    const fallbackBase = process.env.NEXT_PUBLIC_APP_URL || "https://nikahyu.my.id";
+    return NextResponse.redirect(new URL(targetPath, fallbackBase));
+  };
 
   const isProtectedRoute =
     pathname.startsWith("/dashboard") ||
@@ -85,16 +98,16 @@ export async function updateSession(request: NextRequest) {
 
   // 1. Unauthenticated users trying to access protected routes
   if (!user && isProtectedRoute) {
-    url.pathname = isVendorRoute ? "/vendor/login" : "/login";
-    return NextResponse.redirect(url);
+    const target = isVendorRoute ? "/vendor/login" : "/login";
+    return createRedirect(target);
   }
 
   // 2. Admin Route Protection (hanya superadmin dan admin)
   if (user && isAdminRoute) {
     const isSuperadmin = user.role === "superadmin" || user.role === "admin";
     if (!isSuperadmin) {
-      url.pathname = user.userType === "vendor" ? "/vendor/dashboard" : "/dashboard";
-      return NextResponse.redirect(url);
+      const target = user.userType === "vendor" ? "/vendor/dashboard" : "/dashboard";
+      return createRedirect(target);
     }
   }
 
@@ -104,14 +117,12 @@ export async function updateSession(request: NextRequest) {
     const isVendor = user.userType === "vendor";
 
     if (isSuperadmin) {
-      url.pathname = "/admin";
+      return createRedirect("/admin");
     } else if (isVendor) {
-      url.pathname = "/vendor/dashboard";
+      return createRedirect("/vendor/dashboard");
     } else {
-      url.pathname = "/dashboard";
+      return createRedirect("/dashboard");
     }
-
-    return NextResponse.redirect(url);
   }
 
   return NextResponse.next();
