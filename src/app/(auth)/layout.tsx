@@ -18,25 +18,25 @@ export default async function AuthLayout({
   const branding = await getAppBranding();
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-12 sm:px-6 lg:px-8 relative">
-      <div className="absolute top-4 right-4">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-background px-4 py-10 sm:px-6 lg:px-8 relative selection:bg-primary/20">
+      <div className="absolute top-4 right-4 z-20">
         <ThemeToggle />
       </div>
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 select-none">
           {branding.logoUrl ? (
-            <div className="flex justify-center mb-2">
+            <div className="flex justify-center mb-1">
               <img
                 src={branding.logoUrl}
                 alt={branding.appName}
-                className="h-12 w-auto max-w-[180px] object-contain rounded-lg"
+                className="h-11 w-auto max-w-[170px] object-contain rounded-lg"
               />
             </div>
           ) : null}
-          <h1 className="font-sans text-3xl font-bold tracking-tight text-primary">
+          <h1 className="font-sans text-3xl font-extrabold tracking-tight text-primary">
             {branding.appName}
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground font-medium">
             {branding.tagline}
           </p>
         </div>

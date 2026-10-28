@@ -369,7 +369,7 @@ export function PublicVendorRegistrationForm({
               type="submit"
               disabled={loading}
               size="lg"
-              className="w-full sm:w-auto h-11 px-8 gap-2 font-semibold shadow-md shrink-0"
+              className="w-full sm:w-auto h-11 px-8 gap-2 font-semibold shadow-xs shrink-0 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41]"
             >
               <Send className="h-4 w-4" />
               {loading ? "Mendaftarkan Mitra..." : "Daftar Mitra Vendor Sekarang"}
@@ -378,18 +378,11 @@ export function PublicVendorRegistrationForm({
         </form>
       </CardContent>
 
-      <CardFooter className="flex flex-col sm:flex-row items-center justify-between border-t border-border/60 py-4 px-5 sm:px-8 bg-muted/20 gap-3">
-        <p className="text-xs text-muted-foreground text-center sm:text-left">
-          Sudah memiliki akun mitra vendor?{" "}
-          <Link href="/login" className="text-primary font-semibold hover:underline">
-            Masuk ke Akun
-          </Link>
-        </p>
-
-        <p className="text-xs text-muted-foreground text-center sm:text-right">
-          Butuh bantuan pendaftaran?{" "}
-          <Link href="/" className="text-muted-foreground hover:text-foreground underline">
-            Hubungi Dukungan {appName}
+      <CardFooter className="flex-col gap-2 justify-center border-t border-border/60 py-4 px-5 sm:px-8 bg-muted/10 text-center">
+        <p className="text-xs text-muted-foreground">
+          Sudah memiliki akun?{" "}
+          <Link href="/login" className="text-foreground font-semibold hover:underline">
+            Masuk
           </Link>
         </p>
       </CardFooter>
