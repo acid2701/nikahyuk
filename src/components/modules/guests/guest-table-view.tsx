@@ -273,7 +273,7 @@ export function GuestTableView({
             <DialogContent className="max-w-md">
               <form onSubmit={handleCreateGuest}>
                 <DialogHeader>
-                  <DialogTitle className="font-serif text-xl">Tambah Data Tamu</DialogTitle>
+                  <DialogTitle className="font-sans text-xl">Tambah Data Tamu</DialogTitle>
                   <DialogDescription>
                     Catat nama tamu, nomor WhatsApp, dan jumlah alokasi pax.
                   </DialogDescription>
@@ -338,7 +338,7 @@ export function GuestTableView({
             <DialogContent className="max-w-md">
               <form onSubmit={handleUpdateGuest}>
                 <DialogHeader>
-                  <DialogTitle className="font-serif text-xl">Edit Data Tamu</DialogTitle>
+                  <DialogTitle className="font-sans text-xl">Edit Data Tamu</DialogTitle>
                   <DialogDescription>
                     Perbarui nama lengkap, nomor WhatsApp, alokasi pax, atau catatan khusus.
                   </DialogDescription>
@@ -440,7 +440,7 @@ export function GuestTableView({
 
                       {/* Guest Name & Notes */}
                       <TableCell className="text-xs">
-                        <p className="font-serif font-bold text-sm text-foreground">{g.full_name}</p>
+                        <p className="font-sans font-bold text-sm text-foreground">{g.full_name}</p>
                         {g.notes && <p className="text-[11px] text-muted-foreground">{g.notes}</p>}
                       </TableCell>
 

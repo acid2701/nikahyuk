@@ -58,7 +58,7 @@ export function AudioCuesDrawer({ rundowns }: AudioCuesDrawerProps) {
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-sans text-xl flex items-center gap-2">
             <Volume2 className="h-5 w-5 text-primary" />
             Lembar Cue Teknis (Sound, Lighting & Multimedia)
           </DialogTitle>

@@ -126,7 +126,7 @@ export default async function AdminAuditLogsPage({
                           <User className="h-3 w-3 text-primary" />
                           {log.user_display_name}
                         </p>
-                        <p className="text-[11px] text-muted-foreground font-serif">
+                        <p className="text-[11px] text-muted-foreground font-sans">
                           Workspace: {weddingName}
                         </p>
                       </TableCell>

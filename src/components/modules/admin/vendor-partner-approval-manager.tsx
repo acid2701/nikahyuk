@@ -209,7 +209,7 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
       {/* Header Bar & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-4">
         <div>
-          <h1 className="font-serif text-2xl font-bold flex items-center gap-2">
+          <h1 className="font-sans text-2xl font-bold flex items-center gap-2">
             <Building2 className="h-6 w-6 text-primary" /> Manajemen Kemitraan & Suspend Vendor
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -363,7 +363,7 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <div>
-                          <p className="font-serif font-bold text-sm text-foreground">{p.company_name}</p>
+                          <p className="font-sans font-bold text-sm text-foreground">{p.company_name}</p>
                           <p className="text-[11px] text-muted-foreground">{p.city}, {p.province}</p>
                         </div>
                       </div>
@@ -481,7 +481,7 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
                     {selectedPartner.city}, {selectedPartner.province}
                   </Badge>
                 </div>
-                <DialogTitle className="font-serif text-2xl pt-2">
+                <DialogTitle className="font-sans text-2xl pt-2">
                   {selectedPartner.company_name}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
@@ -585,7 +585,7 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
         <DialogContent className="max-w-md">
           <form onSubmit={handleSuspendSubmit}>
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl text-rose-600 flex items-center gap-2">
+              <DialogTitle className="font-sans text-xl text-rose-600 flex items-center gap-2">
                 <Ban className="h-5 w-5" /> Tangguhkan / Suspend Vendor
               </DialogTitle>
               <DialogDescription className="text-xs">

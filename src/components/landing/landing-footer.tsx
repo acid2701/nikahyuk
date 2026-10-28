@@ -28,7 +28,7 @@ export function LandingFooter({
             ) : (
               <Heart className="h-4 w-4 text-primary fill-primary" />
             )}
-            <span className="font-serif text-lg font-bold text-foreground">{appName}</span>
+            <span className="font-sans text-lg font-bold text-foreground">{appName}</span>
           </Link>
           <p className="text-xs text-muted-foreground">{tagline}</p>
         </div>

@@ -68,7 +68,7 @@ export function ChangePasswordForm({ isOAuthUser }: ChangePasswordFormProps) {
     return (
       <Card className="border-border/80 shadow-xs">
         <CardHeader>
-          <CardTitle className="text-lg font-serif flex items-center gap-2">
+          <CardTitle className="text-lg font-sans flex items-center gap-2">
             <KeyRound className="h-5 w-5 text-primary" /> Keamanan & Kata Sandi
           </CardTitle>
           <CardDescription className="text-xs">
@@ -93,7 +93,7 @@ export function ChangePasswordForm({ isOAuthUser }: ChangePasswordFormProps) {
   return (
     <Card className="border-border/80 shadow-xs">
       <CardHeader>
-        <CardTitle className="text-lg font-serif flex items-center gap-2">
+        <CardTitle className="text-lg font-sans flex items-center gap-2">
           <KeyRound className="h-5 w-5 text-primary" /> Keamanan & Kata Sandi
         </CardTitle>
         <CardDescription className="text-xs">

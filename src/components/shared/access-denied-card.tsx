@@ -16,7 +16,7 @@ export function AccessDeniedCard({ moduleTitle, weddingId }: AccessDeniedCardPro
         <div className="h-14 w-14 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto border border-amber-500/20">
           <Lock className="h-7 w-7" />
         </div>
-        <CardTitle className="font-serif text-xl font-bold text-foreground">
+        <CardTitle className="font-sans text-xl font-bold text-foreground">
           Akses Modul &apos;{moduleTitle}&apos; Dikunci
         </CardTitle>
         <CardDescription className="text-xs text-muted-foreground max-w-md mx-auto">

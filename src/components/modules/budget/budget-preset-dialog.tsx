@@ -137,7 +137,7 @@ export function BudgetPresetDialog({
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-sans text-xl flex items-center gap-2">
             <Wallet className="h-5 w-5 text-emerald-600" />
             Template Seeder Pos Anggaran
           </DialogTitle>

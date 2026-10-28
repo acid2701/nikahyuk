@@ -204,7 +204,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
         <Dialog open={Boolean(qrToken)} onOpenChange={(open) => !open && setQrToken(null)}>
           <DialogContent className="max-w-xs text-center">
             <DialogHeader>
-              <DialogTitle className="font-serif text-lg">Pindai QR Code Akses PWA</DialogTitle>
+              <DialogTitle className="font-sans text-lg">Pindai QR Code Akses PWA</DialogTitle>
               <DialogDescription className="text-xs">
                 Kru lapangan dapat memindai QR code ini menggunakan kamera HP untuk langsung membuka portal.
               </DialogDescription>
@@ -241,7 +241,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
           <DialogContent className="max-w-xs">
             <form onSubmit={handleResetPin}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-lg flex items-center gap-1.5">
+                <DialogTitle className="font-sans text-lg flex items-center gap-1.5">
                   <KeyRound className="h-4 w-4 text-primary" /> Reset PIN Keamanan
                 </DialogTitle>
                 <DialogDescription className="text-xs">
@@ -275,7 +275,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card">
         <div>
-          <h2 className="font-serif text-lg font-bold">Token Akses Kru Lapangan (Public PWA)</h2>
+          <h2 className="font-sans text-lg font-bold">Token Akses Kru Lapangan (Public PWA)</h2>
           <p className="text-xs text-muted-foreground">
             Buat tautan instan tanpa registrasi untuk WO, panitia meja registrasi & door greeter.
           </p>
@@ -291,7 +291,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
           <DialogContent className="max-w-md">
             <form onSubmit={handleCreateToken}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Buat Tautan Akses Publik</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Buat Tautan Akses Publik</DialogTitle>
                 <DialogDescription>
                   Atur PIN pengaman dan batasan akses modul untuk kru acara.
                 </DialogDescription>

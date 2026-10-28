@@ -35,7 +35,7 @@ export function VendorMobileDrawer({
         <div className="h-7 w-7 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-600 border border-amber-500/30">
           <Building2 className="h-4 w-4" />
         </div>
-        <span className="font-serif text-base font-bold">Portal Vendor</span>
+        <span className="font-sans text-base font-bold text-foreground">Portal Vendor</span>
       </div>
 
       <Button
@@ -50,7 +50,7 @@ export function VendorMobileDrawer({
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="p-0 max-w-xs h-full left-0 translate-x-0 rounded-none border-r border-border">
           <DialogHeader className="p-4 border-b border-border text-left">
-            <DialogTitle className="font-serif text-lg font-bold">
+            <DialogTitle className="font-sans text-lg font-bold text-foreground">
               NikahYuk Partner Ecosystem
             </DialogTitle>
           </DialogHeader>

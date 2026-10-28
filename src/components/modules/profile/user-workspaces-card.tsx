@@ -23,7 +23,7 @@ export function UserWorkspacesCard({ workspaces }: UserWorkspacesCardProps) {
   return (
     <Card className="border-border/80 shadow-xs">
       <CardHeader>
-        <CardTitle className="text-lg font-serif flex items-center gap-2">
+        <CardTitle className="text-lg font-sans flex items-center gap-2">
           <Heart className="h-5 w-5 text-primary fill-primary/10" /> Workspace Pernikahan Terhubung ({workspaces.length})
         </CardTitle>
         <CardDescription className="text-xs">
@@ -52,7 +52,7 @@ export function UserWorkspacesCard({ workspaces }: UserWorkspacesCardProps) {
                 >
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-serif font-semibold text-sm text-foreground">
+                      <h4 className="font-sans font-semibold text-sm text-foreground">
                         {w.groom_name} & {w.bride_name}
                       </h4>
                       <Badge variant={isOwner ? "default" : "secondary"} className="text-[9px] uppercase px-1.5 py-0">

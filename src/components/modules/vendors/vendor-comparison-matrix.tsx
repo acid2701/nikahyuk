@@ -130,7 +130,7 @@ export function VendorComparisonMatrix({
         <CardHeader className="pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <CardTitle className="text-base font-serif flex items-center gap-2">
+              <CardTitle className="text-base font-sans flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4 text-primary" /> Matriks Perbandingan Vendor
               </CardTitle>
               <CardDescription className="text-xs">

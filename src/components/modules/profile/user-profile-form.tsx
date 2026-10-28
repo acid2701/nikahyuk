@@ -85,7 +85,7 @@ export function UserProfileForm({
               {email.charAt(0).toUpperCase()}
             </div>
             <div>
-              <CardTitle className="text-lg font-serif">Detail Informasi Pengguna</CardTitle>
+              <CardTitle className="text-lg font-sans">Detail Informasi Pengguna</CardTitle>
               <CardDescription className="text-xs">
                 Kelola nama tampilan dan informasi diri akun Anda.
               </CardDescription>

@@ -131,7 +131,7 @@ export function CustomRoleManagerModal({
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-sans text-xl flex items-center gap-2">
             <Shield className="h-5 w-5 text-primary" />
             Kelola Peran Kolaborator Kustom
           </DialogTitle>

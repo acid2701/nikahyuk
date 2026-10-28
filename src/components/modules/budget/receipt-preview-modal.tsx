@@ -36,7 +36,7 @@ export function ReceiptPreviewModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-sans text-xl flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
             Bukti Transfer — {milestoneName}
           </DialogTitle>

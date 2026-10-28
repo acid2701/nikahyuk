@@ -203,7 +203,7 @@ export function PartnerCatalogImportModal({
               <span className="font-semibold text-foreground">Diurutkan Berdasarkan Popularitas</span>
             </div>
           </div>
-          <DialogTitle className="font-serif text-2xl pt-1">
+          <DialogTitle className="font-sans text-2xl pt-1">
             Jelajahi & Impor Vendor Partner NikahYuk
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -340,7 +340,7 @@ export function PartnerCatalogImportModal({
                     {/* LEFT SECTION: Name, Verified Badge, Rating, Category, Location, PIC & WA */}
                     <div className="space-y-1.5 flex-1 min-w-0">
                       <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                        <h3 className="font-serif font-bold text-base text-foreground leading-none">
+                        <h3 className="font-sans font-bold text-base text-foreground leading-none">
                           {partner.company_name}
                         </h3>
                         {partner.is_verified && (
@@ -543,7 +543,7 @@ export function PartnerCatalogImportModal({
               <Badge className="w-fit bg-amber-500/10 text-amber-600 border-amber-500/30 text-[10px]">
                 {inspectingPackage.partner.company_name}
               </Badge>
-              <DialogTitle className="font-serif text-xl pt-1">
+              <DialogTitle className="font-sans text-xl pt-1">
                 {inspectingPackage.pkg.package_name}
               </DialogTitle>
               <DialogDescription className="text-xs">

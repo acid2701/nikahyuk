@@ -162,7 +162,7 @@ export function PublicVendorRegistrationForm({
           <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-xs px-3 py-1">
             Status: Terdaftar & Siap Masuk
           </Badge>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
+          <h2 className="font-sans text-2xl sm:text-3xl font-bold text-foreground">
             Pendaftaran Berhasil Terkirim!
           </h2>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
@@ -204,7 +204,7 @@ export function PublicVendorRegistrationForm({
                 <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Bebas Biaya Registrasi
               </span>
             </div>
-            <CardTitle className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+            <CardTitle className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Formulir Pendaftaran Mitra Vendor
             </CardTitle>
           </div>

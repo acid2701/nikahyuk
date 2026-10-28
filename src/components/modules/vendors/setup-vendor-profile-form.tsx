@@ -98,7 +98,7 @@ export function SetupVendorProfileForm({
         <Badge className="w-fit mx-auto bg-amber-500/10 text-amber-600 border-amber-500/30 text-[11px] gap-1">
           <ShieldCheck className="h-3.5 w-3.5 text-amber-500" /> Satu Akun NikahYuk (Single Identity)
         </Badge>
-        <CardTitle className="font-serif text-2xl font-bold">
+        <CardTitle className="font-sans text-2xl font-bold">
           Lengkapi Informasi Profil Usaha Vendor Anda
         </CardTitle>
         <CardDescription className="text-xs max-w-md mx-auto">

@@ -509,7 +509,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleCreateVendor}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Tambah Mitra / Calon Vendor</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Tambah Mitra / Calon Vendor</DialogTitle>
                 <DialogDescription>
                   Catat calon vendor, status survei, penawaran harga, dan rincian menu/fasilitas.
                 </DialogDescription>
@@ -627,7 +627,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleUpdateVendor}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Edit Data Vendor & Penawaran</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Edit Data Vendor & Penawaran</DialogTitle>
                 <DialogDescription>
                   Perbarui nama, status kandidat, penawaran harga, atau rincian menu/fasilitas.
                 </DialogDescription>
@@ -801,7 +801,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
                           </TableCell>
 
                           {/* Vendor Name */}
-                          <TableCell className="font-serif font-bold text-sm text-foreground">
+                          <TableCell className="font-sans font-bold text-sm text-foreground">
                             <div className="flex items-center gap-1.5">
                               {v.vendor_name}
                               {isWinner && (
@@ -1116,7 +1116,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
                     </Badge>
                   )}
                 </div>
-                <DialogTitle className="font-serif text-2xl pt-2 text-foreground">
+                <DialogTitle className="font-sans text-2xl pt-2 text-foreground">
                   {detailVendor.vendor_name}
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">

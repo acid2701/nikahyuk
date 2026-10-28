@@ -240,7 +240,7 @@ export function CollaboratorInviteModal({
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <DialogTitle className="font-serif text-lg">
+              <DialogTitle className="font-sans text-lg">
                 Undang Kolaborator Baru
               </DialogTitle>
               <DialogDescription className="text-xs">

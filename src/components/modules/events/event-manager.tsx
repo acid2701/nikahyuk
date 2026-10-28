@@ -181,7 +181,7 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
           <DialogContent className="max-w-md">
             <form onSubmit={handleCreateEvent}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Tambah Sub-Event Acara</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Tambah Sub-Event Acara</DialogTitle>
                 <DialogDescription>
                   e.g. Lamaran, Pengajian, Siraman, Akad Nikah, Resepsi. Tanggal acara opsional.
                 </DialogDescription>
@@ -283,7 +283,7 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
         <DialogContent className="max-w-md">
           <form onSubmit={handleUpdateEvent}>
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl">Edit Sub-Event Acara</DialogTitle>
+              <DialogTitle className="font-sans text-xl">Edit Sub-Event Acara</DialogTitle>
               <DialogDescription>
                 Perbarui tanggal, waktu, lokasi, atau penanggung jawab acara.
               </DialogDescription>
@@ -397,7 +397,7 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
-                      <CardTitle className="text-lg font-serif">{ev.event_name}</CardTitle>
+                      <CardTitle className="text-lg font-sans">{ev.event_name}</CardTitle>
                       <Badge variant="outline" className="text-[10px] uppercase">
                         {ev.event_side === "groom"
                           ? "Pihak Pria"

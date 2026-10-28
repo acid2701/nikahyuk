@@ -35,7 +35,7 @@ export function VendorBriefingModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[92vh] overflow-y-auto p-6">
         <DialogHeader className="flex flex-row items-center justify-between pb-4 border-b border-border print:hidden">
-          <DialogTitle className="font-serif text-xl">
+          <DialogTitle className="font-sans text-xl">
             Preview Vendor Briefing Sheet
           </DialogTitle>
           <div className="flex items-center space-x-2">
@@ -52,7 +52,7 @@ export function VendorBriefingModal({
         <div className="space-y-6 pt-2 font-sans text-foreground print:p-0 print:m-0">
           {/* Header Briefing Sheet */}
           <div className="text-center space-y-1 pb-4 border-b border-border/80">
-            <h1 className="font-serif text-2xl font-bold tracking-wide text-foreground">
+            <h1 className="font-sans text-2xl font-bold tracking-wide text-foreground">
               LEMBAR BRIEFING VENDOR PERNIKAHAN
             </h1>
             <p className="text-sm text-muted-foreground font-medium">{weddingTitle}</p>
@@ -81,7 +81,7 @@ export function VendorBriefingModal({
 
           {/* Vendor Table List */}
           <div className="space-y-3">
-            <h3 className="font-serif font-bold text-base text-foreground flex items-center justify-between">
+            <h3 className="font-sans font-bold text-base text-foreground flex items-center justify-between">
               <span>Daftar Mitra Vendor Utama (Selected & Shortlisted)</span>
             </h3>
 
@@ -106,7 +106,7 @@ export function VendorBriefingModal({
                       <tr key={v.id} className="hover:bg-muted/20">
                         <td className="p-2.5 text-center font-mono text-muted-foreground">{i + 1}</td>
                         <td className="p-2.5">
-                          <p className="font-bold font-serif text-sm text-foreground">{v.vendor_name}</p>
+                          <p className="font-bold font-sans text-sm text-foreground">{v.vendor_name}</p>
                           <span className="inline-block text-[10px] uppercase font-semibold px-1.5 py-0.5 rounded bg-muted text-muted-foreground mt-0.5">
                             {v.category}
                           </span>

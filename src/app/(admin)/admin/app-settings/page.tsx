@@ -222,7 +222,7 @@ export default function AdminAppSettingsPage() {
       <form onSubmit={handleSaveBranding} className="space-y-6">
         <Card className="border-border/70">
           <CardHeader>
-            <CardTitle className="font-serif text-lg flex items-center gap-2">
+            <CardTitle className="font-sans text-lg flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-primary" /> Identitas Aplikasi & Aset Cloudflare R2
             </CardTitle>
             <CardDescription>
@@ -402,10 +402,10 @@ export default function AdminAppSettingsPage() {
                 ) : (
                   <Heart className="h-5 w-5 text-primary fill-primary" />
                 )}
-                <span className="font-serif text-lg font-bold text-primary">{appName}</span>
+                <span className="font-sans text-lg font-bold text-primary">{appName}</span>
               </div>
 
-              <h2 className="font-serif text-sm font-bold text-foreground max-w-xs leading-snug">
+              <h2 className="font-sans text-sm font-bold text-foreground max-w-xs leading-snug">
                 {heroTitle}
               </h2>
               <p className="text-[11px] text-muted-foreground max-w-xs line-clamp-2">

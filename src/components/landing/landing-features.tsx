@@ -54,7 +54,7 @@ export function LandingFeatures() {
     <section id="features" className="py-16 md:py-24 border-t border-border/50 bg-accent/10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Semua yang Anda Butuhkan untuk Acara Sempurna
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground">
@@ -71,7 +71,7 @@ export function LandingFeatures() {
                   <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${f.color}`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <h3 className="font-serif font-bold text-base text-foreground">{f.title}</h3>
+                  <h3 className="font-sans font-bold text-base text-foreground">{f.title}</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed">{f.description}</p>
                 </CardContent>
               </Card>

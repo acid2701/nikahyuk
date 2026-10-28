@@ -71,7 +71,7 @@ export function MobilePinGate({
           <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-2">
             <Lock className="h-6 w-6" />
           </div>
-          <CardTitle className="font-serif text-xl">{weddingTitle}</CardTitle>
+          <CardTitle className="font-sans text-xl">{weddingTitle}</CardTitle>
           <CardDescription className="text-xs">
             Portal Kru Lapangan & Panitia Acara. Masukkan PIN Keamanan untuk melanjutkan.
           </CardDescription>

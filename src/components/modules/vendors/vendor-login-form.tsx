@@ -68,7 +68,7 @@ export function VendorLoginForm() {
         <div className="mx-auto h-12 w-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-600 mb-1 border border-amber-500/30">
           <Building2 className="h-6 w-6" />
         </div>
-        <CardTitle className="font-serif text-2xl font-bold">
+        <CardTitle className="font-sans text-2xl font-bold">
           Portal Login Mitra Vendor
         </CardTitle>
         <CardDescription className="text-xs">

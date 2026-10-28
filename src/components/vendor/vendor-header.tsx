@@ -68,7 +68,7 @@ export function VendorHeader({ userEmail }: { userEmail: string }) {
                 variant="ghost"
                 className="relative h-8 w-8 rounded-full bg-primary/10 hover:bg-primary/20 p-0 border border-primary/30"
               >
-                <span className="font-serif font-bold text-xs text-primary">
+                <span className="font-sans font-bold text-xs text-primary">
                   {initialLetter}
                 </span>
               </Button>

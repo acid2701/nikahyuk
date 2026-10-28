@@ -349,7 +349,7 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
           <DialogContent className="max-w-md">
             <form onSubmit={handleCreateGift}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Catat Kado / Angpao Masuk</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Catat Kado / Angpao Masuk</DialogTitle>
                 <DialogDescription>
                   Penerimaan angpao tunai atau kado fisik dari tamu undangan.
                 </DialogDescription>
@@ -448,7 +448,7 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
           <DialogContent className="max-w-md">
             <form onSubmit={handleUpdateGift}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Edit Catatan Kado</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Edit Catatan Kado</DialogTitle>
                 <DialogDescription>
                   Perbarui rincian pemberi, jenis kado, nominal, atau atribusi pihak.
                 </DialogDescription>

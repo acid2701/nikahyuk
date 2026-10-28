@@ -82,7 +82,7 @@ export function RundownPresetDialog({
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-sans text-xl flex items-center gap-2">
             <Layers className="h-5 w-5 text-primary" />
             Template Susunan Acara (Rundown)
           </DialogTitle>

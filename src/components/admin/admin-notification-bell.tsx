@@ -64,7 +64,7 @@ export function AdminNotificationBell() {
         <div className="p-3 border-b border-border bg-muted/30 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Bell className="h-4 w-4 text-amber-500" />
-            <h4 className="font-serif font-bold text-sm text-foreground">
+            <h4 className="font-sans font-bold text-sm text-foreground">
               Notifikasi Sistem Admin
             </h4>
           </div>

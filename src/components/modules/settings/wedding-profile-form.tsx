@@ -110,7 +110,7 @@ export function WeddingProfileForm({
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg font-serif flex items-center gap-2">
+            <CardTitle className="text-lg font-sans flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
               Detail Mempelai & Orang Tua Pengantin
             </CardTitle>

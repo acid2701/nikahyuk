@@ -64,7 +64,7 @@ export function DeleteEventModal({
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="font-serif text-lg text-foreground">
+              <DialogTitle className="font-sans text-lg text-foreground">
                 Hapus Sub-Event Permanen
               </DialogTitle>
               <DialogDescription className="text-xs">
@@ -77,7 +77,7 @@ export function DeleteEventModal({
         <div className="space-y-3 py-1">
           <p className="text-sm text-foreground">
             Apakah Anda yakin ingin menghapus sub-event{" "}
-            <span className="font-bold text-rose-600 dark:text-rose-400 font-serif">
+            <span className="font-bold text-rose-600 dark:text-rose-400 font-sans">
               &ldquo;{eventName}&rdquo;
             </span>
             ?

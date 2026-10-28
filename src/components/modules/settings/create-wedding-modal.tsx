@@ -85,7 +85,7 @@ export function CreateWeddingModal({ trigger }: CreateWeddingModalProps) {
           <div className="mx-auto h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
             <Heart className="h-6 w-6 text-primary fill-primary/20" />
           </div>
-          <DialogTitle className="font-serif text-xl">
+          <DialogTitle className="font-sans text-xl">
             Buat Workspace Pernikahan Baru
           </DialogTitle>
           <DialogDescription className="text-xs">

@@ -67,7 +67,7 @@ export function DeleteBudgetItemModal({
               <AlertTriangle className="h-5 w-5" />
             </div>
             <div>
-              <DialogTitle className="font-serif text-lg text-foreground">
+              <DialogTitle className="font-sans text-lg text-foreground">
                 Hapus Pos Anggaran Permanen
               </DialogTitle>
               <DialogDescription className="text-xs">
@@ -80,7 +80,7 @@ export function DeleteBudgetItemModal({
         <div className="space-y-3 py-1">
           <p className="text-sm text-foreground">
             Apakah Anda yakin ingin menghapus pos anggaran{" "}
-            <span className="font-bold text-rose-600 dark:text-rose-400 font-serif">
+            <span className="font-bold text-rose-600 dark:text-rose-400 font-sans">
               &ldquo;{itemName}&rdquo;
             </span>
             ?

@@ -579,7 +579,7 @@ export function PreweddingChecklistManager({
       <Dialog open={completionModalOpen} onOpenChange={setCompletionModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-serif text-lg flex items-center gap-2">
+            <DialogTitle className="font-sans text-lg flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" /> Selesaikan Item & Tambah Catatan
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -624,7 +624,7 @@ export function PreweddingChecklistManager({
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
-          <h1 className="font-serif text-2xl font-bold tracking-tight">
+          <h1 className="font-sans text-2xl font-bold tracking-tight">
             Checklist Persiapan {eventName}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -650,7 +650,7 @@ export function PreweddingChecklistManager({
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle className="font-serif text-lg flex items-center gap-2">
+                <DialogTitle className="font-sans text-lg flex items-center gap-2">
                   <Layers className="h-5 w-5 text-primary" /> Pilih Template Preset untuk '{eventName}'
                 </DialogTitle>
                 <DialogDescription className="text-xs">
@@ -901,7 +901,7 @@ export function PreweddingChecklistManager({
           <div className="space-y-6">
             <Card className="border-pink-500/20 bg-pink-500/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base font-serif text-pink-700 dark:text-pink-400 flex items-center gap-2">
+                <CardTitle className="text-base font-sans text-pink-700 dark:text-pink-400 flex items-center gap-2">
                   <Gift className="h-5 w-5" /> Ringkasan Anggaran & Status Kotak Seserahan
                 </CardTitle>
                 <CardDescription className="text-xs">
@@ -1122,7 +1122,7 @@ export function PreweddingChecklistManager({
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg font-serif">
+                  <CardTitle className="text-lg font-sans">
                     {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi"}
                     {activeCategory === "lamaran" && `💍 ${dynamicEventCategoryLabel}`}
                     {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan HARI-H"}

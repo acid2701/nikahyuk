@@ -95,7 +95,7 @@ export function VendorSidebar({
             {logoUrl ? (
               <img src={logoUrl} alt={appName} className="h-7 w-auto max-w-[120px] object-contain rounded" />
             ) : null}
-            <span className="font-serif text-2xl font-bold tracking-tight text-primary truncate">
+            <span className="font-sans text-2xl font-bold tracking-tight text-primary truncate">
               {appName}
             </span>
           </Link>

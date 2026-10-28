@@ -77,7 +77,7 @@ export function VendorRatingModal({
       <DialogContent className="max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Evaluasi & Scorecard Vendor</DialogTitle>
+            <DialogTitle className="font-sans text-xl">Evaluasi & Scorecard Vendor</DialogTitle>
             <DialogDescription className="text-xs">
               Berikan penilaian profesionalisme, kualitas layanan, dan hasil kerja dari <span className="font-semibold text-foreground">{vendorName}</span>.
             </DialogDescription>

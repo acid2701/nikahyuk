@@ -284,7 +284,7 @@ export default async function AdminAnalyticsPage() {
                         {index + 1}
                       </TableCell>
                       <TableCell className="text-xs">
-                        <p className="font-semibold text-foreground font-serif">
+                        <p className="font-semibold text-foreground font-sans">
                           {w.groomName} & {w.brideName}
                         </p>
                         <p className="text-[10px] text-muted-foreground font-mono">ID: {w.id}</p>

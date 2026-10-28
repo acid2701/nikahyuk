@@ -29,7 +29,7 @@ export function LandingFaq() {
     <section id="faq" className="py-16 md:py-24 border-t border-border/50 bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="text-center space-y-2">
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
             Pertanyaan yang Sering Diajukan (FAQ)
           </h2>
         </div>

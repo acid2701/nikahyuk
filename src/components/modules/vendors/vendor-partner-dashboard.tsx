@@ -862,7 +862,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <h1 className="font-serif text-2xl font-bold text-foreground">
+                  <h1 className="font-sans text-2xl font-bold text-foreground">
                     {partner.company_name}
                   </h1>
                   {partner.status === "approved" ? (
@@ -989,7 +989,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="font-serif text-lg">Kelengkapan Profil Usaha Vendor</CardTitle>
+                  <CardTitle className="font-sans text-lg">Kelengkapan Profil Usaha Vendor</CardTitle>
                   <CardDescription className="text-xs">
                     Profil yang 100% lengkap memiliki tingkat impor 4x lebih tinggi dari calon pengantin & client acara.
                   </CardDescription>
@@ -1057,7 +1057,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
         <TabsContent value="packages" className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="font-serif text-lg font-bold text-foreground">
+              <h2 className="font-sans text-lg font-bold text-foreground">
                 Daftar Paket Penawaran Interaktif Usaha Anda
               </h2>
               <p className="text-xs text-muted-foreground">
@@ -1106,7 +1106,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                       {/* LEFT SECTION: Title, Pax, Description, Facilities Inline Pills */}
                       <div className="space-y-2 flex-1 min-w-0">
                         <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-                          <h3 className="font-serif font-bold text-base text-foreground leading-none">
+                          <h3 className="font-sans font-bold text-base text-foreground leading-none">
                             {pkg.package_name}
                           </h3>
                           {pkg.capacity_pax && pkg.capacity_pax > 0 ? (
@@ -1347,7 +1347,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <CardHeader className="pb-3 border-b border-border/60">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="font-serif text-lg">Papan Active CRM Pipeline (Acara Mendatang)</CardTitle>
+                  <CardTitle className="font-sans text-lg">Papan Active CRM Pipeline (Acara Mendatang)</CardTitle>
                   <CardDescription className="text-xs">
                     Kelola prospek aktif dan jadwal berbagai acara (Pernikahan, Lamaran, Birthday, Corporate Gathering) yang membutuhkan penanganan vendor.
                   </CardDescription>
@@ -1591,7 +1591,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <CardHeader className="pb-3 border-b border-border/60">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="font-serif text-lg flex items-center gap-2">
+                  <CardTitle className="font-sans text-lg flex items-center gap-2">
                     <Archive className="h-5 w-5 text-emerald-600" /> Tabel Riwayat Acara Selesai ({completedDeals.length} Acara)
                   </CardTitle>
                   <CardDescription className="text-xs">
@@ -1705,7 +1705,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
         <TabsContent value="profile" className="space-y-4">
           <Card className="border-border">
             <CardHeader>
-              <CardTitle className="font-serif text-lg">Edit Profil Usaha & Dokumen Pricelist R2</CardTitle>
+              <CardTitle className="font-sans text-lg">Edit Profil Usaha & Dokumen Pricelist R2</CardTitle>
               <CardDescription className="text-xs">
                 Perbarui informasi kontak PIC, nama brand, wilayah operasional, dan brosur PDF R2 usaha Anda.
               </CardDescription>
@@ -1904,7 +1904,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <CardHeader className="pb-3 border-b border-border/60">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="font-serif text-lg">Riwayat Impor & Pertanyaan Pengantin</CardTitle>
+                  <CardTitle className="font-sans text-lg">Riwayat Impor & Pertanyaan Pengantin</CardTitle>
                   <CardDescription className="text-xs">
                     Daftar calon pengantin & client yang tertarik dan meng-impor paket penawaran usaha Anda.
                   </CardDescription>
@@ -2026,7 +2026,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
         <DialogContent className="max-w-md">
           <form onSubmit={handleSavePackage}>
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl">
+              <DialogTitle className="font-sans text-xl">
                 {editingPackage ? "Edit Paket Penawaran" : "Tambah Paket Penawaran Baru"}
               </DialogTitle>
               <DialogDescription className="text-xs">
@@ -2131,7 +2131,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
         <DialogContent className="max-w-md">
           <form onSubmit={handleSaveDeal}>
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl">
+              <DialogTitle className="font-sans text-xl">
                 {editingDeal ? "Edit Informasi Deal & Reschedule Tanggal" : "Tambah Order / Deal Client Baru"}
               </DialogTitle>
               <DialogDescription className="text-xs">
@@ -2268,7 +2268,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
         <Dialog open={Boolean(activeLedgerDeal)} onOpenChange={() => setActiveLedgerDeal(null)}>
           <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="font-serif text-xl flex items-center gap-2">
+              <DialogTitle className="font-sans text-xl flex items-center gap-2">
                 <Receipt className="h-5 w-5 text-amber-500" /> Histori & Termin Pembayaran Client
               </DialogTitle>
               <DialogDescription className="text-xs">
@@ -2472,7 +2472,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
           <DialogContent className="max-w-2xl max-h-[92vh] overflow-y-auto">
             <DialogHeader className="border-b border-border pb-3 flex flex-row items-center justify-between">
               <div>
-                <DialogTitle className="font-serif text-xl flex items-center gap-2">
+                <DialogTitle className="font-sans text-xl flex items-center gap-2">
                   <Receipt className="h-5 w-5 text-amber-500" /> Kwitansi Pembayaran Digital Resmi
                 </DialogTitle>
                 <DialogDescription className="text-xs">
@@ -2496,13 +2496,13 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                   {/* RECEIPT BRAND HEADER */}
                   <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                     <div>
-                      <h2 className="font-serif text-2xl font-bold text-amber-600">{partner.company_name}</h2>
+                      <h2 className="font-sans text-2xl font-bold text-amber-600">{partner.company_name}</h2>
                       <p className="text-[11px] text-slate-600">{partner.category} • {partner.city}, {partner.province}</p>
                       <p className="text-[11px] text-slate-600">PIC: {partner.pic_name} ({partner.phone})</p>
                     </div>
 
                     <div className="text-right space-y-1">
-                      <span className="text-lg font-serif font-bold text-slate-800 uppercase tracking-widest block">KWITANSI RESMI</span>
+                      <span className="text-lg font-sans font-bold text-slate-800 uppercase tracking-widest block">KWITANSI RESMI</span>
                       <span className="text-[10px] font-mono text-slate-500 block">No: KW/{partner.id.substring(0, 5)}/{receiptDeal.id.substring(0, 5)}</span>
                       <span className="text-[11px] text-slate-600 block">Tanggal: {new Date().toLocaleDateString("id-ID")}</span>
                     </div>
@@ -2613,7 +2613,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div>
-                  <DialogTitle className="font-serif text-lg text-rose-600 dark:text-rose-400">
+                  <DialogTitle className="font-sans text-lg text-rose-600 dark:text-rose-400">
                     Hapus Paket Penawaran?
                   </DialogTitle>
                   <DialogDescription className="text-xs text-muted-foreground mt-0.5">
@@ -2657,7 +2657,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                 <Badge className="bg-emerald-600 text-white text-[10px]">Pratinjau Publik Live</Badge>
                 <span className="text-xs font-mono text-muted-foreground truncate">{publicUrl}</span>
               </div>
-              <DialogTitle className="font-serif text-xl pt-1">
+              <DialogTitle className="font-sans text-xl pt-1">
                 Tampilan Usaha Anda di Mata Calon Pengantin
               </DialogTitle>
             </div>
@@ -2678,7 +2678,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-serif font-bold text-xl text-foreground">{companyName}</h3>
+                    <h3 className="font-sans font-bold text-xl text-foreground">{companyName}</h3>
                     <Badge className="bg-emerald-600 text-white text-[9px]">Verified Partner ✅</Badge>
                   </div>
                   <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
@@ -2735,7 +2735,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
       <Dialog open={openQrModal} onOpenChange={setOpenQrModal}>
         <DialogContent className="max-w-md text-center">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl mx-auto flex items-center gap-2">
+            <DialogTitle className="font-sans text-xl mx-auto flex items-center gap-2">
               <QrCode className="h-5 w-5 text-amber-500" /> QR Code Usaha Vendor
             </DialogTitle>
             <DialogDescription className="text-xs">
@@ -2754,7 +2754,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm font-serif font-bold text-foreground">{companyName}</p>
+              <p className="text-sm font-sans font-bold text-foreground">{companyName}</p>
               <p className="text-[11px] text-muted-foreground">{category} • {city}, {province}</p>
             </div>
 

@@ -131,7 +131,7 @@ export function EditRundownItemModal({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl flex items-center gap-2">
+            <DialogTitle className="font-sans text-xl flex items-center gap-2">
               <Clock className="h-5 w-5 text-primary" /> Edit Agenda Rundown
             </DialogTitle>
             <DialogDescription className="text-xs">

@@ -133,7 +133,7 @@ export function NotificationBell({ weddingId }: NotificationBellProps) {
       <DropdownMenuContent align="end" className="w-80 sm:w-96 max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between p-3 pb-2">
           <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-sm text-foreground">
+            <span className="font-sans font-bold text-sm text-foreground">
               Notifikasi
             </span>
             {unreadCount > 0 && (

@@ -52,7 +52,7 @@ export default async function AdminOverviewPage() {
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-sm text-foreground">
+              <h3 className="font-sans font-bold text-sm text-foreground">
                 Ada {pendingVendorsCount} Pengajuan Mitra Vendor Menunggu Persetujuan!
               </h3>
               <p className="text-xs text-muted-foreground">

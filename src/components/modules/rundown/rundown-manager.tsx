@@ -240,7 +240,7 @@ export function RundownManager({
             <DialogContent className="max-w-md">
               <form onSubmit={handleCreateItem}>
                 <DialogHeader>
-                  <DialogTitle className="font-serif text-xl">Tambah Agenda Rundown</DialogTitle>
+                  <DialogTitle className="font-sans text-xl">Tambah Agenda Rundown</DialogTitle>
                   <DialogDescription>
                     Catat waktu, judul susunan acara, PIC, & cue teknis.
                   </DialogDescription>

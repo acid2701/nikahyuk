@@ -76,7 +76,7 @@ export function DonationQrisModal({
           <div className="mx-auto h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
             <HeartHandshake className="h-5 w-5" />
           </div>
-          <DialogTitle className="font-serif text-lg">KlikQRIS Tip Jar</DialogTitle>
+          <DialogTitle className="font-sans text-lg">KlikQRIS Tip Jar</DialogTitle>
           <DialogDescription className="text-xs">
             Dukungan & Donasi Sukarela untuk Operational Server & Pengembangan NikahYuk.
           </DialogDescription>

@@ -126,7 +126,7 @@ export function BudgetFormModal({ weddingId, eventId, onSuccess }: BudgetFormMod
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl flex items-center gap-2">
+            <DialogTitle className="font-sans text-xl flex items-center gap-2">
               <DollarSign className="h-5 w-5 text-primary" />
               Tambah Pos Anggaran Baru
             </DialogTitle>

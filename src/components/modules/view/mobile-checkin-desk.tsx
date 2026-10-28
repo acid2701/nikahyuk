@@ -289,7 +289,7 @@ export function MobileCheckinDesk({
           <DialogContent className="max-w-xs">
             <form onSubmit={handleCreateWalkin}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-lg">Tambah Tamu Walk-in</DialogTitle>
+                <DialogTitle className="font-sans text-lg">Tambah Tamu Walk-in</DialogTitle>
                 <DialogDescription className="text-xs">
                   Tamu susulan yang hadir tanpa konfirmasi awal.
                 </DialogDescription>

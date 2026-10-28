@@ -290,7 +290,7 @@ export function SeatingManager({
           <DialogContent className="max-w-md">
             <form onSubmit={handleCreateTable}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Tambah Meja Undangan</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Tambah Meja Undangan</DialogTitle>
                 <DialogDescription>
                   e.g. Meja VIP 1, Meja Keluarga Pria A, Meja Dosen.
                 </DialogDescription>
@@ -346,7 +346,7 @@ export function SeatingManager({
           <DialogContent className="max-w-md">
             <form onSubmit={handleUpdateTable}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-xl">Edit Data Meja</DialogTitle>
+                <DialogTitle className="font-sans text-xl">Edit Data Meja</DialogTitle>
                 <DialogDescription>
                   Perbarui nomor/nama meja, kapasitas kursi, atau catatan meja.
                 </DialogDescription>
