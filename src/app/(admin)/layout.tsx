@@ -39,7 +39,12 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
-      <AdminSidebar userEmail={email} appName={branding.appName} logoUrl={branding.logoUrl} />
+      <AdminSidebar
+        userEmail={email}
+        appName={branding.appName}
+        logoUrl={branding.logoUrl}
+        className="hidden lg:flex"
+      />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto overflow-x-hidden">
         {/* Top Admin Header */}

@@ -75,7 +75,9 @@ export function AdminMobileDrawer({
             <div className="flex-1 overflow-y-auto">
               <AdminSidebar
                 userEmail={userEmail}
-                onNavigate={() => setOpen(false)}
+                onNavigate={() => {
+                  setTimeout(() => setOpen(false), 80);
+                }}
                 className="w-full border-r-0 h-auto"
                 appName={appName}
                 logoUrl={logoUrl}
