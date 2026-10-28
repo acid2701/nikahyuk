@@ -211,7 +211,7 @@ export default function AdminAppSettingsPage() {
   const computedAppCallbackUrl = `${appBaseUrl.replace(/\/$/, "")}/auth-callback`;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-w-0 overflow-x-hidden">
       <div>
         <h1 className="font-sans text-2xl font-bold tracking-tight flex items-center gap-2">
           <Settings className="h-6 w-6 text-primary" />
@@ -222,8 +222,8 @@ export default function AdminAppSettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSaveBranding} className="space-y-6">
-        <Card className="border-border/70">
+      <form onSubmit={handleSaveBranding} className="space-y-6 min-w-0">
+        <Card className="border-border/70 min-w-0 overflow-hidden">
           <CardHeader>
             <CardTitle className="font-sans text-lg flex items-center gap-2">
               <ImageIcon className="h-5 w-5 text-primary" /> Identitas Aplikasi & Aset Cloudflare R2
@@ -258,9 +258,9 @@ export default function AdminAppSettingsPage() {
             </div>
 
             {/* R2 DROPZONES FOR LOGO AND FAVICON */}
-            <div className="grid gap-6 md:grid-cols-2 border-t border-border pt-4">
+            <div className="grid gap-6 md:grid-cols-2 border-t border-border pt-4 min-w-0">
               {/* Logo Upload Card */}
-              <div className="space-y-3">
+              <div className="space-y-3 min-w-0">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                     <ImageIcon className="h-4 w-4 text-primary" /> Upload Logo Icon ke R2
@@ -273,8 +273,8 @@ export default function AdminAppSettingsPage() {
                 </div>
 
                 {logoUrl ? (
-                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
-                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1 w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={logoUrl} alt="Logo Preview" className="h-10 w-10 shrink-0 object-contain p-1 bg-white rounded-lg border shadow-xs" />
                       <div className="space-y-0.5 min-w-0 flex-1">
@@ -282,13 +282,13 @@ export default function AdminAppSettingsPage() {
                         <p className="text-[10px] text-muted-foreground font-mono truncate">{logoUrl}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         asChild
-                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold"
+                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold flex-1 sm:flex-initial"
                       >
                         <a href={logoUrl} target="_blank" rel="noopener noreferrer">
                           Lihat
@@ -299,7 +299,7 @@ export default function AdminAppSettingsPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setLogoUrl("")}
-                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex-1 sm:flex-initial"
                       >
                         Ganti / Hapus
                       </Button>
@@ -323,7 +323,7 @@ export default function AdminAppSettingsPage() {
               </div>
 
               {/* Favicon Upload Card */}
-              <div className="space-y-3">
+              <div className="space-y-3 min-w-0">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold flex items-center gap-1.5 text-foreground">
                     <UploadCloud className="h-4 w-4 text-sky-500" /> Upload Favicon ke R2
@@ -336,8 +336,8 @@ export default function AdminAppSettingsPage() {
                 </div>
 
                 {faviconUrl ? (
-                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex items-center justify-between gap-3">
-                    <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="p-3 bg-muted/40 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+                    <div className="flex items-center space-x-3 min-w-0 flex-1 w-full">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={faviconUrl} alt="Favicon Preview" className="h-8 w-8 shrink-0 object-contain p-1 bg-white rounded-lg border shadow-xs" />
                       <div className="space-y-0.5 min-w-0 flex-1">
@@ -345,13 +345,13 @@ export default function AdminAppSettingsPage() {
                         <p className="text-[10px] text-muted-foreground font-mono truncate">{faviconUrl}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-1.5 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-border/50">
                       <Button
                         type="button"
                         size="sm"
                         variant="outline"
                         asChild
-                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold"
+                        className="h-7 text-[10px] px-2.5 gap-1 font-semibold flex-1 sm:flex-initial"
                       >
                         <a href={faviconUrl} target="_blank" rel="noopener noreferrer">
                           Lihat
@@ -362,7 +362,7 @@ export default function AdminAppSettingsPage() {
                         size="sm"
                         variant="outline"
                         onClick={() => setFaviconUrl("")}
-                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                        className="h-7 text-[10px] px-2.5 text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 flex-1 sm:flex-initial"
                       >
                         Ganti / Hapus
                       </Button>
@@ -388,7 +388,7 @@ export default function AdminAppSettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
+        <Card className="border-border/70 min-w-0 overflow-hidden">
           <CardHeader>
             <CardTitle className="text-lg font-medium">Konten Landing Page (Hero Section)</CardTitle>
             <CardDescription>
@@ -479,7 +479,7 @@ export default function AdminAppSettingsPage() {
       </form>
 
       {/* DYNAMIC GOOGLE OAUTH & AUTH PROVIDER CONFIG CARD */}
-      <Card className="border-border/70 overflow-hidden">
+      <Card className="border-border/70 min-w-0 overflow-hidden">
         <CardHeader className="p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1 min-w-0">
