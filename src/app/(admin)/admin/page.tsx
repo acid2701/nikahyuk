@@ -70,155 +70,134 @@ export default async function AdminOverviewPage() {
 
       <HealthMonitorCard />
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Pengajuan Vendor Pending
+      <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-amber-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Pengajuan Mitra Vendor
             </CardTitle>
-            <Building2 className="h-4 w-4 text-amber-500" />
+            <div className="h-7 w-7 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <Building2 className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-amber-600">{pendingVendorsCount}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Menunggu peninjauan Admin
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Total Workspace Pernikahan
-            </CardTitle>
-            <Database className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{weddingsCount || 0}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Pasangan terdaftar di platform
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-amber-500">{pendingVendorsCount}</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+              {pendingVendorsCount > 0 ? "Perlu ditinjau segera" : "Semua pengajuan selesai"}
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Sub-Event Aktif
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Total Workspace
             </CardTitle>
-            <Calendar className="h-4 w-4 text-primary" />
+            <div className="h-7 w-7 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center shrink-0">
+              <Database className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{eventsCount || 0}</div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Akad, Resepsi, Lamaran, dll.
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-foreground">{weddingsCount || 0}</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+              Pasangan terdaftar aktif
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Status Storage S3 R2
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Sub-Events Terjadwal
             </CardTitle>
-            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+            <div className="h-7 w-7 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Badge
-                variant={isR2Configured ? "success" : "destructive"}
-                className="text-xs"
-              >
-                {isR2Configured ? "HEALTHY" : "BELUM DISETTING"}
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-foreground">{eventsCount || 0}</div>
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+              Akad, Resepsi, Lamaran
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-emerald-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Dokumen Storage R2
+            </CardTitle>
+            <div className="h-7 w-7 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <ShieldCheck className="h-4 w-4" />
+            </div>
+          </CardHeader>
+          <CardContent className="p-0 pt-1">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold font-mono text-foreground">{docsCount || 0}</span>
+              <Badge variant={isR2Configured ? "success" : "destructive"} className="text-[10px] px-2 py-0">
+                {isR2Configured ? "ONLINE" : "OFFLINE"}
               </Badge>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              {docsCount || 0} file tersimpan di R2
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Status Google OAuth
-            </CardTitle>
-            <Key className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-2">
-              <Badge
-                variant={isGoogleAuthEnabled ? "success" : "secondary"}
-                className="text-xs"
-              >
-                {isGoogleAuthEnabled ? (isGoogleClientIdSet ? "AKTIF (CONFIGURED)" : "AKTIF (DEFAULT)") : "NONAKTIF"}
-              </Badge>
-            </div>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Auth Callback Engine Ready
+            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+              File & berkas terenkripsi
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="border-border/70">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">App Branding & Google OAuth</CardTitle>
-            <CardDescription>
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
+        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs hover:shadow-md transition-all space-y-3">
+          <div>
+            <CardTitle className="text-base font-sans font-bold">App Branding & Google OAuth</CardTitle>
+            <CardDescription className="text-xs mt-1">
               Atur Base URL callback, Client ID/Secret Google, serta Logo & Favicon S3.
             </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
-              <div>
-                <p className="text-sm font-semibold">Pengaturan Auth & Branding</p>
-                <p className="text-xs text-muted-foreground">URL Callback, OAuth Key & Identity</p>
-              </div>
-              <Button asChild size="sm">
-                <Link href="/admin/app-settings">Buka Setting</Link>
-              </Button>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl bg-muted/50 border border-border/70 gap-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">Pengaturan Auth & Branding</p>
+              <p className="text-[11px] text-muted-foreground">URL Callback, OAuth Key & Identity</p>
             </div>
-          </CardContent>
+            <Button asChild size="sm" className="w-full sm:w-auto h-8 px-4 rounded-full text-xs font-semibold bg-[#ff385c] text-white hover:bg-[#e00b41]">
+              <Link href="/admin/app-settings">Buka Setting</Link>
+            </Button>
+          </div>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Modul Storage R2</CardTitle>
-            <CardDescription>
+        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs hover:shadow-md transition-all space-y-3">
+          <div>
+            <CardTitle className="text-base font-sans font-bold">Modul Storage R2</CardTitle>
+            <CardDescription className="text-xs mt-1">
               Kelola kredensial S3 Cloudflare R2 dan aturan upload secara dinamis.
             </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
-              <div>
-                <p className="text-sm font-semibold">Konfigurasi R2 Storage</p>
-                <p className="text-xs text-muted-foreground">Account ID & Secret Key</p>
-              </div>
-              <Button asChild size="sm" variant="outline">
-                <Link href="/admin/storage-config">Buka Storage</Link>
-              </Button>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl bg-muted/50 border border-border/70 gap-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">S3 Engine & Bucket</p>
+              <p className="text-[11px] text-muted-foreground">Kapasitas, Endpoint, Bucket Rule</p>
             </div>
-          </CardContent>
+            <Button asChild size="sm" className="w-full sm:w-auto h-8 px-4 rounded-full text-xs font-semibold bg-[#ff385c] text-white hover:bg-[#e00b41]">
+              <Link href="/admin/storage-config">Atur Storage</Link>
+            </Button>
+          </div>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Keamanan & RBAC</CardTitle>
-            <CardDescription>
-              Atur template izin default global untuk WO dan Panitia Keluarga.
+        <Card className="rounded-2xl border border-border/80 bg-card p-5 shadow-xs hover:shadow-md transition-all space-y-3">
+          <div>
+            <CardTitle className="text-base font-sans font-bold">Akses Staf & Audit</CardTitle>
+            <CardDescription className="text-xs mt-1">
+              Delegasi wewenang RBAC granular dan pantau rekaman aktivitas per-tenant.
             </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded bg-accent/30 border border-border">
-              <div>
-                <p className="text-sm font-semibold">Template RBAC Global</p>
-                <p className="text-xs text-muted-foreground">Matriks izin bawaan</p>
-              </div>
-              <Button asChild size="sm" variant="secondary">
-                <Link href="/admin/rbac-templates">Kelola Template</Link>
-              </Button>
+          </div>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3.5 rounded-xl bg-muted/50 border border-border/70 gap-3">
+            <div>
+              <p className="text-xs font-semibold text-foreground">RBAC & Audit Trail</p>
+              <p className="text-[11px] text-muted-foreground">Granular Role & Global Activity Log</p>
             </div>
-          </CardContent>
+            <Button asChild size="sm" className="w-full sm:w-auto h-8 px-4 rounded-full text-xs font-semibold bg-[#ff385c] text-white hover:bg-[#e00b41]">
+              <Link href="/admin/staff-permissions">Kelola Staf</Link>
+            </Button>
+          </div>
         </Card>
       </div>
     </div>
