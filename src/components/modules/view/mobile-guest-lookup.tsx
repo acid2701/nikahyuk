@@ -32,12 +32,12 @@ export function MobileGuestLookup({ token, guests }: MobileGuestLookupProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Link href={`/view/${token}`}>
-          <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs px-2">
+          <Button variant="ghost" size="sm" className="gap-1 h-8 px-3 rounded-full text-xs hover:bg-muted">
             <ArrowLeft className="h-4 w-4" /> Kembali
           </Button>
         </Link>
-        <span className="font-mono text-xs font-bold text-blue-600 bg-blue-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
-          <Users className="h-3 w-3" /> Door Greeter Lookup
+        <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full flex items-center gap-1.5 border border-emerald-500/20">
+          <Users className="h-3.5 w-3.5" /> Door Greeter Lookup
         </span>
       </div>
 
@@ -59,8 +59,8 @@ export function MobileGuestLookup({ token, guests }: MobileGuestLookupProps) {
           </p>
         ) : (
           filtered.map((g) => (
-            <Card key={g.id} className="border-border/70 bg-card">
-              <CardContent className="p-3 flex items-center justify-between">
+            <Card key={g.id} className="border-border/70 bg-card/90 rounded-xl hover:border-foreground/30 transition-all">
+              <CardContent className="p-3.5 flex items-center justify-between">
                 <div className="space-y-0.5">
                   <h3 className="font-semibold text-xs text-foreground">{g.fullName}</h3>
                   <p className="text-[11px] text-muted-foreground">Alokasi: {g.pax} Pax</p>

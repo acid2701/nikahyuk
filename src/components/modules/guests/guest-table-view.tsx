@@ -413,112 +413,114 @@ export function GuestTableView({
         </Card>
       ) : (
         <Card className="border-border/80 shadow-xs overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/60">
-              <TableRow>
-                <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
-                <TableHead className="text-xs font-semibold">Nama Tamu & Catatan</TableHead>
-                <TableHead className="text-xs font-semibold">Kontak WA</TableHead>
-                <TableHead className="text-xs font-semibold text-center">Pax</TableHead>
-                <TableHead className="text-xs font-semibold">Status RSVP</TableHead>
-                <TableHead className="text-xs font-semibold text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedGuests.map((g, index) => {
-                const globalIndex = (currentPage - 1) * pageSize + index + 1;
-                const assignment = g.assignments && g.assignments.length > 0 ? g.assignments[0] : null;
-                const rsvpStatus = assignment ? assignment.attendance_status : "pending";
+          <div className="overflow-x-auto min-w-0">
+            <Table>
+              <TableHeader className="bg-muted/60">
+                <TableRow>
+                  <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
+                  <TableHead className="text-xs font-semibold">Nama Tamu & Catatan</TableHead>
+                  <TableHead className="text-xs font-semibold">Kontak WA</TableHead>
+                  <TableHead className="text-xs font-semibold text-center">Pax</TableHead>
+                  <TableHead className="text-xs font-semibold">Status RSVP</TableHead>
+                  <TableHead className="text-xs font-semibold text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedGuests.map((g, index) => {
+                  const globalIndex = (currentPage - 1) * pageSize + index + 1;
+                  const assignment = g.assignments && g.assignments.length > 0 ? g.assignments[0] : null;
+                  const rsvpStatus = assignment ? assignment.attendance_status : "pending";
 
-                return (
-                  <TableRow key={g.id} className="hover:bg-muted/30">
-                    {/* Numbering Cell */}
-                    <TableCell className="text-center font-mono font-semibold text-xs text-muted-foreground">
-                      {globalIndex}
-                    </TableCell>
+                  return (
+                    <TableRow key={g.id} className="hover:bg-muted/30">
+                      {/* Numbering Cell */}
+                      <TableCell className="text-center font-mono font-semibold text-xs text-muted-foreground">
+                        {globalIndex}
+                      </TableCell>
 
-                    {/* Guest Name & Notes */}
-                    <TableCell className="text-xs">
-                      <p className="font-serif font-bold text-sm text-foreground">{g.full_name}</p>
-                      {g.notes && <p className="text-[11px] text-muted-foreground">{g.notes}</p>}
-                    </TableCell>
+                      {/* Guest Name & Notes */}
+                      <TableCell className="text-xs">
+                        <p className="font-serif font-bold text-sm text-foreground">{g.full_name}</p>
+                        {g.notes && <p className="text-[11px] text-muted-foreground">{g.notes}</p>}
+                      </TableCell>
 
-                    {/* WhatsApp Contact Phone Number */}
-                    <TableCell className="text-xs font-mono text-muted-foreground">
-                      {g.sanitized_phone ? `+${g.sanitized_phone}` : "-"}
-                    </TableCell>
+                      {/* WhatsApp Contact Phone Number */}
+                      <TableCell className="text-xs font-mono text-muted-foreground">
+                        {g.sanitized_phone ? `+${g.sanitized_phone}` : "-"}
+                      </TableCell>
 
-                    {/* Default Pax */}
-                    <TableCell className="text-center font-mono font-semibold text-xs">
-                      {g.default_pax} Pax
-                    </TableCell>
+                      {/* Pax */}
+                      <TableCell className="text-center text-xs font-mono font-bold text-foreground">
+                        {g.default_pax || 1}
+                      </TableCell>
 
-                    {/* RSVP Status Selector */}
-                    <TableCell className="text-xs">
-                      {assignment ? (
-                        <Select
-                          value={rsvpStatus}
-                          onValueChange={(val: any) =>
-                            handleUpdateRSVP(assignment.id, val, assignment.actual_pax)
-                          }
-                        >
-                          <SelectTrigger className="h-7 text-[11px] w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="attending">Hadir (Attending)</SelectItem>
-                            <SelectItem value="declined">Halangan (Declined)</SelectItem>
-                            <SelectItem value="checked_in">Sudah Check-In</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Badge variant="outline" className="text-[10px]">
-                          Pending
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    {/* Action Buttons */}
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end space-x-1">
-                        {g.sanitized_phone && (
-                          <WABlastModal
-                            guestName={g.full_name}
-                            phone={g.sanitized_phone}
-                            tableName={
-                              (assignment as any)?.event_tables?.table_number_or_name || "Belum Diatur"
+                      {/* Status RSVP Quick Update */}
+                      <TableCell className="text-xs">
+                        {assignment ? (
+                          <Select
+                            value={rsvpStatus}
+                            onValueChange={(val: any) =>
+                              handleUpdateRSVP(assignment.id, val, assignment.actual_pax)
                             }
-                            locationMapsUrl={activeEventLocation}
-                          />
+                          >
+                            <SelectTrigger className="h-7 w-32 text-[11px] bg-background">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Belum Konfirmasi</SelectItem>
+                              <SelectItem value="attending">Hadir (Attending)</SelectItem>
+                              <SelectItem value="declined">Halangan (Declined)</SelectItem>
+                              <SelectItem value="checked_in">Sudah Check-In</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px]">
+                            Pending
+                          </Badge>
                         )}
+                      </TableCell>
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenEdit(g)}
-                          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                          title="Edit Data Tamu"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                      {/* Action Buttons */}
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end space-x-1">
+                          {g.sanitized_phone && (
+                            <WABlastModal
+                              guestName={g.full_name}
+                              phone={g.sanitized_phone}
+                              tableName={
+                                (assignment as any)?.event_tables?.table_number_or_name || "Belum Diatur"
+                              }
+                              locationMapsUrl={activeEventLocation}
+                            />
+                          )}
 
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setDeleteTarget({ id: g.id, name: g.full_name })}
-                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                          title="Hapus Data Tamu"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleOpenEdit(g)}
+                            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                            title="Edit Data Tamu"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setDeleteTarget({ id: g.id, name: g.full_name })}
+                            className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                            title="Hapus Data Tamu"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
 
           {/* SCALABLE PAGINATION FOOTER */}
           <DataTablePagination

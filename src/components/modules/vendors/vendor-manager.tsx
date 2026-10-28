@@ -771,22 +771,23 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
             </Card>
           ) : (
             <Card className="border-border/80 shadow-xs overflow-hidden">
-              <Table>
-                <TableHeader className="bg-muted/60">
-                  <TableRow>
-                    <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
-                    <TableHead className="text-xs font-semibold">Nama Vendor</TableHead>
-                    <TableHead className="text-xs font-semibold">Kategori</TableHead>
-                    <TableHead className="text-xs font-semibold">Status</TableHead>
-                    <TableHead className="text-xs font-semibold">PIC & Kontak WA</TableHead>
-                    <TableHead className="text-xs font-semibold text-right">Nilai Kontrak</TableHead>
-                    <TableHead className="text-xs font-semibold text-center">Dokumen</TableHead>
-                    <TableHead className="text-xs font-semibold text-right">Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedVendors.map((v, index) => {
-                    const globalIndex = (currentPage - 1) * pageSize + index + 1;
+              <div className="overflow-x-auto min-w-0">
+                <Table>
+                  <TableHeader className="bg-muted/60">
+                    <TableRow>
+                      <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
+                      <TableHead className="text-xs font-semibold">Nama Vendor</TableHead>
+                      <TableHead className="text-xs font-semibold">Kategori</TableHead>
+                      <TableHead className="text-xs font-semibold">Status</TableHead>
+                      <TableHead className="text-xs font-semibold">PIC & Kontak WA</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Nilai Kontrak</TableHead>
+                      <TableHead className="text-xs font-semibold text-center">Dokumen</TableHead>
+                      <TableHead className="text-xs font-semibold text-right">Aksi</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedVendors.map((v, index) => {
+                      const globalIndex = (currentPage - 1) * pageSize + index + 1;
                     const docs = v.vendor_documents || [];
                     const isExpanded = expandedVendorId === v.id;
                     const isWinner = v.status === "selected";
@@ -1068,6 +1069,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
                   })}
                 </TableBody>
               </Table>
+              </div>
 
               {/* SCALABLE PAGINATION FOOTER */}
               <DataTablePagination

@@ -29,6 +29,10 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
+  --color-mint: #00f0a0;
+  --color-mint-foreground: #000000;
+  --color-mint-soft: #ecffe0;
+
   --font-serif: var(--font-serif), "Playfair Display", serif;
   --font-sans: var(--font-sans), "Plus Jakarta Sans", sans-serif;
 

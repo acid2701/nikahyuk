@@ -35,12 +35,21 @@ export function LandingHero({
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-          <Button asChild size="lg" className="h-12 px-6 text-sm font-bold gap-2 shadow-xs w-full sm:w-auto">
+          <Button
+            asChild
+            size="lg"
+            className="h-12 px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 text-sm font-semibold gap-2 shadow-xs w-full sm:w-auto transition-all"
+          >
             <Link href={isLoggedIn ? "/dashboard" : "/register"}>
               {ctaButtonText} <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="h-12 px-6 text-sm font-medium w-full sm:w-auto">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="h-12 px-7 rounded-full border-border/80 text-sm font-medium hover:bg-muted w-full sm:w-auto transition-all"
+          >
             <a href="#features">Pelajari Fitur →</a>
           </Button>
         </div>
@@ -60,26 +69,26 @@ export function LandingHero({
 
         {/* App Showcase Card */}
         <div className="pt-8 max-w-3xl mx-auto">
-          <div className="rounded-xl border border-border/80 bg-card/60 backdrop-blur-xs p-4 shadow-xs grid gap-3 grid-cols-2 sm:grid-cols-4 text-left">
-            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
-              <Clock className="h-5 w-5 text-primary" />
+          <div className="rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xs p-4 sm:p-5 shadow-xs grid gap-3 grid-cols-2 sm:grid-cols-4 text-left">
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
+              <Clock className="h-5 w-5 text-emerald-500" />
               <p className="font-bold text-xs">Live Rundown</p>
               <p className="text-[10px] text-muted-foreground">Timeline shift 1-klik</p>
             </div>
-            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
               <Users className="h-5 w-5 text-amber-500" />
-              <p className="font-bold text-xs">RSVP & WA Blast</p>
-              <p className="text-[10px] text-muted-foreground">Template pesan instan</p>
+              <p className="font-bold text-xs">Buku Tamu & Meja</p>
+              <p className="text-[10px] text-muted-foreground">Check-in QR & Seating</p>
             </div>
-            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
-              <DollarSign className="h-5 w-5 text-emerald-500" />
-              <p className="font-bold text-xs">Anggaran Core</p>
-              <p className="text-[10px] text-muted-foreground">Multiple Milestones</p>
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
+              <DollarSign className="h-5 w-5 text-blue-500" />
+              <p className="font-bold text-xs">RAB Anggaran</p>
+              <p className="text-[10px] text-muted-foreground">DP, Termin & Bukti Bayar</p>
             </div>
-            <div className="p-3 rounded-lg bg-background border border-border space-y-1">
-              <Smartphone className="h-5 w-5 text-sky-500" />
-              <p className="font-bold text-xs">Mobile PWA</p>
-              <p className="text-[10px] text-muted-foreground">Check-in desk offline</p>
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
+              <Smartphone className="h-5 w-5 text-purple-500" />
+              <p className="font-bold text-xs">Portal Kru & WO</p>
+              <p className="text-[10px] text-muted-foreground">Akses token tanpa login</p>
             </div>
           </div>
         </div>

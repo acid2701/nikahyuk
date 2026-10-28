@@ -183,7 +183,7 @@ export default function AdminUsersPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
+        <CardContent className="p-0 overflow-x-auto min-w-0">
           {filteredUsers.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
               Tidak ada pengguna ditemukan.

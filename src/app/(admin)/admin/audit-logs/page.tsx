@@ -87,7 +87,7 @@ export default async function AdminAuditLogsPage({
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-w-0">
             <Table>
               <TableHeader className="bg-muted/60">
                 <TableRow>

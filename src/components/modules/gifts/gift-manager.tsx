@@ -556,8 +556,9 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
         </Card>
       ) : (
         <Card className="border-border/80 shadow-xs overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/60">
+          <div className="overflow-x-auto min-w-0">
+            <Table>
+              <TableHeader className="bg-muted/60">
               <TableRow>
                 <TableHead className="w-12 text-center text-xs font-semibold">No.</TableHead>
                 <TableHead className="text-xs font-semibold">Pemberi Kado</TableHead>
@@ -645,6 +646,7 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
               })}
             </TableBody>
           </Table>
+          </div>
 
           <DataTablePagination
             currentPage={currentPage}

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table";
+import { DataTablePagination } from "@/components/shared/pagination/data-table-pagination";
 import {
   Database,
   ShieldCheck,
@@ -315,7 +316,7 @@ export default function AdminBackupsPage() {
             </div>
           ) : (
             <>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-w-0">
               <Table>
               <TableHeader className="bg-muted/60">
                 <TableRow>
@@ -330,7 +331,7 @@ export default function AdminBackupsPage() {
               <TableBody>
                 {paginatedBackups.map((b, idx) => (
                   <TableRow key={b.id || idx} className="hover:bg-muted/30">
-                    <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                    <TableCell className="text-center font-mono text-xs text-muted-foreground font-semibold">
                       {(page - 1) * pageSize + idx + 1}
                     </TableCell>
 
@@ -342,7 +343,7 @@ export default function AdminBackupsPage() {
                       {new Date(b.createdAt).toLocaleString("id-ID")}
                     </TableCell>
 
-                    <TableCell className="text-xs font-mono text-emerald-600">
+                    <TableCell className="text-xs font-mono text-emerald-600 font-semibold">
                       {(b.sizeBytes / 1024).toFixed(1)} KB
                     </TableCell>
 
@@ -359,9 +360,9 @@ export default function AdminBackupsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setSelectedRestore(b)}
-                          className="h-7 text-xs gap-1 border-amber-500/40 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
+                          className="h-8 px-2.5 rounded-full text-xs gap-1 border-amber-500/40 text-amber-600 hover:bg-amber-500/10 hover:text-amber-700"
                         >
-                          <RotateCcw className="h-3 w-3" /> Restore
+                          <RotateCcw className="h-3.5 w-3.5" /> Restore
                         </Button>
 
                         <a
@@ -369,7 +370,7 @@ export default function AdminBackupsPage() {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          <Button variant="ghost" size="sm" className="h-7 text-xs gap-1">
+                          <Button variant="ghost" size="sm" className="h-8 px-2.5 rounded-full text-xs gap-1 hover:bg-muted">
                             <Download className="h-3.5 w-3.5" /> Unduh
                           </Button>
                         </a>
@@ -380,33 +381,14 @@ export default function AdminBackupsPage() {
               </TableBody>
             </Table>
             </div>
-            {totalPages > 1 ? (
-              <div className="flex items-center justify-between p-4 border-t border-border">
-                <span className="text-xs text-muted-foreground">
-                  Halaman {page} dari {totalPages} ({backups.length} snapshot)
-                </span>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => p - 1)}
-                    className="h-8 text-xs"
-                  >
-                    Sebelumnya
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={page >= totalPages}
-                    onClick={() => setPage((p) => p + 1)}
-                    className="h-8 text-xs"
-                  >
-                    Selanjutnya
-                  </Button>
-                </div>
-              </div>
-            ) : null}
+
+            <DataTablePagination
+              currentPage={page}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              totalItems={backups.length}
+              onPageChange={setPage}
+            />
             </>
           )}
         </CardContent>

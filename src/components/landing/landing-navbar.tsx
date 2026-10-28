@@ -62,7 +62,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           <ThemeToggle />
           {isLoggedIn ? (
             <>
-              <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
+              <Button asChild size="sm" className="h-9 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 gap-1.5 text-xs font-semibold shadow-xs">
                 <Link href="/dashboard">
                   <LayoutDashboard className="h-3.5 w-3.5" /> Buka Dashboard
                 </Link>
@@ -73,7 +73,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
                 size="sm"
                 onClick={handleLogout}
                 disabled={loggingOut}
-                className="text-xs text-muted-foreground hover:text-rose-600 gap-1 px-2"
+                className="h-9 px-3 rounded-full text-xs text-muted-foreground hover:text-rose-600 gap-1 hover:bg-muted"
                 title="Keluar dari akun"
               >
                 <LogOut className="h-3.5 w-3.5" />
@@ -82,10 +82,10 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className="text-xs">
+              <Button asChild variant="ghost" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold hover:bg-muted">
                 <Link href="/login">Masuk</Link>
               </Button>
-              <Button asChild size="sm" className="gap-1.5 text-xs font-semibold">
+              <Button asChild size="sm" className="h-9 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 gap-1.5 text-xs font-semibold shadow-xs">
                 <Link href="/register">
                   Daftar Gratis <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

@@ -337,8 +337,9 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
         </Card>
       ) : (
         <Card className="border-border/80 shadow-xs overflow-hidden">
-          <Table>
-            <TableHeader className="bg-muted/60">
+          <div className="overflow-x-auto min-w-0">
+            <Table>
+              <TableHeader className="bg-muted/60">
               <TableRow>
                 <TableHead className="w-14 text-center text-xs font-bold"># No.</TableHead>
                 <TableHead className="text-xs font-semibold">Nama Vendor & Alamat Kota</TableHead>
@@ -447,6 +448,7 @@ export function VendorPartnerApprovalManager({ initialPartners }: VendorPartnerA
               })}
             </TableBody>
           </Table>
+          </div>
 
           {/* DATATABLE PAGINATION COMPONENT */}
           <div className="p-3 border-t border-border/60 bg-muted/20">
