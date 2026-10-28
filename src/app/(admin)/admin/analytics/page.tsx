@@ -21,44 +21,47 @@ import {
 } from "lucide-react";
 
 export default async function AdminAnalyticsPage() {
-  // 1. Fetch total weddings
-  const weddings = await prisma.wedding.findMany({
-    select: {
-      id: true,
-      groomName: true,
-      brideName: true,
-      weddingSlug: true,
-      createdAt: true,
-      _count: {
-        select: {
-          events: true,
-          guests: true,
+  const [
+    weddings,
+    totalWeddings,
+    totalEvents,
+    totalGuests,
+    assignmentsData,
+    vendorsCount,
+  ] = await Promise.all([
+    prisma.wedding.findMany({
+      select: {
+        id: true,
+        groomName: true,
+        brideName: true,
+        weddingSlug: true,
+        createdAt: true,
+        _count: {
+          select: {
+            events: true,
+            guests: true,
+          },
         },
       },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  });
-
-  const totalWeddings = await prisma.wedding.count();
-
-  // 2. Fetch total sub-events
-  const totalEvents = await prisma.weddingEvent.count();
-
-  // 3. Fetch total guests & RSVP counts
-  const totalGuests = await prisma.guest.count();
-
-  // 4. Fetch assignments for RSVP rates
-  const assignmentsData = await prisma.eventGuestAssignment.findMany({
-    select: { attendanceStatus: true, actualPax: true },
-    take: 5000,
-  });
+      orderBy: { createdAt: "desc" },
+      take: 50,
+    }),
+    prisma.wedding.count(),
+    prisma.weddingEvent.count(),
+    prisma.guest.count(),
+    prisma.eventGuestAssignment.groupBy({
+      by: ["attendanceStatus"],
+      _sum: { actualPax: true },
+      _count: true,
+    }),
+    prisma.vendor.count(),
+  ]);
 
   let confirmedPax = 0;
   let totalAssignedPax = 0;
-  if (assignmentsData) {
+  if (assignmentsData && Array.isArray(assignmentsData)) {
     assignmentsData.forEach((a) => {
-      const pax = a.actualPax || 1;
+      const pax = a._sum?.actualPax || a._count || 0;
       totalAssignedPax += pax;
       if (a.attendanceStatus === "attending" || a.attendanceStatus === "checked_in") {
         confirmedPax += pax;
@@ -70,7 +73,7 @@ export default async function AdminAnalyticsPage() {
     totalAssignedPax > 0 ? Math.round((confirmedPax / totalAssignedPax) * 100) : 0;
 
   // 5. Fetch vendors count
-  const vendorsCount = await prisma.vendor.count();
+  // vendorsCount is already fetched above in Promise.all
 
   // Map workspace stats
   const eventCountMap: Record<string, number> = {};

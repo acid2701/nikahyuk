@@ -7,24 +7,25 @@ import { Database, HardDrive, Calendar, ShieldCheck, Settings, Key, Building2, C
 import { HealthMonitorCard } from "@/components/admin/health-monitor-card";
 
 export default async function AdminOverviewPage() {
-  const weddingsCount = await prisma.wedding.count();
-  const eventsCount = await prisma.weddingEvent.count();
-  const docsCount = await prisma.vendorDocument.count();
+  const [
+    weddingsCount,
+    eventsCount,
+    docsCount,
+    pendingVendorsCountResult,
+    settings,
+  ] = await Promise.all([
+    prisma.wedding.count(),
+    prisma.weddingEvent.count(),
+    prisma.vendorDocument.count(),
+    prisma.vendorPartner.count({ where: { status: "pending" } }).catch(() => 0),
+    prisma.systemSetting.findMany({
+      where: {
+        key: { in: ["r2_credentials", "auth_provider_config"] },
+      },
+    }),
+  ]);
 
-  let pendingVendorsCount = 0;
-  try {
-    pendingVendorsCount = await prisma.vendorPartner.count({
-      where: { status: "pending" },
-    });
-  } catch (err) {
-    console.warn("vendor_partners pending count notice:", err);
-  }
-
-  const settings = await prisma.systemSetting.findMany({
-    where: {
-      key: { in: ["r2_credentials", "auth_provider_config"] },
-    },
-  });
+  const pendingVendorsCount = pendingVendorsCountResult;
 
   const r2Row = settings?.find((r) => r.key === "r2_credentials");
   const authRow = settings?.find((r) => r.key === "auth_provider_config");

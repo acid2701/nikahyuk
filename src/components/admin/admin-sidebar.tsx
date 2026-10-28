@@ -173,7 +173,9 @@ export function AdminSidebar({
                       key={item.href}
                       href={item.href}
                       prefetch={true}
-                      onClick={onNavigate}
+                      onClick={() => {
+                        if (onNavigate) onNavigate();
+                      }}
                       className={`group relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 ${
                         isActive
                           ? "bg-[#ff385c]/10 text-[#ff385c] font-semibold"
