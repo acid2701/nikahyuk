@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { ImageCropModal } from "./image-crop-modal";
 
 export interface UploadedFileMeta {
   r2_file_key: string;
@@ -68,6 +69,10 @@ export function MediaUploaderDropzone({
   const [dragActive, setDragActive] = React.useState(false);
   const [uploadedList, setUploadedList] = React.useState<UploadedFileMeta[]>([]);
   const [replaceIndex, setReplaceIndex] = React.useState<number | null>(null);
+
+  // IMAGE CROP STATE
+  const [pendingCropFile, setPendingCropFile] = React.useState<File | null>(null);
+  const [cropModalOpen, setCropModalOpen] = React.useState(false);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -250,10 +255,23 @@ export function MediaUploaderDropzone({
     }
   }
 
+  function handleFileSelected(file: File) {
+    if (file.type.startsWith("image/")) {
+      // Trigger interactive crop modal for images
+      setPendingCropFile(file);
+      setCropModalOpen(true);
+    } else {
+      // Documents/PDFs proceed directly
+      processAndUploadFile(file);
+    }
+  }
+
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (e.target.files && e.target.files[0]) {
-      processAndUploadFile(e.target.files[0]);
+      handleFileSelected(e.target.files[0]);
     }
+    // Reset input so same file can be re-selected if canceled
+    e.target.value = "";
   }
 
   function handleRemoveFile(index: number) {
@@ -287,7 +305,7 @@ export function MediaUploaderDropzone({
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processAndUploadFile(e.dataTransfer.files[0]);
+      handleFileSelected(e.dataTransfer.files[0]);
     }
   }
 
@@ -430,6 +448,22 @@ export function MediaUploaderDropzone({
           )}
         </div>
       )}
+
+      {/* INTERACTIVE CROP MODAL BEFORE UPLOAD */}
+      <ImageCropModal
+        open={cropModalOpen}
+        imageFile={pendingCropFile}
+        onConfirmCrop={(croppedFile) => {
+          setCropModalOpen(false);
+          setPendingCropFile(null);
+          processAndUploadFile(croppedFile);
+        }}
+        onCancel={() => {
+          setCropModalOpen(false);
+          setPendingCropFile(null);
+          setReplaceIndex(null);
+        }}
+      />
     </div>
   );
 }
