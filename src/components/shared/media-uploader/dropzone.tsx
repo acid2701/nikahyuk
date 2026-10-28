@@ -170,6 +170,11 @@ export function MediaUploaderDropzone({
         }),
       });
 
+      if (!presignRes.ok) {
+        const presignErr = await presignRes.json();
+        throw new Error(presignErr.error || "Gagal mendapatkan izin unggah ke R2");
+      }
+
       const { presignedUrl, r2FileKey, publicUrl } = await presignRes.json();
 
       let uploadSuccess = false;
@@ -332,23 +337,23 @@ export function MediaUploaderDropzone({
           {uploadedList.map((item, idx) => (
             <div
               key={item.r2_file_key + idx}
-              className="p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between gap-3 transition-all"
+              className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all"
             >
-              <div className="flex items-center space-x-2.5 min-w-0">
+              <div className="flex items-center space-x-2.5 min-w-0 flex-1">
                 <FileText className="h-4 w-4 text-emerald-600 shrink-0" />
-                <div className="space-y-0.5 min-w-0">
-                  <p className="font-semibold text-foreground text-xs leading-none truncate">
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  <p className="font-semibold text-foreground text-xs leading-snug truncate">
                     {item.file_name}
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground truncate">
                     {(item.file_size_bytes / 1024).toFixed(1)} KB • {item.mime_type}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-1 shrink-0">
-                <Badge className="bg-emerald-600 text-white text-[9px] hidden sm:inline-flex">
-                  R2 Active ✅
+              <div className="flex items-center flex-wrap gap-1.5 shrink-0 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-emerald-500/20">
+                <Badge className="bg-emerald-600 text-white text-[9px] px-2 py-0.5">
+                  R2 Active
                 </Badge>
 
                 {/* 👁️ PREVIEW BUTTON */}
@@ -357,7 +362,7 @@ export function MediaUploaderDropzone({
                   size="sm"
                   variant="outline"
                   asChild
-                  className="h-7 text-[10px] gap-1 border-border hover:bg-muted font-semibold"
+                  className="h-7 text-[10px] px-2 gap-1 border-border hover:bg-muted font-semibold"
                 >
                   <a
                     href={item.public_url || `/api/storage/presign?key=${encodeURIComponent(item.r2_file_key)}`}
@@ -375,7 +380,7 @@ export function MediaUploaderDropzone({
                   variant="outline"
                   onClick={(e) => handleTriggerReplace(idx, e)}
                   title="Ganti berkas ini"
-                  className="h-7 text-[10px] gap-1 border-border hover:bg-muted font-semibold"
+                  className="h-7 text-[10px] px-2 gap-1 border-border hover:bg-muted font-semibold"
                 >
                   <RefreshCw className="h-3 w-3 text-amber-500" /> Ganti
                 </Button>

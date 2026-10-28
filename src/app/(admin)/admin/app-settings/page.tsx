@@ -314,7 +314,7 @@ export default function AdminAppSettingsPage() {
                 <MediaUploaderDropzone
                   weddingId="system"
                   folder="documents"
-                  allowedMimeTypes={["image/jpeg", "image/png", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]}
+                  allowedMimeTypes={["image/jpeg", "image/png", "image/webp", "image/x-icon", "image/vnd.microsoft.icon", "image/svg+xml"]}
                   onUploadSuccess={handleFaviconUploaded}
                   onUploadError={(msg) =>
                     toast({

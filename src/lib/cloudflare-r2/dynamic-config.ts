@@ -109,6 +109,9 @@ export async function getDynamicStorageRules(): Promise<StorageRules> {
         "image/jpeg",
         "image/png",
         "image/webp",
+        "image/svg+xml",
+        "image/x-icon",
+        "image/vnd.microsoft.icon",
         "application/pdf",
       ],
     };
