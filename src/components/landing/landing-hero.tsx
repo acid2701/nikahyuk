@@ -4,7 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRight, CheckCircle2, Clock, Users, DollarSign, Smartphone } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, Users, DollarSign, Smartphone, Sparkles, ShieldCheck } from "lucide-react";
 
 export interface LandingHeroProps {
   heroTitle: string;
@@ -26,7 +26,7 @@ export function LandingHero({
       <div className="absolute bottom-10 right-10 w-[300px] h-[200px] bg-accent/30 blur-[100px] rounded-full pointer-events-none -z-10" />
 
       <div className="max-w-4xl mx-auto text-center px-4 space-y-6">
-        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-foreground leading-[1.08] uppercase">
+        <h1 className="font-sans text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground leading-[1.12]">
           {heroTitle}
         </h1>
 
@@ -38,7 +38,7 @@ export function LandingHero({
           <Button
             asChild
             size="lg"
-            className="h-12 px-7 rounded-full bg-foreground text-background hover:bg-foreground/90 text-sm font-semibold gap-2 shadow-xs w-full sm:w-auto transition-all"
+            className="h-12 px-8 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] text-sm font-semibold gap-2 shadow-md hover:shadow-lg w-full sm:w-auto transition-all"
           >
             <Link href={isLoggedIn ? "/dashboard" : "/register"}>
               {ctaButtonText} <ArrowRight className="h-4 w-4" />
@@ -70,25 +70,25 @@ export function LandingHero({
         {/* App Showcase Card */}
         <div className="pt-8 max-w-3xl mx-auto">
           <div className="rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xs p-4 sm:p-5 shadow-xs grid gap-3 grid-cols-2 sm:grid-cols-4 text-left">
-            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
-              <Clock className="h-5 w-5 text-emerald-500" />
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-[#ff385c]/30 hover:shadow-xs transition-all">
+              <Clock className="h-5 w-5 text-[#ff385c]" />
               <p className="font-bold text-xs">Live Rundown</p>
-              <p className="text-[10px] text-muted-foreground">Timeline shift 1-klik</p>
+              <p className="text-[11px] text-muted-foreground">Sync real-time panitia</p>
             </div>
-            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
-              <Users className="h-5 w-5 text-amber-500" />
-              <p className="font-bold text-xs">Buku Tamu & Meja</p>
-              <p className="text-[10px] text-muted-foreground">Check-in QR & Seating</p>
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-[#ff385c]/30 hover:shadow-xs transition-all">
+              <Users className="h-5 w-5 text-[#ff385c]" />
+              <p className="font-bold text-xs">Buku Tamu & RSVP</p>
+              <p className="text-[11px] text-muted-foreground">Check-in barcode cepat</p>
             </div>
-            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
-              <DollarSign className="h-5 w-5 text-blue-500" />
-              <p className="font-bold text-xs">RAB Anggaran</p>
-              <p className="text-[10px] text-muted-foreground">DP, Termin & Bukti Bayar</p>
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-[#ff385c]/30 hover:shadow-xs transition-all">
+              <Sparkles className="h-5 w-5 text-[#ff385c]" />
+              <p className="font-bold text-xs">Budgeting</p>
+              <p className="text-[11px] text-muted-foreground">Kawal pos pengeluaran</p>
             </div>
-            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-foreground/30 transition-all">
-              <Smartphone className="h-5 w-5 text-purple-500" />
-              <p className="font-bold text-xs">Portal Kru & WO</p>
-              <p className="text-[10px] text-muted-foreground">Akses token tanpa login</p>
+            <div className="p-3.5 rounded-xl bg-background border border-border/70 space-y-1 hover:border-[#ff385c]/30 hover:shadow-xs transition-all">
+              <ShieldCheck className="h-5 w-5 text-[#ff385c]" />
+              <p className="font-bold text-xs">Vendor Hub</p>
+              <p className="text-[11px] text-muted-foreground">Kontrak & dokumen aman</p>
             </div>
           </div>
         </div>

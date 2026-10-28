@@ -37,11 +37,11 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
             // eslint-disable-next-line @next/next/no-img-element
             <img src={logoUrl} alt={appName} className="h-8 w-8 object-contain" />
           ) : (
-            <div className="h-9 w-9 rounded-full bg-[#00f0a0] flex items-center justify-center text-black font-black text-sm">
-              <Heart className="h-5 w-5 fill-black stroke-black" />
+            <div className="h-9 w-9 rounded-full bg-[#ff385c] flex items-center justify-center text-white font-bold text-sm shadow-xs">
+              <Heart className="h-5 w-5 fill-white stroke-white" />
             </div>
           )}
-          <span className="font-display text-2xl font-black tracking-tight text-foreground uppercase">
+          <span className="font-sans text-xl font-bold tracking-tight text-foreground">
             {appName}
           </span>
         </Link>
@@ -62,7 +62,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           <ThemeToggle />
           {isLoggedIn ? (
             <>
-              <Button asChild size="sm" className="h-9 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 gap-1.5 text-xs font-semibold shadow-xs">
+              <Button asChild size="sm" className="h-9 px-4 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] gap-1.5 text-xs font-semibold shadow-xs">
                 <Link href="/dashboard">
                   <LayoutDashboard className="h-3.5 w-3.5" /> Buka Dashboard
                 </Link>
@@ -85,7 +85,7 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
               <Button asChild variant="ghost" size="sm" className="h-9 px-3.5 rounded-full text-xs font-semibold hover:bg-muted">
                 <Link href="/login">Masuk</Link>
               </Button>
-              <Button asChild size="sm" className="h-9 px-4 rounded-full bg-foreground text-background hover:bg-foreground/90 gap-1.5 text-xs font-semibold shadow-xs">
+              <Button asChild size="sm" className="h-9 px-5 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] gap-1.5 text-xs font-semibold shadow-xs">
                 <Link href="/register">
                   Daftar Gratis <ArrowRight className="h-3.5 w-3.5" />
                 </Link>

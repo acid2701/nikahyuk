@@ -169,12 +169,12 @@ export default async function WeddingOverviewPage(props: {
 
       {/* KPI Cards Grid */}
       <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
           <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
             <CardTitle className="text-xs font-semibold text-muted-foreground">
               Sub-Events Pernikahan
             </CardTitle>
-            <Calendar className="h-4 w-4 text-[#00f0a0]" />
+            <Calendar className="h-4 w-4 text-[#ff385c]" />
           </CardHeader>
           <CardContent className="p-0 pt-1">
             <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">{events.length} Sub-Event</div>
@@ -184,7 +184,7 @@ export default async function WeddingOverviewPage(props: {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-emerald-500/40 hover:shadow-xs transition-all">
           <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
             <CardTitle className="text-xs font-semibold text-muted-foreground">
               RSVP Guest Summary
@@ -192,7 +192,7 @@ export default async function WeddingOverviewPage(props: {
             <Users className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent className="p-0 pt-1">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-[#00f0a0]">
+            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {confirmedPax} Pax Hadir
             </div>
             <p className="text-[11px] text-muted-foreground mt-0.5">
@@ -201,12 +201,12 @@ export default async function WeddingOverviewPage(props: {
           </CardContent>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
+        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
           <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
             <CardTitle className="text-xs font-semibold text-muted-foreground">
               Progres Anggaran Terbayar
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-blue-500" />
+            <DollarSign className="h-4 w-4 text-[#ff385c]" />
           </CardHeader>
           <CardContent className="p-0 pt-1">
             <div className="text-lg sm:text-xl font-bold font-mono text-foreground truncate">

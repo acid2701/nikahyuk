@@ -134,9 +134,9 @@ export function DataTablePagination({
                 type="button"
                 variant={isActive ? "default" : "ghost"}
                 size="sm"
-                className={`h-8 w-8 p-0 rounded-full text-xs font-mono transition-all ${
+                className={`h-8 w-8 p-0 rounded-full text-xs font-semibold transition-all ${
                   isActive
-                    ? "bg-foreground text-background font-semibold shadow-xs"
+                    ? "bg-[#ff385c] text-white hover:bg-[#e00b41] shadow-xs"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 }`}
                 onClick={() => onPageChange(p)}

@@ -60,10 +60,10 @@ export default async function AdminLayout({
             <ThemeToggle />
             <AdminNotificationBell />
             <div className="hidden sm:block text-right pl-3 border-l border-border/50">
-              <p className="text-xs font-mono font-semibold text-foreground leading-none">{email}</p>
+              <p className="text-xs font-semibold text-foreground leading-none">{email}</p>
               <div className="flex items-center justify-end space-x-1.5 mt-1.5">
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00f0a0]/15 text-emerald-600 dark:text-[#00f0a0] border border-[#00f0a0]/30">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#00f0a0] animate-pulse" />
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#ff385c]/10 text-[#ff385c] border border-[#ff385c]/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#ff385c] animate-pulse" />
                   SUPERADMIN
                 </span>
               </div>

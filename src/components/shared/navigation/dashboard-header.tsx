@@ -115,10 +115,10 @@ export function DashboardHeader({
         <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
           <MobileSidebarDrawer weddingId={weddingId} />
           <div className="min-w-0">
-            <h2 className="font-display text-xs sm:text-base font-bold tracking-tight text-foreground leading-tight truncate max-w-[130px] sm:max-w-xs md:max-w-md uppercase">
+            <h2 className="font-sans text-xs sm:text-base font-bold tracking-tight text-foreground leading-tight truncate max-w-[130px] sm:max-w-xs md:max-w-md">
               {groomName} & {brideName}
             </h2>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight truncate font-mono">
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight truncate font-medium">
               Workspace Pernikahan
             </p>
           </div>

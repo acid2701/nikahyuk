@@ -29,13 +29,13 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  --color-mint: #00f0a0;
-  --color-mint-foreground: #000000;
-  --color-mint-soft: #ecffe0;
+  --color-rausch: #ff385c;
+  --color-rausch-hover: #e00b41;
+  --color-rausch-soft: #fff0f3;
 
-  --font-display: var(--font-display), "Titillium Web", sans-serif;
-  --font-sans: var(--font-sans), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: var(--font-display), "Titillium Web", sans-serif;
+  --font-sans: var(--font-sans), "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: var(--font-sans), "Plus Jakarta Sans", sans-serif;
+  --font-display: var(--font-sans), "Plus Jakarta Sans", sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -44,33 +44,33 @@
 
 @layer base {
   :root {
-    /* Base Backgrounds & Surfaces (Jobright Pure White Canvas) */
+    /* Base Backgrounds & Surfaces (Airbnb Pure White Canvas & Soft Off-White) */
     --background: 0 0% 100%;
-    --foreground: 0 0% 0%;
+    --foreground: 0 0% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
+    --card-foreground: 0 0% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
+    --popover-foreground: 0 0% 13%;
 
-    /* Brand Primary Accent (Jobright Vibrant Spring-Mint Green #00f0a0) */
-    --primary: 160 100% 47%;
-    --primary-foreground: 0 0% 0%;
+    /* Brand Primary Accent (Airbnb Rausch #ff385c) */
+    --primary: 349 100% 61%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Brand Secondary Accent (Jobright Canvas Mint #ecffe0) */
-    --secondary: 96 100% 94%;
-    --secondary-foreground: 0 0% 0%;
+    /* Brand Secondary Accent (Airbnb Soft Warm Gray #f7f7f7) */
+    --secondary: 0 0% 97%;
+    --secondary-foreground: 0 0% 13%;
 
     /* Muted & Subdued Elements */
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
 
-    /* Interactive Accent (Jobright Soft Surface #f2f4f5) */
-    --accent: 200 12% 95%;
-    --accent-foreground: 0 0% 0%;
+    /* Interactive Accent (Airbnb Light Rose Wash) */
+    --accent: 349 100% 97%;
+    --accent-foreground: 349 100% 45%;
 
     /* Operational & Status Indicators */
-    --success: 160 100% 47%;
-    --success-foreground: 0 0% 0%;
+    --success: 152 68% 40%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 38 90% 15%;
@@ -78,43 +78,43 @@
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Structural Borders & Controls */
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 160 100% 47%;
+    /* Structural Borders & Controls (Airbnb Hairline #ebebeb) */
+    --border: 0 0% 92%;
+    --input: 0 0% 90%;
+    --ring: 349 100% 61%;
 
     /* Component Geometry */
     --radius: 1.25rem;
   }
 
   .dark {
-    /* Dark Surface (Jobright Deep Void Obsidian Zinc) */
+    /* Dark Surface (Airbnb Warm Obsidian Slate #0e0e11 & #16161a) */
     --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 6%;
-    --popover-foreground: 0 0% 98%;
+    --foreground: 0 0% 97%;
+    --card: 240 8% 7%;
+    --card-foreground: 0 0% 97%;
+    --popover: 240 8% 7%;
+    --popover-foreground: 0 0% 97%;
 
-    /* Brand Primary Accent in Dark Mode (High-Vibrancy Spring Mint) */
-    --primary: 160 100% 47%;
-    --primary-foreground: 0 0% 0%;
+    /* Brand Primary Accent in Dark Mode (Vibrant Rausch) */
+    --primary: 349 100% 61%;
+    --primary-foreground: 0 0% 100%;
 
     /* Secondary Accent Dark */
     --secondary: 240 6% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 97%;
 
     /* Muted Dark */
     --muted: 240 6% 12%;
     --muted-foreground: 240 5% 65%;
 
     /* Interactive Accent Dark */
-    --accent: 240 6% 15%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 349 40% 15%;
+    --accent-foreground: 349 100% 75%;
 
-    /* Status Indicators (High Vibrancy for Dark Backgrounds) */
-    --success: 160 100% 47%;
-    --success-foreground: 0 0% 0%;
+    /* Status Indicators */
+    --success: 152 65% 45%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 38 95% 55%;
     --warning-foreground: 38 95% 12%;
@@ -122,9 +122,9 @@
     --destructive: 0 75% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 240 6% 15%;
-    --input: 240 6% 15%;
-    --ring: 160 100% 47%;
+    --border: 240 6% 16%;
+    --input: 240 6% 16%;
+    --ring: 349 100% 61%;
   }
 }
 

@@ -4,14 +4,14 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-foreground text-background shadow-xs hover:bg-foreground/90",
-        mint:
-          "bg-[#00f0a0] text-black font-bold shadow-xs hover:bg-[#00d68f]",
+          "bg-[#ff385c] text-white shadow-xs hover:bg-[#e00b41]",
+        rausch:
+          "bg-[#ff385c] text-white font-bold shadow-xs hover:bg-[#e00b41]",
         destructive:
           "bg-destructive text-destructive-foreground shadow-xs hover:bg-destructive/90",
         outline:
@@ -19,17 +19,17 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost: "hover:bg-muted hover:text-foreground",
-        link: "text-foreground underline-offset-4 hover:underline",
+        link: "text-[#ff385c] underline-offset-4 hover:underline",
         success:
           "bg-success text-success-foreground shadow-xs hover:bg-success/90",
         warning:
           "bg-warning text-warning-foreground shadow-xs hover:bg-warning/90",
       },
       size: {
-        default: "h-9 px-5 py-2",
+        default: "h-10 px-5 py-2",
         sm: "h-8 rounded-full px-3.5 text-xs",
-        lg: "h-11 rounded-full px-7 text-sm",
-        icon: "h-8 w-8 rounded-full",
+        lg: "h-12 rounded-full px-8 text-base",
+        icon: "h-9 w-9 rounded-full",
       },
     },
     defaultVariants: {

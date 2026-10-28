@@ -36,7 +36,7 @@ export function MobileGuestLookup({ token, guests }: MobileGuestLookupProps) {
             <ArrowLeft className="h-4 w-4" /> Kembali
           </Button>
         </Link>
-        <span className="font-mono text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full flex items-center gap-1.5 border border-emerald-500/20">
+        <span className="font-mono text-xs font-semibold text-[#ff385c] bg-[#ff385c]/10 px-3 py-1 rounded-full flex items-center gap-1.5 border border-[#ff385c]/20">
           <Users className="h-3.5 w-3.5" /> Door Greeter Lookup
         </span>
       </div>

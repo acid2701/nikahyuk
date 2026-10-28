@@ -71,7 +71,7 @@ export default function RegisterPage() {
   return (
     <Card className="w-full max-w-md shadow-lg border-border/80">
       <CardHeader className="space-y-1 text-center">
-        <CardTitle className="font-display text-2xl font-black uppercase tracking-tight">
+        <CardTitle className="font-sans text-2xl font-bold tracking-tight">
           Daftar Akun Pengantin
         </CardTitle>
         <CardDescription className="text-xs">
@@ -165,8 +165,12 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-xs transition-all" disabled={loading}>
-            {loading ? "Memproses Pendaftaran..." : "Daftar Akun Pengantin"}
+          <Button
+            type="submit"
+            className="w-full h-11 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] font-semibold shadow-xs transition-all"
+            disabled={loading}
+          >
+            {loading ? "Membuat Akun..." : "Daftar Sekarang"}
           </Button>
         </form>
       </CardContent>

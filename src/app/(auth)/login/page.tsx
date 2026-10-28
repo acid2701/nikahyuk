@@ -123,10 +123,10 @@ export default function LoginPage() {
   return (
     <Card className="shadow-sm border-border/70">
       <CardHeader className="space-y-1">
-        <CardTitle className="font-display text-2xl font-black text-center uppercase tracking-tight">
+        <CardTitle className="font-sans text-2xl font-bold text-center tracking-tight">
           Masuk ke Akun
         </CardTitle>
-        <CardDescription className="text-center">
+        <CardDescription className="text-center text-xs">
           Masukkan email dan kata sandi untuk melanjutkan
         </CardDescription>
       </CardHeader>
@@ -218,7 +218,11 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full h-11 rounded-full bg-foreground text-background hover:bg-foreground/90 font-semibold shadow-xs transition-all" disabled={loading}>
+          <Button
+            type="submit"
+            className="w-full h-11 rounded-full bg-[#ff385c] text-white hover:bg-[#e00b41] font-semibold shadow-xs transition-all"
+            disabled={loading}
+          >
             {loading ? "Memproses..." : "Masuk"}
           </Button>
         </form>
