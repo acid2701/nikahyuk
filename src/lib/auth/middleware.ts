@@ -68,6 +68,16 @@ export async function updateSession(request: NextRequest) {
 
   // 0. API Route Protection (Khusus rute /api/*)
   if (pathname.startsWith("/api/")) {
+    // Check for Cron Secret Bearer Authorization (e.g. system backup trigger from local server cron)
+    const authHeader = request.headers.get("authorization") || "";
+    const isCronAuthorized =
+      (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) ||
+      (process.env.AUTH_SECRET && authHeader === `Bearer ${process.env.AUTH_SECRET}`);
+
+    if (isCronAuthorized && pathname.startsWith("/api/admin/backup")) {
+      return NextResponse.next();
+    }
+
     const isPublicApi =
       pathname.startsWith("/api/public") ||
       pathname.startsWith("/api/auth/login") ||

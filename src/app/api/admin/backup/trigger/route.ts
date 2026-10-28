@@ -97,34 +97,42 @@ function encryptFileAes256Cbc(inputPath: string, outputPath: string, secretKeyHe
 export async function POST(req: NextRequest) {
   try {
     const rawCookie = req.headers.get("cookie") || "";
-    const tokenFromHeader = rawCookie
-      .split(";")
-      .map((c) => c.trim())
-      .find((c) => c.startsWith("nikahyuk_session="))
-      ?.split("=")[1];
+    const authHeader = req.headers.get("authorization") || "";
+    const isCronAuthorized =
+      (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) ||
+      (process.env.AUTH_SECRET && authHeader === `Bearer ${process.env.AUTH_SECRET}`);
 
-    let user = await getCurrentUser();
-    if (!user && tokenFromHeader) {
-      user = await verifySessionToken(tokenFromHeader);
-    }
-    if (!user) {
-      const token = req.cookies.get("nikahyuk_session")?.value;
-      if (token) {
-        user = await verifySessionToken(token);
+    let user = null;
+    if (!isCronAuthorized) {
+      const tokenFromHeader = rawCookie
+        .split(";")
+        .map((c) => c.trim())
+        .find((c) => c.startsWith("nikahyuk_session="))
+        ?.split("=")[1];
+
+      user = await getCurrentUser();
+      if (!user && tokenFromHeader) {
+        user = await verifySessionToken(tokenFromHeader);
       }
-    }
-    if (!user) {
-      return NextResponse.json(
-        { error: "Unauthorized", debug: { hasCookie: !!rawCookie, hasToken: !!tokenFromHeader } },
-        { status: 401 }
-      );
-    }
+      if (!user) {
+        const token = req.cookies.get("nikahyuk_session")?.value;
+        if (token) {
+          user = await verifySessionToken(token);
+        }
+      }
+      if (!user) {
+        return NextResponse.json(
+          { error: "Unauthorized", debug: { hasCookie: !!rawCookie, hasToken: !!tokenFromHeader } },
+          { status: 401 }
+        );
+      }
 
-    if (user.role !== "superadmin" && user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden: Hanya superadmin/admin yang dapat mentrigger backup." },
-        { status: 403 }
-      );
+      if (user.role !== "superadmin" && user.role !== "admin") {
+        return NextResponse.json(
+          { error: "Forbidden: Hanya superadmin/admin yang dapat mentrigger backup." },
+          { status: 403 }
+        );
+      }
     }
 
     const timestampStr = new Date().toISOString().replace(/[:.]/g, "-").replace("T", "_").slice(0, 19);
@@ -161,7 +169,7 @@ export async function POST(req: NextRequest) {
           ContentType: "application/octet-stream",
           Metadata: {
             "iv-hex": ivHex,
-            "created-by": user.email || "superadmin",
+            "created-by": user ? user.email || "superadmin" : "system-cron",
             "algo": "aes-256-cbc",
           },
         })
