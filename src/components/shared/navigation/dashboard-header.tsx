@@ -86,7 +86,7 @@ export function DashboardHeader({
   weddingId,
   groomName = "Pengantin Pria",
   brideName = "Pengantin Wanita",
-  userEmail = "user@nikahyuk.com",
+  userEmail = "user@nikahyu.my.id",
   events = [],
   activeEventId,
   onAddEventClick,

@@ -24,7 +24,7 @@ export default async function HomePage() {
     branding.heroSubtitle ||
     "Platform all-in-one terdepan untuk Pasangan Pengantin & Wedding Organizer (WO) di Indonesia. Dari Live Rundown, RSVP Tamu & WA Blast, hingga Anggaran Finansial.";
   const ctaButtonText = branding.ctaButtonText || "Mulai Workspace Gratis";
-  const contactEmail = branding.contactEmail || "support@nikahyuk.com";
+  const contactEmail = branding.contactEmail || "support@nikahyu.my.id";
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-between selection:bg-primary/20 selection:text-primary">

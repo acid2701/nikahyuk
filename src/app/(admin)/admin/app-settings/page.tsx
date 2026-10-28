@@ -29,7 +29,7 @@ export default function AdminAppSettingsPage() {
     "Platform all-in-one terdepan untuk Pasangan Pengantin & Wedding Organizer (WO) di Indonesia. Dari Live Rundown, RSVP Tamu & WA Blast, hingga Anggaran Finansial."
   );
   const [ctaButtonText, setCtaButtonText] = React.useState("Mulai Workspace Gratis");
-  const [contactEmail, setContactEmail] = React.useState("support@nikahyuk.com");
+  const [contactEmail, setContactEmail] = React.useState("support@nikahyu.my.id");
 
   // Google Auth & Dynamic Auth Settings State
   const [appBaseUrl, setAppBaseUrl] = React.useState(
@@ -454,7 +454,7 @@ export default function AdminAppSettingsPage() {
                 </label>
                 <Input
                   type="url"
-                  placeholder="e.g. http://localhost:3000 atau https://nikahyuk.com"
+                  placeholder="e.g. http://localhost:3000 atau https://nikahyu.my.id"
                   value={appBaseUrl}
                   onChange={(e) => setAppBaseUrl(e.target.value)}
                   className="w-full text-xs font-mono"

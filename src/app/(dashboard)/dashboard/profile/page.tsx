@@ -81,7 +81,7 @@ export default async function GlobalUserProfilePage() {
       </div>
 
       <UserProfileForm
-        email={user.email || "user@nikahyuk.com"}
+        email={user.email || "user@nikahyu.my.id"}
         initialFullName={fullName}
         initialPhone={phone}
         provider={provider}

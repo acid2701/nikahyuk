@@ -257,7 +257,7 @@ export default function AdminStorageConfigPage() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="e.g. https://pub-cdn.nikahyuk.com"
+                  placeholder="e.g. https://pub-cdn.nikahyu.my.id"
                   value={publicCdnDomain}
                   onChange={(e) => setPublicCdnDomain(e.target.value)}
                   disabled={loading}

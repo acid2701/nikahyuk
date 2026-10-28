@@ -19,7 +19,7 @@ export default async function VendorLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const email = user?.email || "vendor@nikahyuk.com";
+  const email = user?.email || "vendor@nikahyu.my.id";
   const branding = await getAppBranding();
 
   return (

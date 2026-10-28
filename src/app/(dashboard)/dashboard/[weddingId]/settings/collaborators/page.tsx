@@ -28,7 +28,7 @@ export default async function CollaboratorsPage(props: {
     id: c.id,
     wedding_id: c.weddingId,
     user_id: c.userId,
-    email: c.user?.email || "user@nikahyuk.com",
+    email: c.user?.email || "user@nikahyu.my.id",
     role: c.role,
     custom_permissions: c.customPermissions,
     created_at: c.createdAt.toISOString(),

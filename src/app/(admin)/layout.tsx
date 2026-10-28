@@ -34,7 +34,7 @@ export default async function AdminLayout({
     redirect("/dashboard");
   }
 
-  const email = user.email || "superadmin@nikahyuk.com";
+  const email = user.email || "superadmin@nikahyu.my.id";
   const branding = await getAppBranding();
 
   return (

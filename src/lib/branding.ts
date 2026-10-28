@@ -20,7 +20,7 @@ export const DEFAULT_BRANDING: AppBranding = {
   heroSubtitle:
     "Platform all-in-one terdepan untuk Pasangan Pengantin & Wedding Organizer (WO) di Indonesia. Dari Live Rundown, RSVP Tamu & WA Blast, hingga Anggaran Finansial.",
   ctaButtonText: "Mulai Workspace Gratis",
-  contactEmail: "support@nikahyuk.com",
+  contactEmail: "support@nikahyu.my.id",
 };
 
 export async function getAppBranding(): Promise<AppBranding> {

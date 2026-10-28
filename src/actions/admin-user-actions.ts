@@ -113,7 +113,7 @@ export async function getStaffAdminPermissionsAction(): Promise<StaffAdminPermis
   // Default initial staff permissions
   return [
     {
-      email: "admin.staff@nikahyuk.com",
+      email: "admin.staff@nikahyu.my.id",
       canManageStorage: false,
       canViewAuditLogs: true,
       canManageBackups: false,

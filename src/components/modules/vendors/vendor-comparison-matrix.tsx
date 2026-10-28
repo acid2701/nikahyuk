@@ -279,7 +279,7 @@ export function VendorComparisonMatrix({
                             <div className="flex items-center space-x-1.5 shrink-0">
                               {renderDocTypeLabel((doc as any).doc_type)}
                               <a
-                                href={`https://r2.nikahyuk.com/${doc.r2_file_key}`}
+                                href={`/api/storage/presign?key=${encodeURIComponent(doc.r2_file_key)}`}
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-primary hover:underline flex items-center gap-0.5"

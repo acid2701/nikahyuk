@@ -76,7 +76,7 @@ export default async function WeddingDashboardLayout(props: {
             weddingId={weddingId}
             groomName={wedding.groomName}
             brideName={wedding.brideName}
-            userEmail={user.email || "user@nikahyuk.com"}
+            userEmail={user.email || "user@nikahyu.my.id"}
             events={events}
           />
         </Suspense>

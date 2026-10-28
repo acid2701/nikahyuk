@@ -143,7 +143,7 @@ export default function StaffPermissionsPage() {
           <form onSubmit={handleAddStaff} className="flex gap-3">
             <Input
               type="email"
-              placeholder="e.g. staf.admin@nikahyuk.com"
+              placeholder="e.g. staf.admin@nikahyu.my.id"
               value={newEmail}
               onChange={(e) => setNewEmail(e.target.value)}
               className="max-w-md text-xs"

@@ -121,7 +121,7 @@ export default function AdminPaymentsPage() {
                 </label>
                 <Input
                   type="text"
-                  placeholder="https://pub-cdn.nikahyuk.com/qris-donasi.png"
+                  placeholder="https://pub-cdn.nikahyu.my.id/qris-donasi.png"
                   value={qrisImageUrl}
                   onChange={(e) => setQrisImageUrl(e.target.value)}
                   required

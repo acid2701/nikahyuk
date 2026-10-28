@@ -15,7 +15,7 @@ export function LandingFooter({
   appName,
   tagline,
   logoUrl,
-  contactEmail = "support@nikahyuk.com",
+  contactEmail = "support@nikahyu.my.id",
 }: LandingFooterProps) {
   return (
     <footer className="border-t border-border bg-card py-10 select-none">
