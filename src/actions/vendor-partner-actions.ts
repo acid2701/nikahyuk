@@ -22,10 +22,11 @@ export async function loginVendorPartnerAction(email: string, password: string) 
   });
 
   if (!authError && authData?.user) {
+    const user = authData?.user as any;
     // Check if partner record is suspended
     const { data: partner } = await (db.from("vendor_partners" as any) as any)
       .select("*")
-      .or(`user_id.eq.${authData.user.id},email.eq.${authData.user.email}`)
+      .or(`user_id.eq.${user?.id},email.eq.${user?.email}`)
       .maybeSingle();
 
     if (partner && partner.status === "suspended") {
@@ -141,10 +142,11 @@ export async function registerVendorPartnerAction(input: RegisterVendorPartnerIn
       });
 
       if (authError) {
-        console.warn("Vendor Auth Admin Create Notice:", authError.message);
+        const errorMsg = (authError as any)?.message || "";
+        console.warn("Vendor Auth Admin Create Notice:", errorMsg);
 
         // MODEL A DUAL-ROLE: If user is ALREADY REGISTERED (e.g. as a Couple), link their account to Vendor Partner!
-        if (authError.message.toLowerCase().includes("already registered")) {
+        if (errorMsg.toLowerCase().includes("already registered")) {
           const { data: userList } = await adminDb.auth.admin.listUsers();
           const existingUser = userList?.users?.find((u) => u.email?.toLowerCase() === input.email.toLowerCase());
 
@@ -761,7 +763,7 @@ export async function importPartnerPackageToWeddingAction(
     : partnerData.description || `Vendor Partner Resmi (${partnerData.city})`;
 
   // Insert into user's vendors table
-  const { data: importedVendor, error: insertErr } = await database
+  const { data: importedVendor, error: insertErr } = await db
     .from("vendors")
     .insert({
       wedding_id: weddingId,

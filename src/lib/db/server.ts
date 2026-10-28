@@ -446,7 +446,7 @@ export async function createClient() {
       signOut: async () => {
         return { error: null };
       },
-      signInWithPassword: async () => {
+      signInWithPassword: async (credentials?: any) => {
         return { data: { user: null }, error: { message: "Gunakan API /api/auth/login" } };
       },
     },
@@ -458,7 +458,7 @@ export function createAdminClient() {
     from: (tableName: string) => new PostgresQueryBuilder(tableName),
     auth: {
       admin: {
-        listUsers: async () => ({ data: { users: [] as any[] }, error: null }),
+        listUsers: async (params?: any) => ({ data: { users: [] as any[] }, error: null }),
         createUser: async (attributes: any) => ({
           data: {
             user: {

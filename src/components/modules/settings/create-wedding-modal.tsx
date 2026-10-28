@@ -57,7 +57,11 @@ export function CreateWeddingModal({ trigger }: CreateWeddingModalProps) {
       setOpen(false);
       setGroomName("");
       setBrideName("");
-      router.push(`/dashboard/${newWedding.id}`);
+      if (newWedding?.id) {
+        router.push(`/dashboard/${newWedding.id}`);
+      } else {
+        router.push("/dashboard");
+      }
       router.refresh();
     } catch (err) {
       toast({
