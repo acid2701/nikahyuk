@@ -81,6 +81,26 @@ export function AppSidebar({
       ],
     },
     {
+      label: "Persiapan & Biaya",
+      items: [
+        {
+          title: "Checklist Persiapan",
+          href: `${baseUrl}/checklists`,
+          icon: CheckSquare,
+        },
+        {
+          title: "Anggaran (Budget)",
+          href: `${baseUrl}/budget`,
+          icon: DollarSign,
+        },
+        {
+          title: "Vendor Hub & SPK",
+          href: `${baseUrl}/vendors`,
+          icon: Briefcase,
+        },
+      ],
+    },
+    {
       label: "Hari-H & Tamu",
       items: [
         {
@@ -102,26 +122,6 @@ export function AppSidebar({
           title: "Log Kado & Angpao",
           href: `${baseUrl}/gifts`,
           icon: Gift,
-        },
-      ],
-    },
-    {
-      label: "Persiapan & Biaya",
-      items: [
-        {
-          title: "Checklist Persiapan",
-          href: `${baseUrl}/checklists`,
-          icon: CheckSquare,
-        },
-        {
-          title: "Anggaran (Budget)",
-          href: `${baseUrl}/budget`,
-          icon: DollarSign,
-        },
-        {
-          title: "Vendor Hub & SPK",
-          href: `${baseUrl}/vendors`,
-          icon: Briefcase,
         },
       ],
     },
