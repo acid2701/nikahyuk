@@ -133,110 +133,23 @@ const DYNAMIC_EVENT_TYPES = [
   "🎉 Acara / Event Spesial Lainnya",
 ];
 
-// INITIAL SAMPLE CLIENT DEALS FOR CRM PIPELINE DEMO
-const INITIAL_CLIENT_DEALS: VendorClientDealItem[] = [
-  {
-    id: "deal-1",
-    vendor_id: "demo",
-    client_name: "Budi & Siti",
-    event_type: "💍 Pernikahan (Wedding)",
-    wedding_date: "2026-11-12",
-    package_name: "Paket Gold Catering",
-    deal_amount: 45000000,
-    down_payment: 15000000,
-    stage: "completed",
-    notes: "DP 15 Jt Lunas via Transfer BCA. Acara sukses dilaksanakan.",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "deal-2",
-    vendor_id: "demo",
-    client_name: "Rian & Maya",
-    event_type: "💍 Pernikahan (Wedding)",
-    wedding_date: "2026-12-24",
-    package_name: "Paket Sultan MUA & Busana",
-    deal_amount: 35000000,
-    down_payment: 10000000,
-    stage: "deal",
-    notes: "Sudah fitting busana akad & resepsi.",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "deal-3",
-    vendor_id: "demo",
-    client_name: "PT Jaya Abadi - Corporate Gathering",
-    event_type: "💼 Corporate Gathering / Event Kantor",
-    wedding_date: "2027-01-15",
-    package_name: "Paket Bronze WO & Event",
-    deal_amount: 25000000,
-    down_payment: 0,
-    stage: "proposal",
-    notes: "Proposal penawaran gathering perusahaan dikirim via WA.",
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "deal-4",
-    vendor_id: "demo",
-    client_name: "Fajar & Clara",
-    event_type: "💍 Lamaran / Engagement / Sangjit",
-    wedding_date: "2027-02-28",
-    package_name: "Paket Intimate Dekorasi Lamaran",
-    deal_amount: 20000000,
-    down_payment: 0,
-    stage: "inquiry",
-    notes: "Baru tanya ketersediaan tanggal via WhatsApp.",
-    created_at: new Date().toISOString(),
-  },
-];
+// INITIAL CLIENT DEALS FOR CRM PIPELINE (CLEAN & ISOLATED)
+const INITIAL_CLIENT_DEALS: VendorClientDealItem[] = [];
 
-// INITIAL SAMPLE PAYMENT RECORDS FOR DEMO DEALS
-const INITIAL_PAYMENTS_MAP: Record<string, VendorPaymentRecord[]> = {
-  "deal-1": [
-    {
-      id: "pay-101",
-      deal_id: "deal-1",
-      amount: 15000000,
-      payment_date: "2026-01-10",
-      termin_label: "DP 1 (Booking Fee)",
-      payment_method: "Transfer BCA",
-      notes: "DP 1 Lunas via Transfer BCA a.n Budi",
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: "pay-102",
-      deal_id: "deal-1",
-      amount: 30000000,
-      payment_date: "2026-11-05",
-      termin_label: "Pelunasan (H-7 Acara)",
-      payment_method: "Transfer BCA",
-      notes: "Pelunasan 100% Lunas sebelum hari H",
-      created_at: new Date().toISOString(),
-    },
-  ],
-  "deal-2": [
-    {
-      id: "pay-201",
-      deal_id: "deal-2",
-      amount: 10000000,
-      payment_date: "2026-02-20",
-      termin_label: "DP 1 (Booking Fee)",
-      payment_method: "Transfer Mandiri",
-      notes: "DP 1 Lunas via Mandiri",
-      created_at: new Date().toISOString(),
-    },
-  ],
-};
+// INITIAL PAYMENT RECORDS FOR DEALS (CLEAN & ISOLATED)
+const INITIAL_PAYMENTS_MAP: Record<string, VendorPaymentRecord[]> = {};
 
-// SAMPLE INQUIRY LEADS DATA FOR SCALABLE BOARD DEMO
-const INITIAL_BRIDE_LEADS = [
-  { id: "1", names: "Budi & Siti", weddingDate: "12 Nov 2026", packageName: "Paket Bronze", price: 25000000, city: "Kota Jakarta Selatan, DKI Jakarta" },
-  { id: "2", names: "Rian & Maya", weddingDate: "24 Des 2026", packageName: "Paket Gold", price: 45000000, city: "Kota Bandung, Jawa Barat" },
-  { id: "3", names: "Dhani & Annisa", weddingDate: "15 Jan 2027", packageName: "Paket Silver", price: 30000000, city: "Kota Surabaya, Jawa Timur" },
-  { id: "4", names: "Fajar & Clara", weddingDate: "28 Feb 2027", packageName: "Paket Diamond", price: 65000000, city: "Kota Jakarta Pusat, DKI Jakarta" },
-  { id: "5", names: "Reza & Putri", weddingDate: "10 Mar 2027", packageName: "Paket Intimate", price: 20000000, city: "Kota Semarang, Jawa Tengah" },
-  { id: "6", names: "Hendra & Lestari", weddingDate: "05 Apr 2027", packageName: "Paket Royal", price: 80000000, city: "Kota Medan, Sumatera Utara" },
-  { id: "7", names: "Bagus & Kartika", weddingDate: "20 Mei 2027", packageName: "Paket Executive", price: 55000000, city: "Kota Yogyakarta, DI Yogyakarta" },
-];
+export interface BrideLeadItem {
+  id: string;
+  names: string;
+  weddingDate: string;
+  packageName: string;
+  price: number;
+  city: string;
+}
+
+// INQUIRY LEADS DATA (CLEAN & ISOLATED)
+const INITIAL_BRIDE_LEADS: BrideLeadItem[] = [];
 
 interface VendorPartnerDashboardProps {
   partner: VendorPartnerItem;
@@ -1866,8 +1779,8 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
             <Card className="border-border flex-1">
               <CardContent className="p-3.5 flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold text-muted-foreground">Total Impresi Dilihat</p>
-                  <div className="text-xl font-bold font-mono text-primary mt-0.5">142x</div>
+                  <p className="text-[11px] font-semibold text-muted-foreground">Total Dilihat Calon Pengantin</p>
+                  <div className="text-xl font-bold font-mono text-primary mt-0.5">0x</div>
                 </div>
                 <div className="h-9 w-9 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 border border-blue-500/20">
                   <Eye className="h-4 w-4" />
@@ -1891,7 +1804,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
               <CardContent className="p-3.5 flex items-center justify-between">
                 <div>
                   <p className="text-[11px] font-semibold text-muted-foreground">Klik Kontak WA</p>
-                  <div className="text-xl font-bold font-mono text-amber-500 mt-0.5">19x</div>
+                  <div className="text-xl font-bold font-mono text-amber-500 mt-0.5">0x</div>
                 </div>
                 <div className="h-9 w-9 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500 border border-amber-500/20">
                   <MessageSquare className="h-4 w-4" />
@@ -2166,7 +2079,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                 <label className="font-semibold">Nama Client / Pasangan / Perusahaan *</label>
                 <Input
                   type="text"
-                  placeholder="e.g. Budi & Siti / Maya Birthday / PT Jaya Abadi"
+                  placeholder="Contoh: Rencana Pernikahan Akbar & Nisa"
                   value={dealClientName}
                   onChange={(e) => setDealClientName(e.target.value)}
                   required
@@ -2443,7 +2356,7 @@ export function VendorPartnerDashboard({ partner }: VendorPartnerDashboardProps)
                       <label className="font-semibold">Catatan Khusus / Bukti Bayar</label>
                       <Input
                         type="text"
-                        placeholder="e.g. Transfer BCA a.n Budi • Bukti WA terlampir"
+                        placeholder="Contoh: Transfer Bank / QRIS • Bukti WA terlampir"
                         value={newPayNotes}
                         onChange={(e) => setNewPayNotes(e.target.value)}
                       />

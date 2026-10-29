@@ -93,7 +93,7 @@ export default function RegisterPage() {
             </label>
             <Input
               type="text"
-              placeholder="e.g. Budi Santoso"
+              placeholder="Nama Lengkap Anda"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               disabled={loading}

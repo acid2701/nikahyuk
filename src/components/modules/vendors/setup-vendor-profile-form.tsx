@@ -154,7 +154,7 @@ export function SetupVendorProfileForm({
                 <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="text"
-                  placeholder="e.g. Budi Santoso"
+                  placeholder="Nama Lengkap Penanggung Jawab"
                   value={picName}
                   onChange={(e) => setPicName(e.target.value)}
                   className="pl-9"

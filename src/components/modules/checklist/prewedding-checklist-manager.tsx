@@ -594,7 +594,7 @@ export function PreweddingChecklistManager({
               </label>
               <textarea
                 rows={3}
-                placeholder="e.g. Sudah diambil oleh Budi tgl 22 Aug, Nomor Berkas 451/KUA/2026..."
+                placeholder="Catatan berkas, nomor dokumen, atau PIC penanggung jawab..."
                 value={completionNoteInput}
                 onChange={(e) => setCompletionNoteInput(e.target.value)}
                 className="w-full text-xs p-2.5 rounded-lg border border-border bg-background focus:outline-hidden focus:ring-2 focus:ring-primary/30"
