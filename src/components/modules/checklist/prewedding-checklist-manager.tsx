@@ -317,33 +317,36 @@ export function PreweddingChecklistManager({
   }
 
   // Handle Checkbox Toggle
-  function handleCheckboxClick(it: ChecklistItem) {
-    if (!it.is_completed) {
-      // Prompt modal for completion notes
-      setTargetItemForCompletion(it);
-      setCompletionNoteInput(it.completed_notes || "");
-      setCompletionModalOpen(true);
-    } else {
-      // Uncheck item directly
-      setItems((prev) =>
-        prev.map((i) =>
-          i.id === it.id
-            ? {
-                ...i,
-                is_completed: false,
-                completed_notes: null,
-                completed_by: null,
-                completed_at: null,
-              }
-            : i
-        )
-      );
-      toggleChecklistItemAction({
-        id: it.id,
-        weddingId,
-        isCompleted: false,
-      });
-    }
+  async function handleCheckboxClick(it: ChecklistItem) {
+    const nextStatus = !it.is_completed;
+    const nowISO = new Date().toISOString();
+
+    setItems((prev) =>
+      prev.map((i) =>
+        i.id === it.id
+          ? {
+              ...i,
+              is_completed: nextStatus,
+              completed_by: nextStatus ? "Pengguna" : null,
+              completed_at: nextStatus ? nowISO : null,
+            }
+          : i
+      )
+    );
+
+    toast({
+      title: nextStatus ? "Item Selesai" : "Item Ditandai Belum Selesai",
+      description: `'${it.item_name}' ${nextStatus ? "berhasil diselesaikan." : "dikembalikan ke antrean."}`,
+      variant: nextStatus ? "success" : "default",
+    });
+
+    await toggleChecklistItemAction({
+      id: it.id,
+      weddingId,
+      isCompleted: nextStatus,
+      completedNotes: it.completed_notes || undefined,
+    });
+    router.refresh();
   }
 
   // Submit Completion Note
@@ -766,72 +769,44 @@ export function PreweddingChecklistManager({
 
       <Tabs value={activeCategory} onValueChange={(v: any) => setActiveCategory(v)} className="space-y-4">
         <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap print:hidden">
-          <TabsList className="flex-1 flex flex-wrap h-auto p-1 bg-muted/60 min-h-[42px]">
+          <TabsList className="flex flex-wrap h-auto p-1 bg-muted/60 rounded-full border border-border/70 gap-1">
             {!hiddenCategories.includes("kua") && (
-              <TabsTrigger value="kua" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
-                <FileText className="h-4 w-4 text-blue-600 shrink-0" />
-                <span>Dokumen ({kuaCompleted}/{kuaItems.length})</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    hideCategory("kua");
-                  }}
-                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
-                  title="Sembunyikan Tab Dokumen"
-                >
-                  <X className="h-3 w-3" />
-                </span>
+              <TabsTrigger
+                value="kua"
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                <span>Dokumen KUA ({kuaCompleted}/{kuaItems.length})</span>
               </TabsTrigger>
             )}
 
             {!hiddenCategories.includes("seserahan") && (
-              <TabsTrigger value="seserahan" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
-                <Gift className="h-4 w-4 text-pink-600 shrink-0" />
+              <TabsTrigger
+                value="seserahan"
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Gift className="h-3.5 w-3.5 text-pink-600 shrink-0" />
                 <span>Kotak Seserahan ({seserahanCompletedCount}/{seserahanAllItems.length})</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    hideCategory("seserahan");
-                  }}
-                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
-                  title="Sembunyikan Tab Kotak Seserahan"
-                >
-                  <X className="h-3 w-3" />
-                </span>
               </TabsTrigger>
             )}
 
             {!hiddenCategories.includes("lamaran") && (
-              <TabsTrigger value="lamaran" className="group py-2 px-3 text-xs gap-1.5 font-medium min-w-0 relative cursor-pointer">
-                <Heart className="h-4 w-4 text-amber-600 shrink-0" />
-                <span className="truncate">{dynamicTabTriggerLabel} ({lamaranCompleted}/{lamaranItems.length})</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    hideCategory("lamaran");
-                  }}
-                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
-                  title="Sembunyikan Tab Event Ini"
-                >
-                  <X className="h-3 w-3" />
-                </span>
+              <TabsTrigger
+                value="lamaran"
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <Heart className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                <span>{dynamicTabTriggerLabel} ({lamaranCompleted}/{lamaranItems.length})</span>
               </TabsTrigger>
             )}
 
             {!hiddenCategories.includes("emergency") && (
-              <TabsTrigger value="emergency" className="group py-2 px-3 text-xs gap-1.5 font-medium relative cursor-pointer">
-                <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-                <span>Emergency H-Day ({emergencyCompleted}/{emergencyItems.length})</span>
-                <span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    hideCategory("emergency");
-                  }}
-                  className="ml-1 p-0.5 text-muted-foreground/60 hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity rounded"
-                  title="Sembunyikan Tab Emergency H-Day"
-                >
-                  <X className="h-3 w-3" />
-                </span>
+              <TabsTrigger
+                value="emergency"
+                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
+                <span>Emergency Kit ({emergencyCompleted}/{emergencyItems.length})</span>
               </TabsTrigger>
             )}
           </TabsList>
@@ -904,31 +879,31 @@ export function PreweddingChecklistManager({
         {/* SESERAHAN VIEW */}
         {activeCategory === "seserahan" ? (
           <div className="space-y-6">
-            <Card className="border-pink-500/20 bg-pink-500/5">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base font-sans text-pink-700 dark:text-pink-400 flex items-center gap-2">
+            <Card className="rounded-3xl border border-pink-500/20 bg-pink-500/5 shadow-xs">
+              <CardHeader className="pb-3 p-5 sm:p-6">
+                <CardTitle className="text-base sm:text-lg font-sans font-bold text-pink-700 dark:text-pink-400 flex items-center gap-2">
                   <Gift className="h-5 w-5" /> Ringkasan Anggaran & Status Kotak Seserahan
                 </CardTitle>
-                <CardDescription className="text-xs">
+                <CardDescription className="text-xs sm:text-sm">
                   Progres Pembelian: {completedCount} dari {totalCount} produk selesai ({progressPercent}%)
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-0">
-                <div className="p-3 bg-card rounded-lg border border-border">
-                  <span className="text-xs text-muted-foreground block">Total Estimasi Biaya</span>
-                  <span className="text-base font-mono font-bold text-foreground">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 p-5 sm:p-6 pt-0">
+                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
+                  <span className="text-xs text-muted-foreground block font-medium">Total Estimasi Biaya</span>
+                  <span className="text-base sm:text-lg font-mono font-bold text-foreground mt-0.5 block">
                     Rp {totalSeserahanBudget.toLocaleString("id-ID")}
                   </span>
                 </div>
-                <div className="p-3 bg-card rounded-lg border border-border">
-                  <span className="text-xs text-muted-foreground block">Sudah Dibeli / Lunas</span>
-                  <span className="text-base font-mono font-bold text-emerald-600">
+                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
+                  <span className="text-xs text-muted-foreground block font-medium">Sudah Dibeli / Lunas</span>
+                  <span className="text-base sm:text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
                     Rp {totalPaidSeserahan.toLocaleString("id-ID")}
                   </span>
                 </div>
-                <div className="p-3 bg-card rounded-lg border border-border">
-                  <span className="text-xs text-muted-foreground block">Sisa Anggaran Belanja</span>
-                  <span className="text-base font-mono font-bold text-amber-600">
+                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
+                  <span className="text-xs text-muted-foreground block font-medium">Sisa Anggaran Belanja</span>
+                  <span className="text-base sm:text-lg font-mono font-bold text-amber-600 dark:text-amber-400 mt-0.5 block">
                     Rp {totalRemainingSeserahan.toLocaleString("id-ID")}
                   </span>
                 </div>
@@ -936,7 +911,7 @@ export function PreweddingChecklistManager({
             </Card>
 
             {/* Form Add Seserahan Item */}
-            <Card className="p-4 border-border/80 print:hidden">
+            <Card className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card/60 shadow-xs print:hidden">
               <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-muted-foreground">
                 + Tambah Item Kotak Seserahan Baru
               </h3>
@@ -1123,41 +1098,47 @@ export function PreweddingChecklistManager({
           </div>
         ) : (
           /* STANDARD VIEW FOR KUA, LAMARAN, & EMERGENCY */
-          <Card className="border-border/80">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
+          <Card className="rounded-3xl border border-border/80 bg-card shadow-xs">
+            <CardHeader className="pb-3 sm:pb-4 p-5 sm:p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <CardTitle className="text-lg font-sans">
-                    {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi"}
+                  <CardTitle className="text-lg sm:text-xl font-sans font-bold tracking-tight text-foreground">
+                    {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi KUA"}
                     {activeCategory === "lamaran" && `💍 ${dynamicEventCategoryLabel}`}
-                    {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan HARI-H"}
-
+                    {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan Hari-H"}
                   </CardTitle>
-                  <CardDescription className="text-xs mt-1">
+                  <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Progres: {completedCount} dari {totalCount} item selesai ({progressPercent}%)
                   </CardDescription>
                 </div>
-                <Badge variant={progressPercent === 100 ? "default" : "secondary"} className="font-mono text-xs">
+                <Badge
+                  variant="outline"
+                  className={`rounded-full px-3 py-1 font-mono text-xs font-bold border self-start sm:self-auto ${
+                    progressPercent === 100
+                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                      : "bg-[#ff385c]/10 text-[#ff385c] border-[#ff385c]/20"
+                  }`}
+                >
                   {progressPercent}% Selesai
                 </Badge>
               </div>
 
-              <div className="w-full bg-secondary h-2 rounded-full overflow-hidden mt-3">
+              <div className="w-full bg-muted h-2 rounded-full overflow-hidden mt-3">
                 <div
-                  className="bg-primary h-full transition-all duration-300"
+                  className="bg-[#ff385c] h-full transition-all duration-300 rounded-full"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-              <form onSubmit={handleAddCustomItem} className="grid gap-2 sm:grid-cols-4 pt-2 print:hidden">
+            <CardContent className="space-y-4 p-5 sm:p-6 pt-0">
+              <form onSubmit={handleAddCustomItem} className="grid gap-2 sm:grid-cols-4 p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-muted/20 print:hidden">
                 <Input
                   type="text"
                   placeholder="Tambah item checklist baru..."
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
-                  className="sm:col-span-2 text-xs h-9"
+                  className="sm:col-span-2 text-xs h-9 bg-background"
                   required
                 />
                 <Input
@@ -1165,35 +1146,35 @@ export function PreweddingChecklistManager({
                   placeholder="Catatan panduan opsional..."
                   value={newItemNotes}
                   onChange={(e) => setNewItemNotes(e.target.value)}
-                  className="text-xs h-9"
+                  className="text-xs h-9 bg-background"
                 />
                 <div className="flex gap-2">
                   <Input
                     type="text"
-                    placeholder="PIC / Penanggung Jawab..."
+                    placeholder="PIC..."
                     value={newItemAssignee}
                     onChange={(e) => setNewItemAssignee(e.target.value)}
-                    className="text-xs h-9 flex-1"
+                    className="text-xs h-9 flex-1 bg-background"
                   />
-                  <Button type="submit" size="sm" className="h-9 px-3 gap-1 shrink-0 cursor-pointer">
+                  <Button type="submit" size="sm" className="h-9 px-4 gap-1 shrink-0 cursor-pointer rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs font-semibold text-xs">
                     <Plus className="h-4 w-4" /> Tambah
                   </Button>
                 </div>
               </form>
 
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2.5 pt-1">
                 {sortedCategoryItems.length === 0 ? (
-                  <div className="p-8 text-center border border-dashed rounded-lg text-muted-foreground text-xs">
+                  <div className="p-8 text-center border border-dashed rounded-2xl text-muted-foreground text-xs">
                     Belum ada item di kategori ini. Klik &apos;Ambil dari Template&apos; di atas.
                   </div>
                 ) : (
                   sortedCategoryItems.map((it) => (
                     <div
                       key={it.id}
-                      className={`p-3.5 rounded-lg border flex flex-col justify-between gap-2 transition-all ${
+                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-2 ${
                         it.is_completed
-                          ? "bg-accent/20 border-border/50 text-muted-foreground opacity-85"
-                          : "bg-card border-border text-foreground hover:border-primary/50"
+                          ? "bg-emerald-500/5 border-emerald-500/30 text-muted-foreground opacity-80"
+                          : "bg-card border-border/80 hover:border-border text-foreground hover:shadow-xs"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -1204,23 +1185,23 @@ export function PreweddingChecklistManager({
                           {it.is_completed ? (
                             <CheckSquare className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                           ) : (
-                            <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                            <Square className="h-5 w-5 text-muted-foreground hover:text-foreground shrink-0 mt-0.5" />
                           )}
                           <div className="space-y-1">
-                            <p className={`font-semibold text-xs leading-snug ${it.is_completed ? "line-through opacity-75" : ""}`}>
+                            <p className={`font-semibold text-xs sm:text-sm leading-snug ${it.is_completed ? "line-through opacity-75" : "text-foreground"}`}>
                               {it.item_name}
                             </p>
                             {it.notes && (
                               <p className="text-[11px] text-muted-foreground font-normal">
-                                Catatan: {it.notes}
+                                {it.notes}
                               </p>
                             )}
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {it.assignee_name && (
-                            <Badge variant="outline" className="text-[10px] gap-1">
+                            <Badge variant="outline" className="text-[10px] gap-1 rounded-full px-2.5 py-0.5 bg-muted/60">
                               <User className="h-3 w-3" /> PIC: {it.assignee_name}
                             </Badge>
                           )}
@@ -1228,7 +1209,8 @@ export function PreweddingChecklistManager({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteItem(it.id)}
-                            className="h-7 w-7 text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
+                            className="h-7 w-7 rounded-full text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
+                            title="Hapus Item"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -1237,10 +1219,10 @@ export function PreweddingChecklistManager({
 
                       {/* EXECUTION NOTES DISPLAY */}
                       {it.is_completed && it.completed_notes && (
-                        <div className="mt-1 p-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
+                        <div className="mt-1 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
                           <MessageSquareQuote className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           <span>
-                            <strong>Catatan Pelaksanaan:</strong> "{it.completed_notes}"
+                            <strong>Catatan:</strong> "{it.completed_notes}"
                           </span>
                         </div>
                       )}

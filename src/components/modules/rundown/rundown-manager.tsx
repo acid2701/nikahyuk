@@ -372,8 +372,8 @@ export function RundownManager({
           </div>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {rundowns.map((r) => (
+        <div className="space-y-1 pt-2">
+          {rundowns.map((r, index) => (
             <RundownItemCard
               key={r.id}
               item={r}
@@ -382,6 +382,7 @@ export function RundownManager({
               onToggleComplete={handleToggleComplete}
               onEdit={handleOpenEdit}
               onDelete={(id, title) => setDeleteTarget({ id, name: title })}
+              isLast={index === rundowns.length - 1}
             />
           ))}
         </div>
