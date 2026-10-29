@@ -72,13 +72,13 @@ export default async function GiftsPage(props: {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Log Kado & Angpao (Gifts Logger)
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Pencatatan Kado & Angpao
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Rekapitulasi penerimaan angpao tunai & kado fisik untuk:{" "}
-          <span className="font-semibold text-primary">{activeEvent?.event_name}</span>.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Rekapitulasi penerimaan angpao tunai, transfer, dan kado fisik untuk:{" "}
+          <span className="font-semibold text-foreground">{activeEvent?.event_name}</span>.
         </p>
       </div>
 

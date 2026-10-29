@@ -623,12 +623,12 @@ export function PreweddingChecklistManager({
 
       {/* HEADER SECTION */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight">
+        <div className="space-y-1">
+          <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
             Checklist Persiapan {eventName}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Template rincian berkas, perlengkapan, estimasi harga & link pembelian khusus acara ini.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Rincian berkas, perlengkapan, estimasi biaya & tautan perlengkapan untuk acara ini.
           </p>
         </div>
 

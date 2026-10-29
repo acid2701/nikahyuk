@@ -122,12 +122,13 @@ export default async function BudgetPage(props: {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight">
-            Anggaran & Multiple Payment Milestones
+        <div className="space-y-1">
+          <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Rencana Anggaran & Pembayaran
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Kelola pos biaya untuk: <span className="font-semibold text-primary">{activeEvent?.event_name || "Semua Acara"}</span>.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Kelola pos biaya dan pantau pembayaran bertahap (DP s/d Pelunasan) untuk:{" "}
+            <span className="font-semibold text-foreground">{activeEvent?.event_name || "Semua Acara"}</span>.
           </p>
         </div>
         <div className="flex items-center space-x-2">
@@ -136,16 +137,18 @@ export default async function BudgetPage(props: {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+      <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
               Total Target Anggaran
             </CardTitle>
-            <Wallet className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              <Wallet className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold font-mono">
+          <CardContent className="p-0 pt-1">
+            <div className="text-lg sm:text-xl font-bold font-mono text-foreground truncate">
               Rp {totalTargetAmount.toLocaleString("id-ID")}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -154,15 +157,17 @@ export default async function BudgetPage(props: {
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Total Terbayar (Paid)
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-emerald-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Total Dana Terbayar
             </CardTitle>
-            <CheckCircle className="h-4 w-4 text-emerald-500" />
+            <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <CheckCircle className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold font-mono text-emerald-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-lg sm:text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate">
               Rp {totalPaidAmount.toLocaleString("id-ID")}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
@@ -171,36 +176,40 @@ export default async function BudgetPage(props: {
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Sisa Tagihan Belum Lunas
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-amber-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Sisa Tagihan
             </CardTitle>
-            <ArrowRightLeft className="h-4 w-4 text-amber-500" />
+            <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <ArrowRightLeft className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold font-mono text-amber-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-lg sm:text-xl font-bold font-mono text-amber-600 dark:text-amber-400 truncate">
               Rp {totalRemaining.toLocaleString("id-ID")}
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Kewajiban pembayaran mendatang
+              Kewajiban mendatang
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Peringatan Terlewat (Overdue)
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-rose-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Tagihan Jatuh Tempo
             </CardTitle>
-            <AlertCircle className="h-4 w-4 text-rose-500" />
+            <div className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center">
+              <AlertCircle className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-xl font-bold font-mono text-rose-600">
-              {overdueMilestoneCount} Termin
+          <CardContent className="p-0 pt-1">
+            <div className="text-lg sm:text-xl font-bold font-mono text-rose-600 dark:text-rose-400">
+              {overdueMilestoneCount} Tagihan
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Melewati tanggal jatuh tempo
+              Mendekati / lewat tempo
             </p>
           </CardContent>
         </Card>
