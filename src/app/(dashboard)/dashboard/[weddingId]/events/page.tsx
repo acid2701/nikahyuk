@@ -24,12 +24,12 @@ export default async function EventsPage(props: { params: Promise<any> }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Sub-Event Manager (Lamaran, Akad, Resepsi, dll.)
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Rangkaian Acara Pernikahan
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola rincian sub-acara, jadwal waktu, lokasi Google Maps, dan penanggung jawab (Pria/Wanita/Bersama).
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Susun rangkaian hari bahagia (Lamaran, Akad Nikah, Resepsi, dll.) lengkap dengan waktu dan lokasi Google Maps.
         </p>
       </div>
 

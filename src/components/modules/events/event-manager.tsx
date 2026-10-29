@@ -173,9 +173,9 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
 
         <Dialog open={openModal} onOpenChange={setOpenModal}>
           <DialogTrigger asChild>
-            <Button size="sm" onClick={resetForm} className="gap-2">
+            <Button size="sm" onClick={resetForm} className="gap-2 rounded-full h-9 px-5 bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs font-semibold text-xs">
               <Plus className="h-4 w-4" />
-              Tambah Sub-Event Baru
+              Tambah Rangkaian Acara
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-md">
@@ -390,15 +390,15 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
           </div>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {events.map((ev) => (
-            <Card key={ev.id} className="border-border/80">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
+            <Card key={ev.id} className="rounded-3xl border border-border/80 bg-card hover:border-border hover:shadow-xs transition-all flex flex-col justify-between overflow-hidden">
+              <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
+                <div className="flex items-start justify-between gap-2">
                   <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <CardTitle className="text-lg font-sans">{ev.event_name}</CardTitle>
-                      <Badge variant="outline" className="text-[10px] uppercase">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <CardTitle className="text-base font-sans font-bold text-foreground">{ev.event_name}</CardTitle>
+                      <Badge variant="secondary" className="text-[10px] uppercase font-bold rounded-full px-2 py-0.5 bg-muted text-muted-foreground">
                         {ev.event_side === "groom"
                           ? "Pihak Pria"
                           : ev.event_side === "bride"
@@ -406,8 +406,8 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                           : "Bersama"}
                       </Badge>
                     </div>
-                    <CardDescription className="text-xs flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-primary" />
+                    <CardDescription className="text-xs flex items-center gap-1.5 text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
                       {ev.event_date ? (
                         <span>
                           {(ev.event_date as unknown) instanceof Date
@@ -421,35 +421,35 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                             : String(ev.event_date)}
                         </span>
                       ) : (
-                        <span className="italic text-muted-foreground">Belum Ditentukan</span>
+                        <span className="italic text-muted-foreground">Tanggal Belum Ditentukan</span>
                       )}
                     </CardDescription>
                   </div>
 
-                  <div className="flex items-center space-x-1">
+                  <div className="flex items-center space-x-1 shrink-0">
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleOpenEdit(ev)}
-                      className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted"
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-3.5 w-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handleOpenDelete(ev)}
-                      className="h-8 w-8 text-destructive hover:bg-rose-100 hover:text-rose-700 dark:hover:bg-rose-950/50"
-                      title="Hapus Sub-Event"
+                      className="h-8 w-8 rounded-full text-muted-foreground hover:text-rose-600 hover:bg-rose-500/10"
+                      title="Hapus Acara"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 text-xs text-muted-foreground">
+              <CardContent className="p-4 sm:p-5 space-y-2.5 text-xs text-muted-foreground">
                 {(ev.time_start || ev.time_end) && (
-                  <div className="flex items-center gap-1.5 font-mono">
+                  <div className="flex items-center gap-1.5 font-mono text-[11px] text-foreground bg-muted/30 px-2.5 py-1 rounded-full w-fit">
                     <Clock className="h-3.5 w-3.5 text-primary" />
                     <span>
                       {ev.time_start || "--:--"} s/d {ev.time_end || "Selesai"}
@@ -466,9 +466,9 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
                           href={ev.location_maps_url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[11px] text-primary underline mt-0.5 block"
+                          className="text-[11px] text-primary hover:underline mt-0.5 block"
                         >
-                          Buka Google Maps
+                          Buka Google Maps →
                         </a>
                       )}
                     </div>

@@ -1,6 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Calendar, Clock, DollarSign, Users, Briefcase, Heart, CheckSquare, CalendarCheck, MapPin, Gift, Share2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  Users,
+  Briefcase,
+  CheckSquare,
+  CalendarCheck,
+  MapPin,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +83,9 @@ export default async function WeddingOverviewPage(props: {
     });
   });
 
+  const budgetPercentage =
+    totalBudgetEst > 0 ? Math.min(100, Math.round((totalBudgetPaid / totalBudgetEst) * 100)) : 0;
+
   const rawGuests = await prisma.guest.findMany({
     where: { weddingId },
     include: { assignments: true },
@@ -79,15 +93,20 @@ export default async function WeddingOverviewPage(props: {
 
   let confirmedPax = 0;
   let pendingPax = 0;
+  let totalPax = 0;
 
   rawGuests.forEach((g) => {
+    const pax = g.defaultPax || 1;
+    totalPax += pax;
     const assignment = (g.assignments || []).find((a) => a.eventId === activeEvent?.id);
     if (assignment?.attendanceStatus === "attending" || assignment?.attendanceStatus === "checked_in") {
-      confirmedPax += assignment.actualPax || g.defaultPax || 1;
+      confirmedPax += assignment.actualPax || pax;
     } else {
-      pendingPax += g.defaultPax || 1;
+      pendingPax += pax;
     }
   });
+
+  const rsvpPercentage = totalPax > 0 ? Math.min(100, Math.round((confirmedPax / totalPax) * 100)) : 0;
 
   const rawNextRundowns = activeEvent
     ? await prisma.rundown.findMany({
@@ -110,192 +129,345 @@ export default async function WeddingOverviewPage(props: {
     where: { weddingId },
   });
 
-  const giftsData = activeEvent
-    ? await prisma.giftLog.findMany({
-        where: { eventId: activeEvent.id },
-        select: { cashAmount: true, giftType: true },
-      })
-    : [];
-
-  let totalGiftsCash = 0;
-  let totalGiftsItems = 0;
-  giftsData.forEach((g) => {
-    if (g.giftType === "cash") totalGiftsCash += Number(g.cashAmount || 0);
-    else totalGiftsItems++;
+  const totalChecklists = await prisma.weddingChecklist.count({
+    where: { weddingId },
   });
+  const completedChecklists = await prisma.weddingChecklist.count({
+    where: { weddingId, isCompleted: true },
+  });
+  const checklistPercentage =
+    totalChecklists > 0 ? Math.round((completedChecklists / totalChecklists) * 100) : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="rounded-xl border border-border/80 bg-card/60 p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shadow-xs">
-        <div className="space-y-1">
-          <div className="flex items-center space-x-2">
-            <Heart className="h-5 w-5 text-primary fill-primary/20" />
-            <h1 className="font-sans text-2xl font-bold tracking-tight text-foreground">
+    <div className="space-y-6 sm:space-y-8 select-none">
+      {/* 1. WARM HERO HEADER (AIRBNB LUXE STANDARD) */}
+      <div className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xs">
+        {/* Subtle Ambient Radial Glow */}
+        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-[#ff385c]/10 blur-3xl pointer-events-none" />
+
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="space-y-2 max-w-xl">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ff385c]/10 text-[#ff385c] text-[11px] font-bold tracking-tight">
+              <Sparkles className="h-3 w-3" />
+              <span>Workspace Pasangan Bahagia</span>
+            </div>
+            <h1 className="font-sans text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
               {wedding?.groomName || "Pengantin Pria"} & {wedding?.brideName || "Pengantin Wanita"}
             </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Fokus Acara:{" "}
+              <span className="font-semibold text-foreground">
+                {activeEvent?.event_name || "Belum Ada Sub-Event"}
+              </span>{" "}
+              • {formatSafeDate(activeEvent?.event_date, "Tanggal Belum Ditentukan")}
+              {activeEvent?.location_name ? ` di ${activeEvent.location_name}` : ""}
+            </p>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Workspace Pernikahan • Acara Aktif:{" "}
-            <span className="font-semibold text-foreground">{activeEvent?.event_name || "Belum Ada Sub-Event"}</span>{" "}
-            ({formatSafeDate(activeEvent?.event_date, "Tanggal Belum Ditentukan")})
-          </p>
-        </div>
 
-        <div className="bg-card/90 backdrop-blur border border-border px-4 py-2.5 rounded-lg text-center shrink-0">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            H-Day Countdown
-          </span>
-          {daysUntilWedding !== null ? (
-            <span className="font-sans text-xl font-black text-primary">
-              {daysUntilWedding > 0
-                ? `H-${daysUntilWedding} Hari`
-                : daysUntilWedding === 0
-                ? "Hari H Acara! 🎉"
-                : `Lewat ${Math.abs(daysUntilWedding)} Hari`}
-            </span>
-          ) : (
-            <div className="space-y-1 mt-0.5">
-              <span className="text-xs font-semibold text-muted-foreground italic block">
-                Tanggal Belum Ditentukan
+          {/* Countdown Pill Badge */}
+          <div className="flex flex-col items-start md:items-end shrink-0">
+            <div className="px-5 py-3 rounded-2xl bg-muted/40 border border-border/80 text-left md:text-right shadow-2xs">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
+                Menuju Hari Bahagia
               </span>
-              <Button asChild size="sm" variant="ghost" className="h-6 text-[10px] text-primary px-2">
-                <Link href={`/dashboard/${weddingId}/events`}>Set Tanggal →</Link>
-              </Button>
+              {daysUntilWedding !== null ? (
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="font-sans text-2xl sm:text-3xl font-extrabold text-[#ff385c]">
+                    {daysUntilWedding > 0 ? `H-${daysUntilWedding}` : daysUntilWedding === 0 ? "HARI H!" : `+${Math.abs(daysUntilWedding)}`}
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">
+                    {daysUntilWedding > 0 ? "Hari Lagi" : daysUntilWedding === 0 ? "Acara Berlangsung 🎉" : "Hari Terlewat"}
+                  </span>
+                </div>
+              ) : (
+                <div className="mt-1">
+                  <Link
+                    href={`/dashboard/${weddingId}/events`}
+                    className="text-xs font-semibold text-[#ff385c] hover:underline"
+                  >
+                    Atur Tanggal Acara →
+                  </Link>
+                </div>
+              )}
             </div>
-          )}
+          </div>
+        </div>
+
+        {/* Quick Action Pill Bar */}
+        <div className="mt-6 pt-5 border-t border-border/60 flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <Button
+            asChild
+            size="sm"
+            className="rounded-full h-8 px-3.5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs shrink-0"
+          >
+            <Link href={`/dashboard/${weddingId}/guests`}>
+              + Tambah Tamu
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
+          >
+            <Link href={`/dashboard/${weddingId}/budget`}>
+              + Catat Pembayaran
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
+          >
+            <Link href={`/dashboard/${weddingId}/rundown`}>
+              + Buat Agenda Rundown
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="rounded-full h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0 ml-auto"
+          >
+            <Link href={`/dashboard/${weddingId}/share`}>
+              <Share2 className="h-3.5 w-3.5 mr-1.5 text-sky-500" />
+              Bagikan Link Kru Lapangan
+            </Link>
+          </Button>
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">
-              Sub-Events Pernikahan
-            </CardTitle>
-            <Calendar className="h-4 w-4 text-[#ff385c]" />
-          </CardHeader>
-          <CardContent className="p-0 pt-1">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">{events.length} Sub-Event</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
-              Aktif: {activeEvent?.event_name || "None"}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-emerald-500/40 hover:shadow-xs transition-all">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">
-              RSVP Guest Summary
-            </CardTitle>
-            <Users className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent className="p-0 pt-1">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
-              {confirmedPax} Pax Hadir
+      {/* 2. ELEVATED KPI CARDS DENGAN VISUAL PROGRESS BAR */}
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        {/* KPI 1: RSVP TAMU */}
+        <Card className="rounded-3xl border border-border/80 bg-card p-5 hover:border-emerald-500/40 hover:shadow-sm transition-all flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground">Konfirmasi Tamu & RSVP</span>
+              <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <Users className="h-4 w-4" />
+              </div>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Pending: {pendingPax} Pax ({rawGuests.length} Tamu)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-[#ff385c]/40 hover:shadow-xs transition-all">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">
-              Progres Anggaran Terbayar
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-[#ff385c]" />
-          </CardHeader>
-          <CardContent className="p-0 pt-1">
-            <div className="text-lg sm:text-xl font-bold font-mono text-foreground truncate">
-              Rp {totalBudgetPaid.toLocaleString("id-ID")}
+            <div>
+              <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                {confirmedPax} <span className="text-xs font-sans font-medium text-muted-foreground">Pax Hadir</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {pendingPax} Pax Menunggu Konfirmasi ({rawGuests.length} Undangan)
+              </p>
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Target Rp {totalBudgetEst.toLocaleString("id-ID")}
-            </p>
-          </CardContent>
+          </div>
+          {/* Progress Bar */}
+          <div className="mt-4 pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold mb-1">
+              <span>Kehadiran Terkonfirmasi</span>
+              <span>{rsvpPercentage}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full transition-all"
+                style={{ width: `${rsvpPercentage}%` }}
+              />
+            </div>
+          </div>
         </Card>
 
-        <Card className="rounded-2xl border border-border/80 bg-card p-4 hover:border-foreground/30 transition-all">
-          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
-            <CardTitle className="text-xs font-semibold text-muted-foreground">
-              Vendor Terhubung
-            </CardTitle>
-            <Briefcase className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent className="p-0 pt-1">
-            <div className="text-xl sm:text-2xl font-bold font-mono text-foreground">{vendorsCount || 0} Vendor</div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Mitra & Kontrak Terkait
-            </p>
-          </CardContent>
+        {/* KPI 2: PROGRES ANGGARAN */}
+        <Card className="rounded-3xl border border-border/80 bg-card p-5 hover:border-[#ff385c]/40 hover:shadow-sm transition-all flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground">Realisasi Anggaran</span>
+              <div className="h-8 w-8 rounded-full bg-[#ff385c]/10 text-[#ff385c] flex items-center justify-center">
+                <DollarSign className="h-4 w-4" />
+              </div>
+            </div>
+            <div>
+              <div className="text-xl font-bold font-mono text-foreground truncate">
+                Rp {totalBudgetPaid.toLocaleString("id-ID")}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                Target: Rp {totalBudgetEst.toLocaleString("id-ID")}
+              </p>
+            </div>
+          </div>
+          {/* Progress Bar */}
+          <div className="mt-4 pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold mb-1">
+              <span>Dana Terbayar</span>
+              <span className="text-[#ff385c]">{budgetPercentage}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[#ff385c] rounded-full transition-all"
+                style={{ width: `${budgetPercentage}%` }}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* KPI 3: KESIAPAN CHECKLIST */}
+        <Card className="rounded-3xl border border-border/80 bg-card p-5 hover:border-blue-500/40 hover:shadow-sm transition-all flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground">Kesiapan Dokumen & Acara</span>
+              <div className="h-8 w-8 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                <CheckSquare className="h-4 w-4" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold font-mono text-foreground">
+                {completedChecklists} / {totalChecklists}{" "}
+                <span className="text-xs font-sans font-medium text-muted-foreground">Tugas Selesai</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                KUA, Seserahan, Fitting, & Busana
+              </p>
+            </div>
+          </div>
+          {/* Progress Bar */}
+          <div className="mt-4 pt-3 border-t border-border/50">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-semibold mb-1">
+              <span>Progres Checklist</span>
+              <span>{checklistPercentage}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all"
+                style={{ width: `${checklistPercentage}%` }}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* KPI 4: MITRA VENDOR */}
+        <Card className="rounded-3xl border border-border/80 bg-card p-5 hover:border-purple-500/40 hover:shadow-sm transition-all flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-muted-foreground">Mitra Vendor Terhubung</span>
+              <div className="h-8 w-8 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                <Briefcase className="h-4 w-4" />
+              </div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold font-mono text-foreground">
+                {vendorsCount} <span className="text-xs font-sans font-medium text-muted-foreground">Vendor</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                Katering, MUA, Dokumentasi, & Dekor
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-border/50 flex items-center justify-between">
+            <span className="text-[11px] font-medium text-muted-foreground">Status Kerjasama</span>
+            <Link
+              href={`/dashboard/${weddingId}/vendors`}
+              className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+            >
+              Lihat Vendor →
+            </Link>
+          </div>
         </Card>
       </div>
 
-      {/* Sub-Events List Overview Widget */}
-      <Card className="border-border/70 shadow-sm">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+      {/* 3. SUB-EVENTS ITINERARY CARDS (AIRBNB CARD STANDARD) */}
+      <Card className="rounded-3xl border border-border/80 shadow-xs overflow-hidden">
+        <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60 bg-muted/10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-base font-sans font-bold">
-                Rangkaian Sub-Events Pernikahan ({events.length})
+              <CardTitle className="font-sans text-lg font-bold text-foreground">
+                Rangkaian Acara Pernikahan ({events.length})
               </CardTitle>
               <CardDescription className="text-xs mt-0.5">
-                Kelola jadwal, lokasi Google Maps, dan penanggung jawab per acara.
+                Pilih konteks acara untuk menyaring susunan rundown, penataan meja, dan catatan kado.
               </CardDescription>
             </div>
-            <Button asChild size="sm" variant="outline" className="text-xs gap-1">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="rounded-full text-xs font-medium border-border/80 hover:bg-muted self-start sm:self-auto"
+            >
               <Link href={`/dashboard/${weddingId}/events`}>
-                <CalendarCheck className="h-3.5 w-3.5 text-primary" /> Kelola Sub-Event
+                <CalendarCheck className="h-3.5 w-3.5 mr-1.5 text-primary" /> Kelola Rangkaian Acara
               </Link>
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-5 sm:p-6">
           {events.length === 0 ? (
-            <div className="p-6 text-center border border-dashed rounded-lg space-y-2">
-              <Calendar className="h-8 w-8 text-muted-foreground mx-auto" />
-              <p className="text-xs text-muted-foreground">
-                Belum ada sub-event. Klik &apos;Kelola Sub-Event&apos; untuk menambah Lamaran, Akad, atau Resepsi.
+            <div className="py-10 text-center border-2 border-dashed border-border/80 rounded-2xl space-y-3">
+              <div className="h-12 w-12 rounded-full bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto">
+                <Calendar className="h-6 w-6" />
+              </div>
+              <p className="text-xs font-medium text-muted-foreground max-w-sm mx-auto">
+                Belum ada sub-acara. Buat agenda pertama seperti Lamaran, Akad Nikah, atau Resepsi untuk mulai menyusun rundown.
               </p>
+              <Button asChild size="sm" className="rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white text-xs font-semibold">
+                <Link href={`/dashboard/${weddingId}/events`}>
+                  + Tambah Acara Pertama
+                </Link>
+              </Button>
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
               {events.map((ev) => {
                 const isCurrentActive = ev.id === activeEvent?.id;
                 return (
                   <div
                     key={ev.id}
-                    className={`p-3 rounded-lg border flex flex-col justify-between space-y-2 transition-all ${
+                    className={`rounded-2xl p-4 border transition-all flex flex-col justify-between space-y-3 ${
                       isCurrentActive
-                        ? "border-primary bg-primary/5 shadow-xs"
-                        : "border-border bg-card"
+                        ? "border-[#ff385c] bg-[#ff385c]/5 shadow-xs"
+                        : "border-border/80 bg-card hover:border-border"
                     }`}
                   >
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-xs text-foreground">{ev.event_name}</span>
-                        <Badge variant={isCurrentActive ? "default" : "outline"} className="text-[9px] uppercase px-1.5 py-0">
-                          {ev.event_side}
+                        <span className="font-bold text-sm text-foreground">{ev.event_name}</span>
+                        <Badge
+                          variant="secondary"
+                          className="text-[10px] uppercase font-bold rounded-full px-2 py-0.5 bg-muted text-muted-foreground"
+                        >
+                          {ev.event_side === "joint" ? "Bersama" : ev.event_side === "groom" ? "Pria" : "Wanita"}
                         </Badge>
                       </div>
-                      <p className="text-[11px] text-muted-foreground flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-primary" />
-                        {formatSafeDate(ev.event_date, "Tanggal TBD")}
-                      </p>
-                      {ev.location_name && (
-                        <p className="text-[11px] text-muted-foreground flex items-center gap-1 truncate">
-                          <MapPin className="h-3 w-3 text-primary shrink-0" />
-                          <span className="truncate">{ev.location_name}</span>
+
+                      <div className="space-y-1 text-xs text-muted-foreground">
+                        <p className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-primary shrink-0" />
+                          <span>{formatSafeDate(ev.event_date, "Tanggal Belum Ditentukan")}</span>
                         </p>
-                      )}
+                        {ev.start_time && (
+                          <p className="flex items-center gap-1.5 font-mono text-[11px]">
+                            <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span>{ev.start_time} - {ev.end_time || "Selesai"}</span>
+                          </p>
+                        )}
+                        {ev.location_name && (
+                          <p className="flex items-center gap-1.5 truncate">
+                            <MapPin className="h-3.5 w-3.5 text-primary shrink-0" />
+                            <span className="truncate">{ev.location_name}</span>
+                          </p>
+                        )}
+                      </div>
                     </div>
 
-                    <Button asChild variant="ghost" size="sm" className="h-7 text-[11px] w-full justify-between mt-2">
+                    <Button
+                      asChild
+                      variant={isCurrentActive ? "default" : "outline"}
+                      size="sm"
+                      className={`h-8 rounded-full text-xs font-semibold w-full justify-between transition-all ${
+                        isCurrentActive
+                          ? "bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs"
+                          : "border-border/80 hover:bg-muted"
+                      }`}
+                    >
                       <Link href={`/dashboard/${weddingId}?eventId=${ev.id}`}>
-                        <span>{isCurrentActive ? "✓ Sedang Dipilih" : "Pilih Konteks Ini"}</span>
+                        <span>{isCurrentActive ? "✓ Sedang Dipilih" : "Buka Acara Ini"}</span>
                         <span>→</span>
                       </Link>
                     </Button>
@@ -307,117 +479,122 @@ export default async function WeddingOverviewPage(props: {
         </CardContent>
       </Card>
 
-      {/* Agenda & Quick Access Row */}
+      {/* 4. AGENDA RUNDOWN & AKSES MODUL */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base font-sans font-bold">
-                Agenda Rundown Berikutnya ({activeEvent?.event_name || "Semua Acara"})
-              </CardTitle>
-              <Button asChild variant="ghost" size="sm" className="h-7 text-xs text-primary">
-                <Link href={`/dashboard/${weddingId}/rundown`}>Lihat Semua →</Link>
-              </Button>
-            </div>
-            <CardDescription className="text-xs">
-              Susunan acara paling awal yang terdaftar untuk {activeEvent?.event_name || "Acara Aktif"}.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {nextRundowns && nextRundowns.length > 0 ? (
-              nextRundowns.map((r: any) => (
-                <div
-                  key={r.id}
-                  className="p-3 rounded-lg border border-border bg-accent/20 flex items-center justify-between text-xs"
-                >
-                  <div className="space-y-0.5">
-                    <p className="font-semibold text-foreground">{r.activity_title}</p>
-                    <p className="text-[11px] text-muted-foreground">PIC: {r.pic_name || "-"}</p>
-                  </div>
-                  <span className="font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded">
-                    {r.time_start} - {r.time_end}
-                  </span>
-                </div>
-              ))
-            ) : (
-              <div className="p-6 text-center border border-dashed rounded-lg space-y-2">
-                <Clock className="h-6 w-6 text-muted-foreground mx-auto" />
-                <p className="text-xs text-muted-foreground">
-                  Belum ada rundown untuk acara ini. Klik modul Live Rundown untuk mengisi.
-                </p>
+        {/* AGENDA BERIKUTNYA */}
+        <Card className="rounded-3xl border border-border/80 shadow-xs flex flex-col justify-between">
+          <div>
+            <CardHeader className="p-5 sm:p-6 pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-sans text-base font-bold text-foreground">
+                  Susunan Rundown Acara
+                </CardTitle>
+                <Button asChild variant="ghost" size="sm" className="rounded-full h-7 text-xs text-primary font-semibold">
+                  <Link href={`/dashboard/${weddingId}/rundown`}>Lihat Semua →</Link>
+                </Button>
               </div>
-            )}
-          </CardContent>
+              <CardDescription className="text-xs">
+                Susunan kegiatan awal untuk {activeEvent?.event_name || "Acara Terpilih"}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-5 sm:p-6 pt-0 space-y-2.5">
+              {nextRundowns && nextRundowns.length > 0 ? (
+                nextRundowns.map((r: any) => (
+                  <div
+                    key={r.id}
+                    className="p-3.5 rounded-2xl border border-border/80 bg-muted/20 flex items-center justify-between text-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <p className="font-bold text-foreground">{r.activity_name}</p>
+                      <p className="text-[11px] text-muted-foreground">PIC: {r.person_in_charge || "Koordinator Acara"}</p>
+                    </div>
+                    <span className="font-mono font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full text-[11px]">
+                      {r.start_time} - {r.end_time || "Selesai"}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center border-2 border-dashed border-border/70 rounded-2xl space-y-2">
+                  <Clock className="h-6 w-6 text-muted-foreground mx-auto" />
+                  <p className="text-xs text-muted-foreground">
+                    Belum ada agenda rundown terdaftar.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </div>
         </Card>
 
-        {/* Quick Access Modul Grid */}
-        <Card className="border-border/70 shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-sans font-bold">Pintas Akses Cepat Modul</CardTitle>
+        {/* NAVIGASI CEPAT MODUL */}
+        <Card className="rounded-3xl border border-border/80 shadow-xs flex flex-col justify-between">
+          <CardHeader className="p-5 sm:p-6 pb-3">
+            <CardTitle className="font-sans text-base font-bold text-foreground">
+              Akses Cepat Modul Acara
+            </CardTitle>
             <CardDescription className="text-xs">
-              Akses instan ke seluruh fitur perencanaan acara pernikahan Anda.
+              Lompat langsung ke modul kerja persiapan hari bahagia Anda.
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-3 sm:grid-cols-2">
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/checklists`}>
-                <CheckSquare className="h-4 w-4 mr-2 text-blue-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Checklist Persiapan</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">KUA, Seserahan, Lamaran</p>
-                </div>
-              </Link>
-            </Button>
+          <CardContent className="p-5 sm:p-6 pt-0 grid gap-3 sm:grid-cols-2">
+            <Link
+              href={`/dashboard/${weddingId}/guests`}
+              className="p-3.5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 group"
+            >
+              <div className="h-9 w-9 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                <Users className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  Buku Tamu & RSVP
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">Daftar Tamu & Kirim WA</p>
+              </div>
+            </Link>
 
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/rundown`}>
-                <Clock className="h-4 w-4 mr-2 text-primary" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Live Rundown</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">Timeline & Cues</p>
-                </div>
-              </Link>
-            </Button>
+            <Link
+              href={`/dashboard/${weddingId}/budget`}
+              className="p-3.5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 group"
+            >
+              <div className="h-9 w-9 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
+                <DollarSign className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  Rencana Anggaran
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">Pos Biaya & Kuitansi</p>
+              </div>
+            </Link>
 
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/budget`}>
-                <DollarSign className="h-4 w-4 mr-2 text-emerald-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Anggaran & Finansial</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">Payer & Proofs</p>
-                </div>
-              </Link>
-            </Button>
+            <Link
+              href={`/dashboard/${weddingId}/checklists`}
+              className="p-3.5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 group"
+            >
+              <div className="h-9 w-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                <CheckSquare className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  Checklist Persiapan
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">KUA & Perlengkapan</p>
+              </div>
+            </Link>
 
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/guests`}>
-                <Users className="h-4 w-4 mr-2 text-amber-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Master Guest Pool</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">RSVP & WA Blast</p>
-                </div>
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/gifts`}>
-                <Gift className="h-4 w-4 mr-2 text-amber-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Log Kado & Angpao</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">Pria / Wanita Side</p>
-                </div>
-              </Link>
-            </Button>
-
-            <Button asChild variant="outline" className="justify-start h-12">
-              <Link href={`/dashboard/${weddingId}/share`}>
-                <Share2 className="h-4 w-4 mr-2 text-sky-600" />
-                <div className="text-left">
-                  <p className="font-semibold text-xs">Berbagi Link (Share)</p>
-                  <p className="text-[10px] text-muted-foreground font-normal">PWA Kru Lapangan</p>
-                </div>
-              </Link>
-            </Button>
+            <Link
+              href={`/dashboard/${weddingId}/vendors`}
+              className="p-3.5 rounded-2xl border border-border/80 bg-card hover:bg-muted/40 transition-all flex items-center gap-3 group"
+            >
+              <div className="h-9 w-9 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center shrink-0">
+                <Briefcase className="h-4 w-4" />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                  Mitra Vendor
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate">Kontrak & Kontak PIC</p>
+              </div>
+            </Link>
           </CardContent>
         </Card>
       </div>
