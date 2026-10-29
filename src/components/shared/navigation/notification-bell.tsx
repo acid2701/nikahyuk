@@ -188,9 +188,16 @@ export function NotificationBell({ weddingId }: NotificationBellProps) {
               </DropdownMenuItem>
             ))
           ) : (
-            <div className="p-6 text-center text-xs text-muted-foreground space-y-1">
-              <Bell className="h-6 w-6 text-muted-foreground/50 mx-auto" />
-              <p>Belum ada notifikasi baru.</p>
+            <div className="py-10 px-4 text-center space-y-2 select-none">
+              <div className="h-10 w-10 rounded-full bg-muted/60 text-muted-foreground flex items-center justify-center mx-auto border border-border/60">
+                <Bell className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-semibold text-foreground">
+                Belum ada notifikasi
+              </p>
+              <p className="text-[11px] text-muted-foreground max-w-[220px] mx-auto leading-relaxed">
+                Pemberitahuan terkait RSVP, pembayaran, dan rundown acara Anda akan tampil di sini.
+              </p>
             </div>
           )}
         </div>

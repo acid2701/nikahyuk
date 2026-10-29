@@ -34,7 +34,7 @@ export async function fetchNotificationsAction(
     });
 
     if (notifications.length === 0) {
-      return getSyntheticNotifications(sessionUser, weddingId);
+      return [];
     }
 
     return notifications.map((n) => ({
@@ -49,7 +49,8 @@ export async function fetchNotificationsAction(
       created_at: n.createdAt.toISOString(),
     }));
   } catch (error) {
-    return getSyntheticNotifications(sessionUser, weddingId);
+    console.error("Failed to fetch user notifications:", error);
+    return [];
   }
 }
 
@@ -189,52 +190,4 @@ export async function createNotificationAction({
   } catch (error: any) {
     return { skipped: true, error: error?.message || "Failed to create notification" };
   }
-}
-
-/**
- * Fallback generator for realistic active notifications if table is empty
- */
-function getSyntheticNotifications(
-  user: any,
-  weddingId?: string
-): UserNotificationItem[] {
-  const now = new Date();
-  const baseUrl = weddingId ? `/dashboard/${weddingId}` : "/dashboard";
-  const userId = user.userId || user.id;
-
-  return [
-    {
-      id: "syn_1",
-      user_id: userId,
-      wedding_id: weddingId || null,
-      title: "🤝 Undangan Kolaborator Baru",
-      message: "Anda terhubung sebagai tim kolaborator di NikahYuk Companion SaaS.",
-      type: "invite",
-      is_read: false,
-      action_url: `${baseUrl}/settings/collaborators`,
-      created_at: new Date(now.getTime() - 1000 * 60 * 12).toISOString(),
-    },
-    {
-      id: "syn_2",
-      user_id: userId,
-      wedding_id: weddingId || null,
-      title: "💰 Pengingat Termin Pembayaran",
-      message: "Termin pembayaran vendor H-7 mendekati batas waktu jatuh tempo.",
-      type: "payment",
-      is_read: false,
-      action_url: `${baseUrl}/budget`,
-      created_at: new Date(now.getTime() - 1000 * 60 * 120).toISOString(),
-    },
-    {
-      id: "syn_3",
-      user_id: userId,
-      wedding_id: weddingId || null,
-      title: "👥 Konfirmasi RSVP Tamu",
-      message: "Budi Santoso mengonfirmasi HADIR (2 Pax) untuk Acara Resepsi.",
-      type: "rsvp",
-      is_read: true,
-      action_url: `${baseUrl}/guests`,
-      created_at: new Date(now.getTime() - 1000 * 60 * 360).toISOString(),
-    },
-  ];
 }
