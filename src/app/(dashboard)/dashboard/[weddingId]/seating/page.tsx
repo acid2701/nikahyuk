@@ -102,27 +102,29 @@ export default async function SeatingPage(props: {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2 border-b border-border pb-3">
+      {/* 1. AIRBNB PILL SUB-NAVIGATION */}
+      <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-full border border-border/70 max-w-fit">
         <Link
           href={`/dashboard/${weddingId}/guests${activeEventId ? `?eventId=${activeEventId}` : ""}`}
-          className="px-3 py-1.5 text-xs font-medium rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="px-4 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground transition-all"
         >
-          Master Tamu & RSVP
+          Buku Tamu & RSVP
         </Link>
         <Link
           href={`/dashboard/${weddingId}/seating${activeEventId ? `?eventId=${activeEventId}` : ""}`}
-          className="px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-primary-foreground shadow-xs"
+          className="px-4 py-1.5 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs transition-all"
         >
-          Penataan Tempat Duduk (Seating)
+          Penataan Tempat Duduk
         </Link>
       </div>
 
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Penataan Tempat Duduk & Meteran Kapasitas (Seating Allocation)
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Penataan Tempat Duduk Meja
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Atur denah meja untuk: <span className="font-semibold text-primary">{activeEvent?.event_name}</span>.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Atur kapasitas kursi dan plot meja tamu VIP/keluarga untuk:{" "}
+          <span className="font-semibold text-foreground">{activeEvent?.event_name}</span>.
         </p>
       </div>
 

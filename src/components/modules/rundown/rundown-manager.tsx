@@ -205,23 +205,23 @@ export function RundownManager({
         onConfirm={handleConfirmDelete}
       />
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-lg border border-border bg-card">
-        <div className="space-y-1 w-full sm:w-auto">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-5 rounded-3xl border border-border/80 bg-card shadow-xs">
+        <div className="space-y-1.5 w-full sm:w-auto">
           <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className="text-xs font-semibold text-muted-foreground">
               Progres Acara Live ({completedCount} / {rundowns.length} Selesai)
             </span>
-            <span className="font-mono text-xs font-bold text-primary">{progressRatio.toFixed(0)}%</span>
+            <span className="font-mono text-xs font-bold text-[#ff385c]">{progressRatio.toFixed(0)}%</span>
           </div>
           <div className="w-full sm:w-64 bg-muted h-2 rounded-full overflow-hidden">
             <div
-              className="bg-primary h-full transition-all"
+              className="bg-[#ff385c] h-full transition-all rounded-full"
               style={{ width: `${progressRatio}%` }}
             />
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center space-x-2 w-full sm:w-auto justify-end gap-y-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
           <AudioCuesDrawer rundowns={rundowns} />
           <RundownPDFPrintButton
             eventName={eventName}
@@ -232,8 +232,8 @@ export function RundownManager({
 
           <Dialog open={openModal} onOpenChange={setOpenModal}>
             <DialogTrigger asChild>
-              <Button size="sm" onClick={resetForm} className="gap-2 h-9 text-xs">
-                <Plus className="h-4 w-4" />
+              <Button size="sm" onClick={resetForm} className="gap-2 h-8 px-4 text-xs font-semibold rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs">
+                <Plus className="h-3.5 w-3.5" />
                 Tambah Agenda Rundown
               </Button>
             </DialogTrigger>

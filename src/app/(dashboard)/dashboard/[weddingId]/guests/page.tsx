@@ -115,93 +115,104 @@ export default async function GuestsPage(props: {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2 border-b border-border pb-3">
+      {/* 1. AIRBNB PILL SUB-NAVIGATION */}
+      <div className="flex items-center gap-2 p-1 bg-muted/60 rounded-full border border-border/70 max-w-fit">
         <Link
           href={`/dashboard/${weddingId}/guests${activeEventId ? `?eventId=${activeEventId}` : ""}`}
-          className="px-3 py-1.5 text-xs font-semibold rounded-md bg-primary text-primary-foreground shadow-xs"
+          className="px-4 py-1.5 text-xs font-semibold rounded-full bg-background text-foreground shadow-xs transition-all"
         >
-          Master Tamu & RSVP
+          Buku Tamu & RSVP
         </Link>
         <Link
           href={`/dashboard/${weddingId}/seating${activeEventId ? `?eventId=${activeEventId}` : ""}`}
-          className="px-3 py-1.5 text-xs font-medium rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          className="px-4 py-1.5 text-xs font-medium rounded-full text-muted-foreground hover:text-foreground transition-all"
         >
-          Penataan Tempat Duduk (Seating)
+          Penataan Tempat Duduk
         </Link>
       </div>
 
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Master Guest Pool & RSVP Tracker
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Buku Tamu & Konfirmasi Kehadiran
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola buku tamu utama untuk: <span className="font-semibold text-primary">{activeEvent?.event_name || "Semua Acara"}</span>.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Kelola daftar undangan dan pantau kehadiran tamu untuk:{" "}
+          <span className="font-semibold text-foreground">{activeEvent?.event_name || "Semua Acara"}</span>.
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Total Entri Tamu
+      {/* 2. ELEVATED METRIC CARDS */}
+      <div className="grid gap-3.5 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-primary/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Total Undangan
             </CardTitle>
-            <Users className="h-4 w-4 text-primary" />
+            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+              <Users className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono">{totalGuestsCount} Entri</div>
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-foreground">{totalGuestsCount} Entri</div>
             <p className="text-[11px] text-muted-foreground mt-1">
               Estimasi total: {totalPaxCount} Pax
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Konfirmasi Hadir (RSVP Yes)
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-emerald-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Konfirmasi Hadir
             </CardTitle>
-            <UserCheck className="h-4 w-4 text-emerald-500" />
+            <div className="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <UserCheck className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-emerald-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {confirmedPaxCount} Pax
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Sudah mengonfirmasi kedatangan
+              Siap menghadiri acara
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Berhalangan Hadir (RSVP No)
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-rose-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Berhalangan Hadir
             </CardTitle>
-            <UserX className="h-4 w-4 text-rose-500" />
+            <div className="h-8 w-8 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center">
+              <UserX className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-rose-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-rose-600 dark:text-rose-400">
               {declinedCount} Undangan
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Mengonfirmasi tidak dapat hadir
+              Konfirmasi berhalangan
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/70">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              Belum Merespons (Pending)
+        <Card className="rounded-3xl border border-border/80 bg-card p-4 sm:p-5 hover:border-amber-500/40 hover:shadow-xs transition-all">
+          <CardHeader className="flex flex-row items-center justify-between p-0 pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">
+              Menunggu Respon
             </CardTitle>
-            <Clock className="h-4 w-4 text-amber-500" />
+            <div className="h-8 w-8 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <Clock className="h-4 w-4" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold font-mono text-amber-600">
+          <CardContent className="p-0 pt-1">
+            <div className="text-2xl font-bold font-mono text-amber-600 dark:text-amber-400">
               {pendingCount} Undangan
             </div>
             <p className="text-[11px] text-muted-foreground mt-1">
-              Menunggu konfirmasi / respon
+              Belum konfirmasi RSVP
             </p>
           </CardContent>
         </Card>

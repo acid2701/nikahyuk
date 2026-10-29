@@ -100,12 +100,13 @@ export default async function RundownPage(props: {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Live Rundown, Technical Cues & 1-Click Shift Timeline Engine
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Susunan Rundown Acara
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Susunan agenda acara untuk: <span className="font-semibold text-primary">{activeEvent?.event_name}</span>.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Agenda kronologis, petunjuk aba-aba (cue), dan penanggung jawab untuk:{" "}
+          <span className="font-semibold text-foreground">{activeEvent?.event_name}</span>.
         </p>
       </div>
 
