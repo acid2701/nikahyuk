@@ -31,12 +31,12 @@ export default async function SharePage(props: { params: Promise<any> }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Shareable Token Manager & Access Controls
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Bagikan Akses Tautan Kru & Panitia
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola token tautan publik PWA untuk kru lapangan, panitia meja registrasi, dan WO.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Buat tautan akses cepat terlindungi PIN untuk tim registrasi meja tamu, MC, dan koordinator lapangan.
         </p>
       </div>
 

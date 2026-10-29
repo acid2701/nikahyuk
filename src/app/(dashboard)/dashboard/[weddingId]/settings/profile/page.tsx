@@ -15,12 +15,12 @@ export default async function WeddingProfileSettingsPage(props: { params: Promis
 
   return (
     <div className="space-y-6 max-w-3xl">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Profil Pernikahan & Pasangan
+      <div className="space-y-1">
+        <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+          Profil Pasangan & Pernikahan
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola rincian data pengantin pria, pengantin wanita, dan URL slug publik.
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Kelola data nama kedua mempelai, identitas keluarga, dan alamat tautan unik undangan Anda.
         </p>
       </div>
 

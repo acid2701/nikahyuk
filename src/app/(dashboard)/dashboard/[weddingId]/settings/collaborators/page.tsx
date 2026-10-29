@@ -48,12 +48,12 @@ export default async function CollaboratorsPage(props: {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="font-sans text-2xl font-bold tracking-tight">
-            Kolaborator & Tim Acara
+        <div className="space-y-1">
+          <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Tim Kolaborator & Hak Akses
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Kelola hak akses Pasangan, Wedding Organizer (WO), panitia keluarga, dan peran kustom.
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Undang pasangan, Wedding Organizer (WO), serta panitia keluarga dengan izin modul yang teratur.
           </p>
         </div>
         <div className="flex items-center space-x-2">
