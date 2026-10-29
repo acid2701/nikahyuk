@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CollaboratorPermissionForm, SubEventItem } from "./collaborator-permission-form";
@@ -27,9 +28,10 @@ export interface CollaboratorCardItemProps {
 export function CollaboratorCardItem({
   collaborator,
   weddingId,
-  weddingTitle = "Pernikahan",
-  events = [],
+  weddingTitle,
+  events,
 }: CollaboratorCardItemProps) {
+  const router = useRouter();
   const [deleteModalOpen, setDeleteModalOpen] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
   const [copied, setCopied] = React.useState(false);
@@ -81,6 +83,7 @@ export function CollaboratorCardItem({
         variant: "success",
       });
       setDeleteModalOpen(false);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Mencabut Akses",

@@ -163,6 +163,7 @@ export async function inviteCollaboratorAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return {
     id: collaborator.id,
     wedding_id: collaborator.weddingId,
@@ -201,6 +202,7 @@ export async function updateCollaboratorPermissionsAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return {
     id: updated.id,
     wedding_id: updated.weddingId,
@@ -237,6 +239,7 @@ export async function removeCollaboratorAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/settings/collaborators`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }
 

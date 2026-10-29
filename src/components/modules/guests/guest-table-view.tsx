@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -69,6 +70,7 @@ export function GuestTableView({
   initialGuests,
   activeEventLocation,
 }: GuestTableViewProps) {
+  const router = useRouter();
   const [guests, setGuests] = React.useState<GuestItemRow[]>(initialGuests);
   const [search, setSearch] = React.useState("");
   const [openModal, setOpenModal] = React.useState(false);
@@ -147,6 +149,7 @@ export function GuestTableView({
 
       setOpenModal(false);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Tamu",
@@ -181,6 +184,7 @@ export function GuestTableView({
       setOpenEditModal(false);
       setEditingGuest(null);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Tamu",
@@ -197,9 +201,10 @@ export function GuestTableView({
       await updateGuestRSVPAction(assignmentId, weddingId, status, pax);
       toast({
         title: "Status RSVP Diperbarui",
-        description: `Status diubah menjadi '${status}'.`,
+        description: `Status kehadiran berhasil diubah menjadi ${status} (${pax} Pax).`,
         variant: "success",
       });
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Mengubah RSVP",
@@ -221,6 +226,7 @@ export function GuestTableView({
         variant: "success",
       });
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Tamu",

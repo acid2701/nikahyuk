@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ export function DeleteEventModal({
   eventName,
   weddingId,
 }: DeleteEventModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 
@@ -44,6 +46,7 @@ export function DeleteEventModal({
       });
 
       onOpenChange(false);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Sub-Event",

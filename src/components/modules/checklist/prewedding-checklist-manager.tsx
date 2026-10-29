@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,6 +101,7 @@ export function PreweddingChecklistManager({
   eventId = "all",
   eventName = "Semua Acara (Akumulasi Total)",
 }: PreweddingChecklistManagerProps) {
+  const router = useRouter();
   const storageKey = `nikahyuk_checklist_${weddingId}_${eventId}`;
   const { toast } = useToast();
 
@@ -377,6 +379,7 @@ export function PreweddingChecklistManager({
       isCompleted: true,
       completedNotes: notesText,
     });
+    router.refresh();
   }
 
   async function handleDeleteItem(id: string) {
@@ -388,6 +391,7 @@ export function PreweddingChecklistManager({
       variant: "warning",
     });
     await deleteChecklistItemAction(id, weddingId);
+    router.refresh();
   }
 
   async function handleAddCustomItem(e: React.FormEvent) {
@@ -435,6 +439,7 @@ export function PreweddingChecklistManager({
       due_date: newItem.due_date || undefined,
       assignee_name: newItem.assignee_name || undefined,
     });
+    router.refresh();
   }
 
   function importPresetTemplate(presetKey: "lamaran" | "akad" | "resepsi" | "master") {

@@ -245,6 +245,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
 
       setOpenModal(false);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Vendor",
@@ -283,6 +284,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
       setOpenEditModal(false);
       setEditingVendor(null);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Vendor",
@@ -340,6 +342,7 @@ export function VendorManager({ weddingId, eventId, events = [], initialVendors 
         });
       }
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Item",

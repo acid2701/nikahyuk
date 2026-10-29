@@ -78,6 +78,7 @@ export async function createEventAction(input: CreateEventInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}`);
+  revalidatePath(`/dashboard/${input.weddingId}/events`);
   return toEventDTO(event);
 }
 
@@ -126,6 +127,7 @@ export async function updateEventAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}`);
+  revalidatePath(`/dashboard/${weddingId}/events`);
   return toEventDTO(event);
 }
 
@@ -150,5 +152,6 @@ export async function deleteEventAction(eventId: string, weddingId: string) {
   });
 
   revalidatePath(`/dashboard/${weddingId}`);
+  revalidatePath(`/dashboard/${weddingId}/events`);
   return { success: true };
 }

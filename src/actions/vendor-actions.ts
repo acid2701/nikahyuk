@@ -94,6 +94,7 @@ export async function createVendorAction(input: CreateVendorInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/vendors`);
+  revalidatePath(`/dashboard/${input.weddingId}`);
   return toVendorDTO(vendor);
 }
 
@@ -149,6 +150,7 @@ export async function updateVendorAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/vendors`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toVendorDTO(vendor);
 }
 
@@ -270,6 +272,7 @@ export async function deleteVendorAction(vendorId: string, weddingId: string) {
   });
 
   revalidatePath(`/dashboard/${weddingId}/vendors`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }
 
@@ -340,6 +343,7 @@ export async function syncVendorToBudgetAction(vendorId: string, weddingId: stri
 
   revalidatePath(`/dashboard/${weddingId}/vendors`);
   revalidatePath(`/dashboard/${weddingId}/budget`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true, budgetItemId: budgetItem.id };
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Trash2, DollarSign } from "lucide-react";
 import {
   Dialog,
@@ -25,6 +26,7 @@ export interface BudgetFormModalProps {
 }
 
 export function BudgetFormModal({ weddingId, eventId, onSuccess }: BudgetFormModalProps) {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [itemName, setItemName] = React.useState("");
   const [estimatedCost, setEstimatedCost] = React.useState("");
@@ -104,6 +106,7 @@ export function BudgetFormModal({ weddingId, eventId, onSuccess }: BudgetFormMod
       setEstimatedCost("");
       setNotes("");
       onSuccess?.();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Anggaran",

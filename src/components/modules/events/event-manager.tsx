@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +39,7 @@ export interface EventManagerProps {
 }
 
 export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
+  const router = useRouter();
   const [events, setEvents] = React.useState<EventItem[]>(initialEvents);
   const [openModal, setOpenModal] = React.useState(false);
   const [openEditModal, setOpenEditModal] = React.useState(false);
@@ -94,7 +96,7 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
     setLoading(true);
 
     try {
-      await createEventAction({
+      const newEv = await createEventAction({
         weddingId,
         eventName,
         eventDate: eventDate || null,
@@ -104,6 +106,11 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
         locationMapsUrl: locationMapsUrl || null,
         eventSide,
       });
+
+      if (newEv) {
+        setEvents((prev) => [...prev, newEv as EventItem]);
+      }
+      router.refresh();
 
       toast({
         title: "Sub-Event Berhasil Ditambahkan",
@@ -131,7 +138,7 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
     setLoading(true);
 
     try {
-      await updateEventAction(editingEvent.id, weddingId, {
+      const updatedEv = await updateEventAction(editingEvent.id, weddingId, {
         eventName,
         eventDate: eventDate || null,
         timeStart: timeStart || null,
@@ -140,6 +147,13 @@ export function EventManager({ weddingId, initialEvents }: EventManagerProps) {
         locationMapsUrl: locationMapsUrl || null,
         eventSide,
       });
+
+      if (updatedEv) {
+        setEvents((prev) =>
+          prev.map((item) => (item.id === editingEvent.id ? (updatedEv as EventItem) : item))
+        );
+      }
+      router.refresh();
 
       toast({
         title: "Sub-Event Berhasil Diperbarui",

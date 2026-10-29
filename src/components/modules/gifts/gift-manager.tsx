@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +42,7 @@ export interface GiftManagerProps {
 }
 
 export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerProps) {
+  const router = useRouter();
   const [gifts, setGifts] = React.useState<GiftLogItem[]>(initialGifts);
   const [search, setSearch] = React.useState("");
   const [sideFilter, setSideFilter] = React.useState<string>("all");
@@ -141,13 +143,14 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
       });
 
       toast({
-        title: "Kado/Angpao Berhasil Dicatat",
-        description: `Pencatatan atas nama '${giverName}' tersimpan.`,
+        title: "Log Kado Berhasil Ditambahkan",
+        description: `Kado '${itemDescription || "Tanpa rincian"}' berhasil dicatat.`,
         variant: "success",
       });
 
       setOpenModal(false);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Mencatat Kado",
@@ -202,11 +205,12 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
     try {
       await deleteGiftLogAction(deleteTarget.id, weddingId);
       toast({
-        title: "Catatan Kado Dihapus",
-        description: `Catatan kado '${deleteTarget.name}' berhasil dihapus.`,
+        title: "Log Kado Dihapus",
+        description: `Catatan kado '${deleteTarget.name}' telah dihapus.`,
         variant: "success",
       });
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Catatan",

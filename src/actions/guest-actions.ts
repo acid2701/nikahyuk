@@ -102,6 +102,7 @@ export async function createGuestAction(input: CreateGuestInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/guests`);
+  revalidatePath(`/dashboard/${input.weddingId}`);
   return toGuestDTO(guest);
 }
 
@@ -148,6 +149,7 @@ export async function updateGuestAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toGuestDTO(guest);
 }
 
@@ -197,6 +199,7 @@ export async function bulkImportGuestsAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return createdGuests.map(toGuestDTO);
 }
 
@@ -230,6 +233,7 @@ export async function updateGuestRSVPAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toAssignmentDTO(assignment);
 }
 
@@ -254,5 +258,6 @@ export async function deleteGuestAction(guestId: string, weddingId: string) {
   });
 
   revalidatePath(`/dashboard/${weddingId}/guests`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }

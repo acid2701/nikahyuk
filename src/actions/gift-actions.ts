@@ -70,6 +70,7 @@ export async function createGiftLogAction(input: CreateGiftLogInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/gifts`);
+  revalidatePath(`/dashboard/${input.weddingId}`);
   return toGiftDTO(gift);
 }
 
@@ -114,6 +115,7 @@ export async function updateGiftLogAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/gifts`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toGiftDTO(gift);
 }
 
@@ -138,5 +140,6 @@ export async function deleteGiftLogAction(giftId: string, weddingId: string) {
   });
 
   revalidatePath(`/dashboard/${weddingId}/gifts`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }

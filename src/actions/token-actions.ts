@@ -82,6 +82,7 @@ export async function createShareTokenAction(input: CreateShareTokenInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/share`);
+  revalidatePath(`/dashboard/${input.weddingId}`);
   return { tokenRecord: toTokenDTO(tokenRecord), plainToken };
 }
 
@@ -111,6 +112,7 @@ export async function toggleShareTokenActiveAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/share`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toTokenDTO(tokenRecord);
 }
 
@@ -142,6 +144,7 @@ export async function resetShareTokenPINAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/share`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toTokenDTO(tokenRecord);
 }
 
@@ -166,5 +169,6 @@ export async function deleteShareTokenAction(tokenId: string, weddingId: string)
   });
 
   revalidatePath(`/dashboard/${weddingId}/share`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }

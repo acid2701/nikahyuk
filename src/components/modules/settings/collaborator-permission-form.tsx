@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { CustomPermissions } from "@/types/database.types";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -27,6 +28,7 @@ export function CollaboratorPermissionForm({
   initialPermissions,
   events = [],
 }: CollaboratorPermissionFormProps) {
+  const router = useRouter();
   const [permissions, setPermissions] = React.useState<
     CustomPermissions & { allowed_event_ids?: string[] }
   >(initialPermissions);
@@ -79,6 +81,7 @@ export function CollaboratorPermissionForm({
         description: "Matriks izin kustom & batas akses sub-event berhasil disimpan.",
         variant: "success",
       });
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Izin",

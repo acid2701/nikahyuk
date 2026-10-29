@@ -98,6 +98,7 @@ export async function addChecklistItemAction(payload: {
     });
 
     revalidatePath(`/dashboard/${payload.wedding_id}/checklists`);
+    revalidatePath(`/dashboard/${payload.wedding_id}`);
     return { success: true, data: toChecklistDTO(item) };
   } catch (error: any) {
     return { success: false, error: error?.message || "Gagal membuat item checklist" };
@@ -128,6 +129,7 @@ export async function toggleChecklistItemAction({
     });
 
     revalidatePath(`/dashboard/${weddingId}/checklists`);
+    revalidatePath(`/dashboard/${weddingId}`);
     return { success: true, data: toChecklistDTO(item) };
   } catch (error: any) {
     return { success: false, error: error?.message || "Gagal memperbarui status checklist" };
@@ -160,6 +162,7 @@ export async function updateChecklistNotesAction({
     });
 
     revalidatePath(`/dashboard/${weddingId}/checklists`);
+    revalidatePath(`/dashboard/${weddingId}`);
     return { success: true, data: toChecklistDTO(item) };
   } catch (error: any) {
     return { success: false, error: error?.message || "Gagal memperbarui catatan checklist" };
@@ -176,6 +179,7 @@ export async function deleteChecklistItemAction(
     });
 
     revalidatePath(`/dashboard/${weddingId}/checklists`);
+    revalidatePath(`/dashboard/${weddingId}`);
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error?.message || "Gagal menghapus checklist" };

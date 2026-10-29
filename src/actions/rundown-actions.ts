@@ -96,6 +96,7 @@ export async function createRundownItemAction(input: RundownItemInput) {
   });
 
   revalidatePath(`/dashboard/${parsed.weddingId}/rundown`);
+  revalidatePath(`/dashboard/${parsed.weddingId}`);
   return toRundownDTO(item);
 }
 
@@ -130,6 +131,7 @@ export async function toggleRundownItemCompleteAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toRundownDTO(item);
 }
 
@@ -190,6 +192,7 @@ export async function shiftRundownTimelineAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true, shiftedCount: items.length - startIndex };
 }
 
@@ -214,6 +217,7 @@ export async function deleteRundownItemAction(rundownId: string, weddingId: stri
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }
 
@@ -280,5 +284,6 @@ export async function updateRundownItemAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/rundown`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toRundownDTO(item);
 }

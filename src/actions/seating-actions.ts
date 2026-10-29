@@ -54,6 +54,7 @@ export async function createSeatingTableAction(input: CreateSeatingTableInput) {
   });
 
   revalidatePath(`/dashboard/${input.weddingId}/seating`);
+  revalidatePath(`/dashboard/${input.weddingId}/guests`);
   return toTableDTO(table);
 }
 
@@ -92,6 +93,7 @@ export async function updateSeatingTableAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/seating`);
+  revalidatePath(`/dashboard/${weddingId}/guests`);
   return toTableDTO(table);
 }
 
@@ -123,6 +125,7 @@ export async function assignGuestToTableAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/seating`);
+  revalidatePath(`/dashboard/${weddingId}/guests`);
   return {
     id: assignment.id,
     event_id: assignment.eventId,
@@ -159,5 +162,6 @@ export async function deleteSeatingTableAction(tableId: string, weddingId: strin
   });
 
   revalidatePath(`/dashboard/${weddingId}/seating`);
+  revalidatePath(`/dashboard/${weddingId}/guests`);
   return { success: true };
 }

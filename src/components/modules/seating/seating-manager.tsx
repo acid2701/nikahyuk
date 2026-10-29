@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +59,7 @@ export function SeatingManager({
   initialTables,
   unassignedGuests,
 }: SeatingManagerProps) {
+  const router = useRouter();
   const [tables, setTables] = React.useState<SeatingTableItem[]>(initialTables);
   const [openModal, setOpenModal] = React.useState(false);
   const [openEditModal, setOpenEditModal] = React.useState(false);
@@ -110,12 +112,13 @@ export function SeatingManager({
 
       toast({
         title: "Meja Berhasil Dibuat",
-        description: `Meja '${tableName}' dengan kapasitas ${maxSeats} kursi telah ditambahkan.`,
+        description: `Meja '${tableName}' berhasil ditambahkan.`,
         variant: "success",
       });
 
       setOpenModal(false);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Membuat Meja",
@@ -141,14 +144,15 @@ export function SeatingManager({
       });
 
       toast({
-        title: "Data Meja Diperbarui",
-        description: `Perubahan rincian meja '${tableName}' tersimpan.`,
+        title: "Penataan Meja Diperbarui",
+        description: `Perubahan data meja '${tableName}' telah disimpan.`,
         variant: "success",
       });
 
       setOpenEditModal(false);
       setEditingTable(null);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Meja",
@@ -205,10 +209,11 @@ export function SeatingManager({
       await deleteSeatingTableAction(deleteTarget.id, weddingId);
       toast({
         title: "Meja Dihapus",
-        description: `Meja '${deleteTarget.name}' berhasil dihapus & tamu dikembalikan ke antrean.`,
+        description: `Meja '${deleteTarget.name}' berhasil dihapus.`,
         variant: "success",
       });
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Meja",

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -71,6 +72,7 @@ export function RundownManager({
   weddingDetails,
   initialRundowns,
 }: RundownManagerProps) {
+  const router = useRouter();
   const [rundowns, setRundowns] = React.useState<RundownItem[]>(initialRundowns);
   const [openModal, setOpenModal] = React.useState(false);
   const [openEditModal, setOpenEditModal] = React.useState(false);
@@ -138,6 +140,7 @@ export function RundownManager({
 
       setOpenModal(false);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menambahkan Agenda",
@@ -157,6 +160,7 @@ export function RundownManager({
         description: `Agenda ditandai ${!currentCompleted ? "SELESAI" : "PENDING"}.`,
         variant: "success",
       });
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Agenda",
@@ -178,6 +182,7 @@ export function RundownManager({
         variant: "success",
       });
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Agenda",

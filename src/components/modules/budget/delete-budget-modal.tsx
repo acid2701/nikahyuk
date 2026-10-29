@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +32,7 @@ export function DeleteBudgetItemModal({
   weddingId,
   onSuccess,
 }: DeleteBudgetItemModalProps) {
+  const router = useRouter();
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
 
@@ -47,6 +49,7 @@ export function DeleteBudgetItemModal({
 
       onOpenChange(false);
       onSuccess?.();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Pos Anggaran",

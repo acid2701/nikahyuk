@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +42,7 @@ export interface ShareTokenManagerProps {
 }
 
 export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManagerProps) {
+  const router = useRouter();
   const [tokens, setTokens] = React.useState<ShareTokenItem[]>(initialTokens);
   const [openModal, setOpenModal] = React.useState(false);
 
@@ -97,6 +99,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
       setOpenModal(false);
       setPin("");
       setExpiresDays("30");
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Membuat Tautan",
@@ -163,6 +166,7 @@ export function ShareTokenManager({ weddingId, initialTokens }: ShareTokenManage
         variant: "success",
       });
       setDeleteTarget(null);
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Menghapus Tautan",

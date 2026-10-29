@@ -108,6 +108,7 @@ export async function createBudgetItemWithMilestonesAction(input: BudgetItemInpu
   });
 
   revalidatePath(`/dashboard/${parsed.weddingId}/budget`);
+  revalidatePath(`/dashboard/${parsed.weddingId}`);
   return toBudgetItemDTO(item);
 }
 
@@ -158,6 +159,7 @@ export async function payMilestoneAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/budget`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toMilestoneDTO(milestone);
 }
 
@@ -182,6 +184,7 @@ export async function deleteBudgetItemAction(itemId: string, weddingId: string) 
   });
 
   revalidatePath(`/dashboard/${weddingId}/budget`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return { success: true };
 }
 
@@ -252,5 +255,6 @@ export async function updateBudgetItemAction(
   });
 
   revalidatePath(`/dashboard/${weddingId}/budget`);
+  revalidatePath(`/dashboard/${weddingId}`);
   return toBudgetItemDTO(item);
 }

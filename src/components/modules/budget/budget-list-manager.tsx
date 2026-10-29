@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,6 +27,7 @@ export interface BudgetListManagerProps {
 }
 
 export function BudgetListManager({ weddingId, initialItems }: BudgetListManagerProps) {
+  const router = useRouter();
   const [items, setItems] = React.useState<BudgetItemData[]>(initialItems);
   const [sideFilter, setSideFilter] = React.useState<"all" | "groom" | "bride" | "joint">("all");
   const [openEditModal, setOpenEditModal] = React.useState(false);
