@@ -56,19 +56,43 @@ export default async function GiftsPage(props: {
 
   const rawGifts = await prisma.giftLog.findMany({
     where: { eventId: activeEventId },
+    include: { guest: true },
     orderBy: { receivedAt: "desc" },
   });
 
-  const gifts = rawGifts.map((g) => ({
-    id: g.id,
-    event_id: g.eventId,
-    guest_id: g.guestId,
-    gift_type: g.giftType,
-    cash_amount: g.cashAmount ? Number(g.cashAmount) : null,
-    item_description: g.itemDescription,
-    received_by: g.receivedBy,
-    received_at: g.receivedAt.toISOString(),
-  }));
+  const gifts = rawGifts.map((g) => {
+    let giverName = g.guest?.fullName || "";
+    let itemDesc = g.itemDescription || "";
+
+    if (!giverName) {
+      if (g.giftType === "cash") {
+        giverName = g.itemDescription || "Tamu";
+        itemDesc = "Angpao Tunai";
+      } else if (itemDesc.includes(" - ")) {
+        const parts = itemDesc.split(" - ");
+        giverName = parts[0]?.trim() || "Tamu";
+        itemDesc = parts.slice(1).join(" - ")?.trim() || "Kado Fisik";
+      } else {
+        giverName = g.itemDescription || "Tamu";
+      }
+    }
+
+    return {
+      id: g.id,
+      event_id: g.eventId,
+      guest_id: g.guestId,
+      giver_name: giverName,
+      gift_type: g.giftType as any,
+      amount: g.cashAmount ? Number(g.cashAmount) : 0,
+      cash_amount: g.cashAmount ? Number(g.cashAmount) : 0,
+      item_description: itemDesc,
+      giver_side: (g.receivedBy || "joint") as any,
+      received_by: g.receivedBy,
+      notes: null,
+      created_at: g.receivedAt.toISOString(),
+      received_at: g.receivedAt.toISOString(),
+    };
+  });
 
   return (
     <div className="space-y-6">

@@ -87,20 +87,24 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
 
   function handleOpenEdit(gift: GiftLogItem) {
     setEditingGift(gift);
-    setGiverName(gift.giver_name);
-    setGiftType(gift.gift_type);
+    setGiverName(gift.giver_name || "");
+    setGiftType(gift.gift_type || "cash");
     setAmount(String(gift.amount || 0));
     setItemDescription(gift.item_description || "");
-    setGiverSide(gift.giver_side);
+    setGiverSide(gift.giver_side || "joint");
     setNotes(gift.notes || "");
     setOpenEditModal(true);
   }
 
   const filteredGifts = gifts.filter((g) => {
+    const gName = g.giver_name || "";
+    const gDesc = g.item_description || "";
+    const gNotes = g.notes || "";
+
     const matchesSearch =
-      g.giver_name.toLowerCase().includes(search.toLowerCase()) ||
-      (g.item_description && g.item_description.toLowerCase().includes(search.toLowerCase())) ||
-      (g.notes && g.notes.toLowerCase().includes(search.toLowerCase()));
+      gName.toLowerCase().includes(search.toLowerCase()) ||
+      gDesc.toLowerCase().includes(search.toLowerCase()) ||
+      gNotes.toLowerCase().includes(search.toLowerCase());
 
     const matchesSide = sideFilter === "all" || g.giver_side === sideFilter;
     const matchesType = typeFilter === "all" || g.gift_type === typeFilter;
@@ -187,6 +191,7 @@ export function GiftManager({ weddingId, eventId, initialGifts }: GiftManagerPro
       setOpenEditModal(false);
       setEditingGift(null);
       resetForm();
+      router.refresh();
     } catch (err) {
       toast({
         title: "Gagal Memperbarui Catatan",
