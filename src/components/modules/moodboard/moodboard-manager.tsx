@@ -20,7 +20,6 @@ import {
   Plus,
   Trash2,
   ExternalLink,
-  Sparkles,
   Check,
   Copy,
   Image as ImageIcon,
@@ -63,12 +62,12 @@ export interface MoodboardManagerProps {
 
 const CATEGORY_TABS = [
   { key: "all", label: "Semua Inspirasi" },
-  { key: "decor", label: "🌸 Dekorasi & Bunga" },
-  { key: "attire", label: "👗 Busana & Kain" },
-  { key: "makeup", label: "💄 MUA & Hairdo" },
-  { key: "photo", label: "📸 Mood Foto & Video" },
-  { key: "stationery", label: "💌 Undangan & Souvenir" },
-  { key: "other", label: "✨ Detail Lainnya" },
+  { key: "decor", label: "Dekorasi & Pelaminan" },
+  { key: "attire", label: "Busana & Kain" },
+  { key: "makeup", label: "MUA & Tata Rias" },
+  { key: "photo", label: "Foto & Video" },
+  { key: "stationery", label: "Undangan & Souvenir" },
+  { key: "other", label: "Detail Lainnya" },
 ] as const;
 
 const CURATED_PRESETS: { name: string; colors: ColorSwatchItem[] }[] = [
@@ -426,12 +425,12 @@ export function MoodboardManager({
                         onChange={(e) => setNewItemCategory(e.target.value as any)}
                         className="w-full h-9 text-xs rounded-md border border-input bg-background px-3 py-1 text-foreground shadow-xs"
                       >
-                        <option value="decor">🌸 Dekorasi & Bunga</option>
-                        <option value="attire">👗 Busana & Kain</option>
-                        <option value="makeup">💄 MUA & Hairdo</option>
-                        <option value="photo">📸 Mood Foto & Video</option>
-                        <option value="stationery">💌 Undangan & Souvenir</option>
-                        <option value="other">✨ Detail Lainnya</option>
+                        <option value="decor">Dekorasi & Pelaminan</option>
+                        <option value="attire">Busana & Kain</option>
+                        <option value="makeup">MUA & Tata Rias</option>
+                        <option value="photo">Foto & Video</option>
+                        <option value="stationery">Undangan & Souvenir</option>
+                        <option value="other">Detail Lainnya</option>
                       </select>
                     </div>
 
