@@ -10,7 +10,7 @@ export interface PresignedUrlResult {
 
 export async function generatePresignedUploadUrl(
   weddingId: string,
-  folder: "invoices" | "contracts" | "proofs" | "documents",
+  folder: "invoices" | "contracts" | "proofs" | "documents" | "moodboard",
   fileName: string,
   mimeType: string
 ): Promise<PresignedUrlResult> {
@@ -40,4 +40,17 @@ export async function generatePresignedUploadUrl(
     r2FileKey,
     publicUrl,
   };
+}
+
+export function formatR2PublicUrl(r2FileKey: string, publicCdnDomain?: string | null): string {
+  if (!r2FileKey) return "";
+  if (r2FileKey.startsWith("http://") || r2FileKey.startsWith("https://")) {
+    return r2FileKey;
+  }
+  const cleanKey = r2FileKey.replace(/^\//, "");
+  const cdn = (publicCdnDomain || "").replace(/\/$/, "");
+  if (cdn) {
+    return cdn.startsWith("http") ? `${cdn}/${cleanKey}` : `https://${cdn}/${cleanKey}`;
+  }
+  return `/api/storage/file/${cleanKey}`;
 }

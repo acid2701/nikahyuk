@@ -17,6 +17,7 @@ import {
   QrCode,
   HeartHandshake,
   CheckSquare,
+  Palette,
   Share2,
   LogOut,
 } from "lucide-react";
@@ -83,6 +84,11 @@ export function AppSidebar({
     {
       label: "Persiapan & Biaya",
       items: [
+        {
+          title: "Moodboard & Konsep",
+          href: `${baseUrl}/moodboard`,
+          icon: Palette,
+        },
         {
           title: "Checklist Persiapan",
           href: `${baseUrl}/checklists`,

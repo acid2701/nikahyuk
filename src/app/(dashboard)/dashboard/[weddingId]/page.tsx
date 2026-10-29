@@ -211,6 +211,17 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
           >
+            <Link href={`/dashboard/${weddingId}/moodboard`}>
+              🎨 Moodboard & Warna
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
+          >
             <Link href={`/dashboard/${weddingId}/budget`}>
               + Catat Pembayaran
             </Link>

@@ -36,7 +36,7 @@ export interface DynamicRules {
 
 export interface MediaUploaderDropzoneProps {
   weddingId: string;
-  folder: "invoices" | "contracts" | "proofs" | "documents";
+  folder: "invoices" | "contracts" | "proofs" | "documents" | "moodboard";
   maxSizeBytes?: number;
   allowedMimeTypes?: string[];
   multiple?: boolean;

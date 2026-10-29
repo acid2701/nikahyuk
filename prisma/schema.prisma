@@ -97,6 +97,8 @@ model Wedding {
   tokens        ShareableToken[]
   auditLogs     AuditLog[]
   checklists    WeddingChecklist[]
+  moodboardItems MoodboardItem[]
+  colorPalettes  WeddingColorPalette[]
 
   @@index([createdBy])
   @@index([weddingSlug])
@@ -472,4 +474,40 @@ model AuditLog {
 
   @@index([weddingId, createdAt(sort: Desc)])
   @@map("audit_logs")
+}
+
+// -------------------------------------------------------------
+// 9. MOODBOARD & WEDDING COLOR PALETTES
+// -------------------------------------------------------------
+model WeddingColorPalette {
+  id          String   @id @default(uuid())
+  weddingId   String   @map("wedding_id")
+  paletteName String   @default("Tema Utama") @map("palette_name")
+  colors      Json     @default("[]") // Array of { hex: string, name: string }
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([weddingId])
+  @@map("wedding_color_palettes")
+}
+
+model MoodboardItem {
+  id              String   @id @default(uuid())
+  weddingId       String   @map("wedding_id")
+  category        String   @default("decor") @map("category") // 'decor' | 'attire' | 'makeup' | 'photo' | 'stationery' | 'other'
+  title           String   @map("title")
+  notes           String?  @map("notes")
+  r2FileKey       String   @map("r2_file_key")
+  fileSizeBytes   BigInt?  @map("file_size_bytes")
+  mimeType        String?  @map("mime_type")
+  sourceUrl       String?  @map("source_url")
+  vendorName      String?  @map("vendor_name")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([weddingId, category])
+  @@map("moodboard_items")
 }
