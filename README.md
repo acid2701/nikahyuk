@@ -1,6 +1,8 @@
 # NikahYuk — Modern Wedding Planning & Event Management Platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI](https://github.com/acid2701/nikahyuk/actions/workflows/ci.yml/badge.svg)](https://github.com/acid2701/nikahyuk/actions/workflows/ci.yml)
+[![Tests: Vitest](https://img.shields.io/badge/Tests-21%20Passed-brightgreen.svg)](https://vitest.dev/)
 [![Next.js](https://img.shields.io/badge/Next.js-14_App_Router-black?logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.x-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
