@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/shared/theme/theme-provider";
 import { getAppBranding } from "@/lib/branding";
+import { DynamicFaviconUpdater } from "@/components/shared/branding/dynamic-favicon-updater";
 import "./globals.css";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -54,11 +55,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const branding = await getAppBranding();
+
   return (
     <html
       lang="id"
@@ -66,6 +69,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
+        <DynamicFaviconUpdater initialFavicon={branding.faviconUrl} />
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
