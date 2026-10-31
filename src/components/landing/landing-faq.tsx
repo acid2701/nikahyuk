@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, HelpCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export interface LandingFaqProps {
   appName: string;
@@ -12,30 +13,43 @@ export function LandingFaq({ appName }: LandingFaqProps) {
 
   const faqs = [
     {
-      q: `Apakah ${appName} dapat digunakan secara gratis?`,
-      a: `Ya! ${appName} dapat digunakan secara gratis untuk membuat jadwal acara pernikahan, mengelola sub-event (Akad/Resepsi), rundown, anggaran, dan daftar tamu.`,
+      q: `Apakah ${appName} beneran 100% gratis dipakai pengantin?`,
+      a: `Iya, 100% gratis! Kamu dan pasangan bisa langsung bikin workspace acara, atur rangkaian akad & resepsi, susun rundown live, kurasi moodboard warna tema, dan catat tamu tanpa dipungut biaya langganan.`,
     },
     {
-      q: "Bagaimana cara panitia atau kru lapangan mengakses jadwal tanpa login?",
-      a: "Melalui fitur Tautan Berbagi (Shareable Link), pasangan pengantin atau WO dapat membuat tautan khusus yang bisa langsung dibuka di browser HP kru tanpa perlu login akun, serta dapat diamankan dengan PIN 4–6 digit.",
+      q: "Gimana kalau pas hari-H sinyal di ballroom atau gedung mendadak hilang?",
+      a: "Aman banget. Modul check-in buku tamu di meja registrasi dilengkapi teknologi offline-ready di browser. Panitia tetap bisa scan barcode dan centang kehadiran tamu tanpa sinyal, lalu otomatis sinkron begitu internet nyala lagi.",
     },
     {
-      q: "Apakah fitur buku tamu & check-in tetap berjalan jika sinyal gedung hilang?",
-      a: "Bisa. Sistem dilengkapi penyimpanan offline di memori browser perangkat. Saat sinyal terputus, pencatatan tamu tetap berjalan lancar dan otomatis tersinkronisasi ke pusat saat internet kembali terhubung.",
+      q: "Apakah panitia keluarga, MC, atau vendor harus download aplikasi?",
+      a: "Nggak perlu sama sekali! Kamu cukup bagikan tautan khusus yang diproteksi PIN 4–6 digit. Panitia dan MC bisa langsung buka rundown dan daftar tamu lewat browser HP apa saja tanpa perlu bikin akun.",
     },
     {
-      q: "Apakah data rencana pernikahan kami aman dan bisa diunduh?",
-      a: "Sangat aman. Anda memiliki kendali penuh atas data dan dapat mengunduh salinan berkas lengkap (.zip) berisi arsip CSV dan dokumen pendukung kapan saja melalui menu Ekspor Data.",
+      q: "Bisa kolaborasi bareng Wedding Organizer (WO) atau pasangan?",
+      a: "Bisa banget! Kamu bisa undang pasanganmu sebagai Co-Owner atau undang tim WO dengan hak akses teratur, jadi kalian bisa nyicil persiapan bareng tanpa saling tumpuk file spreadsheet yang beda versi.",
+    },
+    {
+      q: "Apakah data rencana pernikahan kami aman dan bisa diekspor?",
+      a: "Sangat aman dan terisolasi. Seluruh arsip berkas, kontak tamu, dan rincian anggaran pernikahanmu bisa diunduh kapan saja dalam format arsip lengkap (.zip / Excel).",
     },
   ];
 
   return (
-    <section id="faq" className="py-16 md:py-24 border-t border-border/50 bg-background">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
+    <section id="faq" className="py-16 md:py-24 border-t border-border/60 bg-background">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="text-center space-y-2">
-          <h2 className="font-sans text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-            Pertanyaan yang Sering Diajukan (FAQ)
+          <Badge
+            variant="outline"
+            className="rounded-full px-3.5 py-1 text-xs font-semibold border-primary/30 text-primary bg-primary/5"
+          >
+            FAQ & Hal yang Sering Ditanyakan
+          </Badge>
+          <h2 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            Biar Makin Yakin & Nggak Bingung
           </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+            Jawaban singkat buat pertanyaan umum seputar persiapan acara di {appName}.
+          </p>
         </div>
 
         <div className="space-y-3">
@@ -44,22 +58,24 @@ export function LandingFaq({ appName }: LandingFaqProps) {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-border bg-card overflow-hidden transition-all"
+                className="rounded-2xl border border-border/80 bg-card overflow-hidden shadow-xs transition-all"
               >
                 <button
                   type="button"
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
-                  className="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-semibold text-foreground hover:bg-muted/30 cursor-pointer"
+                  className="w-full p-4 sm:p-5 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-foreground hover:bg-muted/40 cursor-pointer transition-colors"
                 >
-                  <span>{faq.q}</span>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                      isOpen ? "rotate-180 text-primary" : ""
+                  <span className="pr-4">{faq.q}</span>
+                  <div
+                    className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                      isOpen ? "rotate-180 bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                     }`}
-                  />
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </div>
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 text-xs text-muted-foreground leading-relaxed border-t border-border/40 pt-3">
+                  <div className="px-4 sm:px-5 pb-5 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/60 pt-3.5 font-normal">
                     {faq.a}
                   </div>
                 )}
