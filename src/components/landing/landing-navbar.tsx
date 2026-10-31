@@ -53,9 +53,6 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           <Link href="/#faq" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
             Tanya Jawab
           </Link>
-          <Link href="/vendor-register" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
-            Mitra Vendor
-          </Link>
         </nav>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
