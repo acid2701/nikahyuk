@@ -32,11 +32,11 @@ export function LandingHero({
         {/* Clean, Humanist Editorial Headline (Solid typography, no AI gradient clips) */}
         <div className="space-y-3 max-w-2xl mx-auto">
           <h1 className="font-sans text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
-            Semua rencana pernikahan rapi di satu tempat.
+            {heroTitle || "Semua rencana pernikahan rapi di satu tempat."}
           </h1>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-normal">
-            Susun jadwal rundown hari-H, undang tamu via WhatsApp, simpan palet warna tema, dan pantau pengeluaran bersama pasangan serta tim WO.
+            {heroSubtitle || "Susun jadwal rundown hari-H, undang tamu via WhatsApp, simpan palet warna tema, dan pantau pengeluaran bersama pasangan serta tim WO."}
           </p>
         </div>
 

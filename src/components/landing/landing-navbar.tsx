@@ -46,16 +46,16 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center space-x-6 text-xs font-medium text-muted-foreground">
-          <a href="#features" className="hover:text-foreground transition-colors">
-            Fitur Unggulan
+        <nav className="hidden md:flex items-center gap-1 bg-muted/40 p-1 rounded-full border border-border/60 text-xs font-medium text-muted-foreground">
+          <a href="#features" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
+            Fitur & Layanan
           </a>
-          <a href="#advantages" className="hover:text-foreground transition-colors">
-            Keunggulan
+          <a href="#faq" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
+            Tanya Jawab
           </a>
-          <a href="#faq" className="hover:text-foreground transition-colors">
-            FAQ
-          </a>
+          <Link href="/vendor-register" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
+            Mitra Vendor
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
