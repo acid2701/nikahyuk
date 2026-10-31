@@ -47,12 +47,12 @@ export function LandingNavbar({ appName, logoUrl, isLoggedIn }: LandingNavbarPro
         </Link>
 
         <nav className="hidden md:flex items-center gap-1 bg-muted/40 p-1 rounded-full border border-border/60 text-xs font-medium text-muted-foreground">
-          <a href="#features" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
+          <Link href="/#features" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
             Fitur & Layanan
-          </a>
-          <a href="#faq" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
+          </Link>
+          <Link href="/#faq" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
             Tanya Jawab
-          </a>
+          </Link>
           <Link href="/vendor-register" className="px-3.5 py-1.5 rounded-full hover:text-foreground hover:bg-background/80 transition-all">
             Mitra Vendor
           </Link>

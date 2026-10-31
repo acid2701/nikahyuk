@@ -63,16 +63,21 @@ export default async function PublicVendorPage(props: {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Top Public Header */}
-      <header className="border-b border-border bg-card sticky top-0 z-20 h-14 px-4 sm:px-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center space-x-2">
+      <header className="border-b border-border bg-card/90 backdrop-blur-md sticky top-0 z-20 h-16 px-4 sm:px-6 flex items-center justify-between">
+        <Link href="/" className="flex items-center space-x-2.5">
           {branding.logoUrl ? (
-            <img src={branding.logoUrl} alt={branding.appName} className="h-6 w-auto max-w-[100px] object-contain rounded" />
+            <img src={branding.logoUrl} alt={branding.appName} className="h-8 w-8 object-contain rounded" />
           ) : null}
-          <span className="font-sans text-xl font-bold text-primary">{branding.appName}</span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">• Partner & Event Catalog</span>
+          <span className="font-sans text-xl font-bold tracking-tight text-foreground">{branding.appName}</span>
+          <span className="text-xs text-muted-foreground hidden sm:inline">• Katalog Resmi Mitra Vendor</span>
         </Link>
 
         <div className="flex items-center space-x-2">
+          <Button asChild variant="ghost" size="sm" className="rounded-full text-xs font-semibold hover:bg-muted">
+            <Link href="/" className="flex items-center gap-1.5">
+              <ArrowLeft className="h-3.5 w-3.5" /> Beranda
+            </Link>
+          </Button>
           {partner.sanitized_phone && (
             <WAButton
               phone={partner.sanitized_phone}
