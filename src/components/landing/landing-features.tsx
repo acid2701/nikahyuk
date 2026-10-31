@@ -18,12 +18,6 @@ export function LandingFeatures() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
         {/* Section Header */}
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <Badge
-            variant="outline"
-            className="rounded-full px-3.5 py-1 text-xs font-semibold border-border text-muted-foreground bg-muted/40"
-          >
-            Fitur Utama Workspace
-          </Badge>
           <h2 className="font-sans text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
             Dirancang praktis untuk hari bahagia Anda.
           </h2>

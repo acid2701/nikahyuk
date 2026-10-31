@@ -38,17 +38,11 @@ export function LandingFaq({ appName }: LandingFaqProps) {
     <section id="faq" className="py-16 md:py-24 border-t border-border/60 bg-background">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-10">
         <div className="text-center space-y-2">
-          <Badge
-            variant="outline"
-            className="rounded-full px-3.5 py-1 text-xs font-semibold border-primary/30 text-primary bg-primary/5"
-          >
-            FAQ & Hal yang Sering Ditanyakan
-          </Badge>
           <h2 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Biar Makin Yakin & Nggak Bingung
+            Pertanyaan yang Sering Diajukan
           </h2>
-          <p className="text-xs sm:text-sm text-muted-foreground font-medium">
-            Jawaban singkat buat pertanyaan umum seputar persiapan acara di {appName}.
+          <p className="text-xs sm:text-sm text-muted-foreground font-normal">
+            Informasi seputar persiapan acara dan penggunaan {appName}.
           </p>
         </div>
 

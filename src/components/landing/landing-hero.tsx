@@ -29,11 +29,6 @@ export function LandingHero({
   return (
     <section className="relative pt-12 pb-16 md:pt-18 md:pb-24 border-b border-border/50">
       <div className="max-w-4xl mx-auto text-center px-4 space-y-6">
-        {/* Simple Label Pill (No pulse, no multi-color gradient) */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-border bg-muted/30 text-xs font-semibold text-foreground/80 mx-auto">
-          <span>Manajemen Pernikahan & Hari-H</span>
-        </div>
-
         {/* Clean, Humanist Editorial Headline (Solid typography, no AI gradient clips) */}
         <div className="space-y-3 max-w-2xl mx-auto">
           <h1 className="font-sans text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
