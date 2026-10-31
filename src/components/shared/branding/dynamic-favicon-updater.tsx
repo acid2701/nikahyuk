@@ -15,15 +15,30 @@ export function DynamicFaviconUpdater({ initialFavicon }: { initialFavicon?: str
     const faviconUrl = branding.faviconUrl || initialFavicon;
     if (!faviconUrl) return;
 
-    // Find or create favicon link tag
-    let link: HTMLLinkElement | null = document.querySelector("link[rel*='icon']");
+    // Remove any hardcoded or auto-injected favicon links
+    const existingLinks = document.querySelectorAll("link[rel*='icon']");
+    existingLinks.forEach((el) => {
+      if (el.getAttribute("href") !== faviconUrl) {
+        el.remove();
+      }
+    });
+
+    // Create or update canonical link icon
+    let link: HTMLLinkElement | null = document.querySelector("link[rel='icon']");
     if (!link) {
       link = document.createElement("link");
-      link.type = "image/x-icon";
-      link.rel = "shortcut icon";
-      document.getElementsByTagName("head")[0].appendChild(link);
+      link.rel = "icon";
+      document.head.appendChild(link);
     }
     link.href = faviconUrl;
+
+    let shortcut: HTMLLinkElement | null = document.querySelector("link[rel='shortcut icon']");
+    if (!shortcut) {
+      shortcut = document.createElement("link");
+      shortcut.rel = "shortcut icon";
+      document.head.appendChild(shortcut);
+    }
+    shortcut.href = faviconUrl;
   }, [branding.faviconUrl, initialFavicon]);
 
   return null;

@@ -26,7 +26,11 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: branding.heroSubtitle || branding.tagline,
     icons: {
-      icon: branding.faviconUrl || "/favicon.ico",
+      icon: [
+        {
+          url: branding.faviconUrl || "/favicon.ico",
+        },
+      ],
       shortcut: branding.faviconUrl || "/favicon.ico",
       apple: branding.logoUrl || branding.faviconUrl || "/favicon.ico",
     },
