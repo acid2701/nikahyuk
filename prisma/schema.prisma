@@ -86,6 +86,10 @@ model Wedding {
   brideName   String   @map("bride_name")
   weddingSlug String   @unique @map("wedding_slug")
   pairCode    String?  @unique @map("pair_code")
+  groomFatherName String? @map("groom_father_name")
+  groomMotherName String? @map("groom_mother_name")
+  brideFatherName String? @map("bride_father_name")
+  brideMotherName String? @map("bride_mother_name")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 

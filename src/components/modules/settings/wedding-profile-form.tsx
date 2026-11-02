@@ -94,10 +94,13 @@ export function WeddingProfileForm({
 
       setEditing(false);
       router.refresh();
-    } catch (err) {
+    } catch (err: any) {
+      const msg = err?.message || "Terjadi kesalahan internal.";
       toast({
         title: "Gagal Menyimpan",
-        description: err instanceof Error ? err.message : "Internal error",
+        description: msg.includes("Minified React error")
+          ? "Gagal menyimpan data. Pastikan nama pengantin dan slug acara valid."
+          : msg,
         variant: "destructive",
       });
     } finally {

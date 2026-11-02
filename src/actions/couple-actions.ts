@@ -83,8 +83,8 @@ export async function heartbeatCouplePresenceAction(
       userRole: p.userRole,
       currentPath: p.currentPath,
       isOnline: Date.now() - new Date(p.lastActive).getTime() < activeThreshold,
-      lastActive: p.lastActive,
-    }));
+      lastActive: p.lastActive instanceof Date ? p.lastActive.toISOString() : String(p.lastActive),
+    })) as any;
 
     return { success: true, activeUsers };
   } catch (err) {
@@ -100,7 +100,18 @@ export async function getCoupleNotesAction(weddingId: string) {
       orderBy: { createdAt: "desc" },
       take: 20,
     });
-    return { success: true, notes };
+    return {
+      success: true,
+      notes: notes.map((n) => ({
+        id: n.id,
+        authorRole: n.authorRole,
+        authorName: n.authorName,
+        content: n.content,
+        tag: n.tag,
+        isDone: n.isDone,
+        createdAt: n.createdAt.toISOString(),
+      })),
+    };
   } catch (err) {
     console.error("getCoupleNotesAction error:", err);
     return { success: false, notes: [] };
@@ -133,7 +144,18 @@ export async function createCoupleNoteAction(params: {
     });
 
     revalidatePath(`/dashboard/${params.weddingId}`);
-    return { success: true, note };
+    return {
+      success: true,
+      note: {
+        id: note.id,
+        authorRole: note.authorRole,
+        authorName: note.authorName,
+        content: note.content,
+        tag: note.tag,
+        isDone: note.isDone,
+        createdAt: note.createdAt.toISOString(),
+      },
+    };
   } catch (err) {
     console.error("createCoupleNoteAction error:", err);
     throw err;
@@ -155,7 +177,18 @@ export async function toggleCoupleNoteAction(params: {
     });
 
     revalidatePath(`/dashboard/${params.weddingId}`);
-    return { success: true, note: updated };
+    return {
+      success: true,
+      note: {
+        id: updated.id,
+        authorRole: updated.authorRole,
+        authorName: updated.authorName,
+        content: updated.content,
+        tag: updated.tag,
+        isDone: updated.isDone,
+        createdAt: updated.createdAt.toISOString(),
+      },
+    };
   } catch (err) {
     console.error("toggleCoupleNoteAction error:", err);
     throw err;
