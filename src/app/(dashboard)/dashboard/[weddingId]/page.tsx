@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { TamanCintaWidget } from "@/components/modules/overview/taman-cinta-widget";
 
 export default async function WeddingOverviewPage(props: {
   params: Promise<any>;
@@ -252,7 +253,19 @@ export default async function WeddingOverviewPage(props: {
         </div>
       </div>
 
-      {/* 2. ELEVATED KPI CARDS DENGAN VISUAL PROGRESS BAR */}
+      {/* 2. EMOTIONAL GAMIFICATION: TAMAN CINTA (MELD PATTERN) */}
+      <TamanCintaWidget
+        weddingId={weddingId}
+        groomName={wedding?.groomName || "Pengantin Pria"}
+        brideName={wedding?.brideName || "Pengantin Wanita"}
+        checklistTotal={totalChecklists}
+        checklistCompleted={completedChecklists}
+        budgetEstTotal={totalBudgetEst}
+        budgetPaidTotal={totalBudgetPaid}
+        daysUntilWedding={daysUntilWedding}
+      />
+
+      {/* 3. ELEVATED KPI CARDS DENGAN VISUAL PROGRESS BAR */}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPI 1: RSVP TAMU */}
         <Card className="rounded-3xl border border-border/80 bg-card p-5 hover:border-emerald-500/40 hover:shadow-sm transition-all flex flex-col justify-between">

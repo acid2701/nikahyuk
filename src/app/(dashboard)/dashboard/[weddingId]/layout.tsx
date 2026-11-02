@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/shared/navigation/app-sidebar";
 import { DashboardHeader } from "@/components/shared/navigation/dashboard-header";
 import { EventScopeHeader } from "@/components/layout/event-scope-header";
 import { SubEventOption } from "@/components/shared/navigation/event-switcher";
+import { MobileBottomNav } from "@/components/shared/navigation/mobile-bottom-nav";
 
 export default async function WeddingDashboardLayout(props: {
   children: React.ReactNode;
@@ -89,7 +90,8 @@ export default async function WeddingDashboardLayout(props: {
             />
           </Suspense>
         )}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">{props.children}</main>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">{props.children}</main>
+        <MobileBottomNav weddingId={weddingId} />
       </div>
     </div>
   );
