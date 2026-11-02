@@ -99,6 +99,8 @@ model Wedding {
   checklists    WeddingChecklist[]
   moodboardItems MoodboardItem[]
   colorPalettes  WeddingColorPalette[]
+  coupleNotes   CoupleNote[]
+  couplePresence CouplePresence[]
 
   @@index([createdBy])
   @@index([weddingSlug])
@@ -510,4 +512,40 @@ model MoodboardItem {
 
   @@index([weddingId, category])
   @@map("moodboard_items")
+}
+
+// -------------------------------------------------------------
+// 10. REAL-TIME COUPLE COLLABORATION & PRESENCE (MELD PATTERN)
+// -------------------------------------------------------------
+model CoupleNote {
+  id         String   @id @default(uuid())
+  weddingId  String   @map("wedding_id")
+  authorRole String   @default("groom") @map("author_role") // 'groom' | 'bride' | 'partner'
+  authorName String   @map("author_name")
+  content    String
+  tag        String   @default("Catatan") // 'Catatan' | 'Impian' | 'Tugas' | 'Perhatian' | 'Cinta'
+  isDone     Boolean  @default(false) @map("is_done")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@index([weddingId, createdAt(sort: Desc)])
+  @@map("couple_notes")
+}
+
+model CouplePresence {
+  id          String   @id @default(uuid())
+  weddingId   String   @map("wedding_id")
+  userId      String   @map("user_id")
+  userName    String   @map("user_name")
+  userRole    String   @default("groom") @map("user_role") // 'groom' | 'bride' | 'partner'
+  currentPath String   @default("/dashboard") @map("current_path")
+  lastActive  DateTime @default(now()) @map("last_active")
+
+  wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
+
+  @@unique([weddingId, userId])
+  @@index([weddingId, lastActive])
+  @@map("couple_presence")
 }

@@ -16,6 +16,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TamanCintaWidget } from "@/components/modules/overview/taman-cinta-widget";
+import { CoupleSyncCard } from "@/components/modules/overview/couple-sync-card";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export default async function WeddingOverviewPage(props: {
   params: Promise<any>;
@@ -138,6 +140,15 @@ export default async function WeddingOverviewPage(props: {
   });
   const checklistPercentage =
     totalChecklists > 0 ? Math.round((completedChecklists / totalChecklists) * 100) : 0;
+
+  const [sessionUser, rawCoupleNotes] = await Promise.all([
+    getCurrentUser(),
+    prisma.coupleNote.findMany({
+      where: { weddingId },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
+  ]);
 
   return (
     <div className="space-y-6 sm:space-y-8 select-none">
@@ -397,7 +408,24 @@ export default async function WeddingOverviewPage(props: {
         </Card>
       </div>
 
-      {/* 3. SUB-EVENTS ITINERARY CARDS (AIRBNB CARD STANDARD) */}
+      {/* 4. REAL-TIME COUPLE COLLABORATION & SHARED NOTES (MELD PATTERN) */}
+      <CoupleSyncCard
+        weddingId={weddingId}
+        groomName={wedding?.groomName || "Pengantin Pria"}
+        brideName={wedding?.brideName || "Pengantin Wanita"}
+        initialNotes={rawCoupleNotes.map((n: any) => ({
+          id: n.id,
+          authorRole: n.authorRole,
+          authorName: n.authorName,
+          content: n.content,
+          tag: n.tag,
+          isDone: n.isDone,
+          createdAt: n.createdAt.toISOString(),
+        }))}
+        currentUserEmail={sessionUser?.email || "user@nikahyu.my.id"}
+      />
+
+      {/* 5. SUB-EVENTS ITINERARY CARDS (AIRBNB CARD STANDARD) */}
       <Card className="rounded-3xl border border-border/80 shadow-xs overflow-hidden">
         <CardHeader className="p-5 sm:p-6 pb-4 border-b border-border/60 bg-muted/10">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
