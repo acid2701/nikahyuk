@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Plus, Heart, Shield, Users, ArrowRight } from "lucide-react";
 import { CreateWeddingModal } from "@/components/modules/settings/create-wedding-modal";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export interface WorkspaceItem {
   id: string;
@@ -81,7 +82,10 @@ export default async function DashboardSelectorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6">
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6 relative">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
       <div className="max-w-3xl w-full space-y-6">
         <div className="text-center space-y-2">
           <Heart className="h-10 w-10 text-primary mx-auto" />

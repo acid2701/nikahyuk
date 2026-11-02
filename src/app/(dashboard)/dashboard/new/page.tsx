@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/components/ui/use-toast";
 import { Heart, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export default function NewWeddingPage() {
   const [groomName, setGroomName] = React.useState("");
@@ -61,7 +62,10 @@ export default function NewWeddingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6">
+    <div className="min-h-screen bg-background flex flex-col justify-center items-center p-6 relative">
+      <div className="absolute top-4 right-4 z-20">
+        <ThemeToggle />
+      </div>
       <div className="max-w-md w-full space-y-6">
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs px-2 mb-2">

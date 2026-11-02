@@ -22,6 +22,7 @@ import {
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getAppBranding } from "@/lib/branding";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export async function generateMetadata(props: {
   params: Promise<{ vendorId: string }>;
@@ -73,6 +74,7 @@ export default async function PublicVendorPage(props: {
         </Link>
 
         <div className="flex items-center space-x-2">
+          <ThemeToggle />
           <Button asChild variant="ghost" size="sm" className="rounded-full text-xs font-semibold hover:bg-muted">
             <Link href="/" className="flex items-center gap-1.5">
               <ArrowLeft className="h-3.5 w-3.5" /> Beranda

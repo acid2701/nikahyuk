@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { UserProfileForm } from "@/components/modules/profile/user-profile-form";
 import { ChangePasswordForm } from "@/components/modules/profile/change-password-form";
 import { UserWorkspacesCard, WorkspaceItem } from "@/components/modules/profile/user-workspaces-card";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export default async function GlobalUserProfilePage() {
   const session = await getCurrentUser();
@@ -71,13 +72,16 @@ export default async function GlobalUserProfilePage() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto py-4">
-      <div>
-        <h1 className="font-sans text-2xl font-bold tracking-tight">
-          Pengaturan Profil Akun Saya
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Kelola informasi identitas akun, keamanan kata sandi, dan ruang kerja pernikahan terhubung.
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="font-sans text-2xl font-bold tracking-tight">
+            Pengaturan Profil Akun Saya
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Kelola informasi identitas akun, keamanan kata sandi, dan ruang kerja pernikahan terhubung.
+          </p>
+        </div>
+        <ThemeToggle />
       </div>
 
       <UserProfileForm
