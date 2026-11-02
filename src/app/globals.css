@@ -3,6 +3,7 @@
 @config "../../tailwind.config.ts";
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant cute (&:is(.cute *));
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -125,6 +126,45 @@
     --border: 240 6% 16%;
     --input: 240 6% 16%;
     --ring: 349 100% 61%;
+  }
+
+  .cute {
+    /* Cute Blush Mode (MELD Pattern: Soft Rose Milk #FFF5F5 & Romantic Clean Accent #F43F5E) */
+    --background: 350 100% 98%;
+    --foreground: 240 10% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 15%;
+
+    /* Primary Accent Rose-500 #F43F5E */
+    --primary: 349 89% 60%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary Accent Soft Rose Wash #FFE4E6 */
+    --secondary: 350 89% 95%;
+    --secondary-foreground: 349 89% 30%;
+
+    /* Muted Elements */
+    --muted: 350 40% 96%;
+    --muted-foreground: 350 15% 45%;
+
+    /* Interactive Accent */
+    --accent: 350 89% 95%;
+    --accent-foreground: 349 89% 45%;
+
+    /* Status Indicators */
+    --success: 152 68% 40%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 90% 15%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Borders: Soft Rose Border rgba(254, 205, 211, 0.6) */
+    --border: 350 70% 91%;
+    --input: 350 70% 91%;
+    --ring: 349 89% 60%;
   }
 }
 
