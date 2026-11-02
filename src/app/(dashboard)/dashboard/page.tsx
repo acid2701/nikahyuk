@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Plus, Heart, Shield, Users, ArrowRight } from "lucide-react";
 import { CreateWeddingModal } from "@/components/modules/settings/create-wedding-modal";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
+import { JoinPairCodeModal } from "@/components/modules/overview/join-pair-code-modal";
 
 export interface WorkspaceItem {
   id: string;
@@ -144,10 +145,12 @@ export default async function DashboardSelectorPage() {
           )}
         </div>
 
-        <div className="flex justify-center pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+          <JoinPairCodeModal />
+
           <CreateWeddingModal
             trigger={
-              <Button size="lg" className="gap-2 px-6 h-11 text-sm font-semibold shadow-md">
+              <Button size="lg" className="gap-2 px-6 h-11 text-sm font-semibold shadow-md meld-bouncy bg-[#ff385c] hover:bg-[#e00b41] text-white">
                 <Plus className="h-4 w-4" />
                 Buat Acara Pernikahan Baru
               </Button>

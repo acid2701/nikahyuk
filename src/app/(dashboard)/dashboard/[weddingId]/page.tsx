@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TamanCintaWidget } from "@/components/modules/overview/taman-cinta-widget";
 import { CoupleSyncCard } from "@/components/modules/overview/couple-sync-card";
+import { CouplePairModal } from "@/components/modules/overview/couple-pair-modal";
 import { getCurrentUser } from "@/lib/auth/session";
 
 export default async function WeddingOverviewPage(props: {
@@ -249,6 +250,12 @@ export default async function WeddingOverviewPage(props: {
               + Buat Agenda Rundown
             </Link>
           </Button>
+
+          <CouplePairModal
+            weddingId={weddingId}
+            groomName={wedding?.groomName || "Pengantin Pria"}
+            brideName={wedding?.brideName || "Pengantin Wanita"}
+          />
 
           <Button
             asChild

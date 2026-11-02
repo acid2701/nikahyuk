@@ -181,3 +181,159 @@ export async function deleteCoupleNoteAction(params: {
     throw err;
   }
 }
+
+// -------------------------------------------------------------
+// KODE PENYANDING PASANGAN (PAIRING CODE / HYBRID INVITE)
+// -------------------------------------------------------------
+function generatePairCode(): string {
+  // Format bersih: NIKAH-XXXX (4 karakter alfanumerik kapital tanpa huruf membingungkan 0/O/1/I)
+  const chars = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+  let suffix = "";
+  for (let i = 0; i < 4; i++) {
+    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `NIKAH-${suffix}`;
+}
+
+export async function getOrGeneratePairCodeAction(weddingId: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Akses tidak sah.");
+
+    const wedding = await prisma.wedding.findUnique({
+      where: { id: weddingId },
+      select: { id: true, createdBy: true, pairCode: true, groomName: true, brideName: true },
+    });
+
+    if (!wedding) throw new Error("Workspace tidak ditemukan.");
+
+    // Cek apakah sudah ada collaborator bertipe partner
+    const existingPartner = await prisma.weddingCollaborator.findFirst({
+      where: {
+        weddingId,
+        role: "partner",
+      },
+      include: {
+        user: {
+          select: { email: true, fullName: true },
+        },
+      },
+    });
+
+    if (wedding.pairCode) {
+      return {
+        success: true,
+        pairCode: wedding.pairCode,
+        isPaired: Boolean(existingPartner),
+        partner: existingPartner?.user || null,
+      };
+    }
+
+    // Generate kode baru yang unik
+    let newCode = generatePairCode();
+    let isUnique = false;
+    while (!isUnique) {
+      const existing = await prisma.wedding.findUnique({
+        where: { pairCode: newCode },
+      });
+      if (!existing) isUnique = true;
+      else newCode = generatePairCode();
+    }
+
+    await prisma.wedding.update({
+      where: { id: weddingId },
+      data: { pairCode: newCode },
+    });
+
+    revalidatePath(`/dashboard/${weddingId}`);
+    return {
+      success: true,
+      pairCode: newCode,
+      isPaired: Boolean(existingPartner),
+      partner: existingPartner?.user || null,
+    };
+  } catch (err) {
+    console.error("getOrGeneratePairCodeAction error:", err);
+    throw err;
+  }
+}
+
+export async function connectViaPairCodeAction(rawCode: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("Silakan masuk/login terlebih dahulu untuk menyandingkan workspace.");
+
+    const cleanCode = rawCode.trim().toUpperCase();
+    if (!cleanCode) throw new Error("Kode penyanding tidak boleh kosong.");
+
+    const wedding = await prisma.wedding.findUnique({
+      where: { pairCode: cleanCode },
+      include: {
+        user: { select: { email: true, fullName: true } },
+      },
+    });
+
+    if (!wedding) {
+      throw new Error("Kode penyanding tidak valid atau tidak ditemukan.");
+    }
+
+    if (wedding.createdBy === user.userId) {
+      throw new Error("Anda adalah pemilik utama workspace ini.");
+    }
+
+    // Periksa apakah user sudah terhubung
+    const existingCollab = await prisma.weddingCollaborator.findUnique({
+      where: {
+        weddingId_userId: {
+          weddingId: wedding.id,
+          userId: user.userId,
+        },
+      },
+    });
+
+    if (existingCollab) {
+      // Pastikan role-nya partner
+      if (existingCollab.role !== "partner") {
+        await prisma.weddingCollaborator.update({
+          where: { id: existingCollab.id },
+          data: { role: "partner" },
+        });
+      }
+    } else {
+      // Hubungkan sebagai Partner resmi (Akses penuh setara Owner)
+      const fullPartnerPerms = {
+        can_edit_rundown: true,
+        can_manage_guests: true,
+        can_view_budget: true,
+        can_edit_budget: true,
+        can_view_gifts: true,
+        is_active: true,
+        invited_email: user.email,
+        connected_via: "PAIR_CODE",
+      };
+
+      await prisma.weddingCollaborator.create({
+        data: {
+          weddingId: wedding.id,
+          userId: user.userId,
+          role: "partner",
+          customPermissions: fullPartnerPerms,
+        },
+      });
+    }
+
+    revalidatePath(`/dashboard`);
+    revalidatePath(`/dashboard/${wedding.id}`);
+
+    return {
+      success: true,
+      weddingId: wedding.id,
+      groomName: wedding.groomName,
+      brideName: wedding.brideName,
+    };
+  } catch (err) {
+    console.error("connectViaPairCodeAction error:", err);
+    throw err;
+  }
+}
+
