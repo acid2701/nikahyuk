@@ -5,6 +5,7 @@ import { UserProfileForm } from "@/components/modules/profile/user-profile-form"
 import { ChangePasswordForm } from "@/components/modules/profile/change-password-form";
 import { UserWorkspacesCard, WorkspaceItem } from "@/components/modules/profile/user-workspaces-card";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
+import { ThemePreferenceCard } from "@/components/shared/theme/theme-preference-card";
 
 export default async function GlobalUserProfilePage() {
   const session = await getCurrentUser();
@@ -91,6 +92,8 @@ export default async function GlobalUserProfilePage() {
         provider={provider}
         createdAt={user.createdAt ? user.createdAt.toISOString() : new Date().toISOString()}
       />
+
+      <ThemePreferenceCard />
 
       <ChangePasswordForm isOAuthUser={isOAuthUser} />
 

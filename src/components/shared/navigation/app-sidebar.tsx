@@ -24,6 +24,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { DonationQrisModal } from "@/components/shared/modal/donation-qris-modal";
+import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 
 export interface AppSidebarProps {
   weddingId?: string;
@@ -234,7 +235,12 @@ export function AppSidebar({
           </nav>
         </div>
 
-        <div className="p-3.5 border-t border-border/70 space-y-2.5 shrink-0 bg-background/50">
+        <div className="p-3.5 border-t border-border/70 space-y-2 shrink-0 bg-background/50">
+          <div className="flex items-center justify-between px-1 py-0.5">
+            <span className="text-[11px] font-medium text-muted-foreground">Pilihan Tema</span>
+            <ThemeToggle />
+          </div>
+
           <button
             type="button"
             onClick={() => setOpenDonationModal(true)}
