@@ -56,7 +56,7 @@ function toGiftDTO(g: any) {
     cashAmount: Number(g.cashAmount) || 0,
     itemDescription: itemDesc,
     receivedBy: g.receivedBy || "joint",
-    receivedAt: g.receivedAt,
+    receivedAt: g.receivedAt instanceof Date ? g.receivedAt.toISOString() : String(g.receivedAt || ""),
   };
 }
 

@@ -21,7 +21,7 @@ function toTableDTO(t: any) {
     table_number_or_name: t.tableNumberOrName,
     max_seats: t.maxSeats,
     notes: t.notes || null,
-    created_at: t.createdAt?.toISOString?.() || t.createdAt,
+    created_at: t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt || ""),
     eventId: t.eventId,
     tableNumberOrName: t.tableNumberOrName,
     maxSeats: t.maxSeats,

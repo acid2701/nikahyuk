@@ -45,8 +45,8 @@ function toChecklistDTO(c: any): DBChecklistItem {
       : null,
     assignee_name: c.assignedTo || null,
     is_completed: c.isCompleted,
-    created_at: c.createdAt?.toISOString?.() || c.createdAt,
-    updated_at: c.updatedAt?.toISOString?.() || c.updatedAt,
+    created_at: c.createdAt instanceof Date ? c.createdAt.toISOString() : String(c.createdAt || ""),
+    updated_at: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : String(c.updatedAt || ""),
   };
 }
 

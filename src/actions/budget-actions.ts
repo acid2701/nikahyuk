@@ -8,30 +8,33 @@ import { BudgetItemInput, BudgetItemInputSchema } from "@/types/budget.types";
 
 function toMilestoneDTO(m: any) {
   if (!m) return null;
+  const formattedDueDate = m.dueDate
+    ? m.dueDate instanceof Date
+      ? m.dueDate.toISOString().split("T")[0]
+      : String(m.dueDate).split("T")[0]
+    : null;
+  const formattedPaidDate = m.paidDate
+    ? m.paidDate instanceof Date
+      ? m.paidDate.toISOString().split("T")[0]
+      : String(m.paidDate).split("T")[0]
+    : null;
+
   return {
     id: m.id,
     budget_item_id: m.budgetItemId,
     milestone_name: m.milestoneName,
     amount: Number(m.amount),
-    due_date: m.dueDate
-      ? m.dueDate instanceof Date
-        ? m.dueDate.toISOString().split("T")[0]
-        : String(m.dueDate).split("T")[0]
-      : null,
-    paid_date: m.paidDate
-      ? m.paidDate instanceof Date
-        ? m.paidDate.toISOString().split("T")[0]
-        : String(m.paidDate).split("T")[0]
-      : null,
+    due_date: formattedDueDate,
+    paid_date: formattedPaidDate,
     alert_days_before: m.alertDaysBefore,
     payment_status: m.paymentStatus,
     paid_by: m.paidBy || "joint",
-    created_at: m.createdAt?.toISOString?.() || m.createdAt,
-    updated_at: m.updatedAt?.toISOString?.() || m.updatedAt,
+    created_at: m.createdAt instanceof Date ? m.createdAt.toISOString() : String(m.createdAt || ""),
+    updated_at: m.updatedAt instanceof Date ? m.updatedAt.toISOString() : String(m.updatedAt || ""),
     budgetItemId: m.budgetItemId,
     milestoneName: m.milestoneName,
-    dueDate: m.dueDate,
-    paidDate: m.paidDate,
+    dueDate: formattedDueDate,
+    paidDate: formattedPaidDate,
     alertDaysBefore: m.alertDaysBefore,
     paymentStatus: m.paymentStatus,
     paidBy: m.paidBy || "joint",
@@ -49,8 +52,8 @@ function toBudgetItemDTO(b: any) {
     estimated_cost: Number(b.estimatedCost),
     target_payer: b.targetPayer,
     notes: b.notes || null,
-    created_at: b.createdAt?.toISOString?.() || b.createdAt,
-    updated_at: b.updatedAt?.toISOString?.() || b.updatedAt,
+    created_at: b.createdAt instanceof Date ? b.createdAt.toISOString() : String(b.createdAt || ""),
+    updated_at: b.updatedAt instanceof Date ? b.updatedAt.toISOString() : String(b.updatedAt || ""),
     eventId: b.eventId,
     categoryId: b.categoryId || null,
     vendorId: b.vendorId || null,

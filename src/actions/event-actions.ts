@@ -19,25 +19,26 @@ export interface CreateEventInput {
 
 function toEventDTO(e: any) {
   if (!e) return null;
+  const formattedDate = e.eventDate
+    ? e.eventDate instanceof Date
+      ? e.eventDate.toISOString().split("T")[0]
+      : String(e.eventDate).split("T")[0]
+    : null;
   return {
     id: e.id,
     wedding_id: e.weddingId,
     event_name: e.eventName,
-    event_date: e.eventDate
-      ? e.eventDate instanceof Date
-        ? e.eventDate.toISOString().split("T")[0]
-        : String(e.eventDate).split("T")[0]
-      : null,
+    event_date: formattedDate,
     time_start: e.timeStart || null,
     time_end: e.timeEnd || null,
     event_side: e.eventSide || "joint",
     location_name: e.locationName || null,
     location_maps_url: e.locationMapsUrl || null,
-    created_at: e.createdAt?.toISOString?.() || e.createdAt,
-    updated_at: e.updatedAt?.toISOString?.() || e.updatedAt,
+    created_at: e.createdAt instanceof Date ? e.createdAt.toISOString() : String(e.createdAt || ""),
+    updated_at: e.updatedAt instanceof Date ? e.updatedAt.toISOString() : String(e.updatedAt || ""),
     weddingId: e.weddingId,
     eventName: e.eventName,
-    eventDate: e.eventDate,
+    eventDate: formattedDate,
     timeStart: e.timeStart,
     timeEnd: e.timeEnd,
     eventSide: e.eventSide,

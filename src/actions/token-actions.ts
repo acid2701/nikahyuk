@@ -21,6 +21,8 @@ export interface CreateShareTokenInput {
 
 function toTokenDTO(t: any) {
   if (!t) return null;
+  const formattedExpires = t.expiresAt instanceof Date ? t.expiresAt.toISOString() : String(t.expiresAt || "");
+  const formattedCreated = t.createdAt instanceof Date ? t.createdAt.toISOString() : String(t.createdAt || "");
   return {
     id: t.id,
     wedding_id: t.weddingId,
@@ -28,15 +30,15 @@ function toTokenDTO(t: any) {
     pin_hash: t.pinHash,
     module_access: t.moduleAccess,
     hide_internal_notes: t.hideInternalNotes,
-    expires_at: t.expiresAt?.toISOString?.() || t.expiresAt,
+    expires_at: formattedExpires,
     is_active: t.isActive,
-    created_at: t.createdAt?.toISOString?.() || t.createdAt,
+    created_at: formattedCreated,
     weddingId: t.weddingId,
     tokenHash: t.tokenHash,
     pinHash: t.pinHash,
     moduleAccess: t.moduleAccess,
     hideInternalNotes: t.hideInternalNotes,
-    expiresAt: t.expiresAt,
+    expiresAt: formattedExpires,
     isActive: t.isActive,
   };
 }
