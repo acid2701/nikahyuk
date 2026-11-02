@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth/session";
 import { recordAuditLog } from "@/lib/audit/logger";
 import { UserRoleEnum, CustomPermissions } from "@/types/database.types";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 function toWeddingDTO(w: any) {
   if (!w) return null;
@@ -108,16 +110,27 @@ export async function inviteCollaboratorAction(
   };
 
   let isRegistered = false;
-  let targetUserId = sessionUser.userId;
-
-  const targetUser = await prisma.user.findUnique({
+  let targetUser = await prisma.user.findUnique({
     where: { email: email.trim().toLowerCase() },
   });
 
-  if (targetUser) {
-    targetUserId = targetUser.id;
+  if (!targetUser) {
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString("hex"), salt);
+    targetUser = await prisma.user.create({
+      data: {
+        email: email.trim().toLowerCase(),
+        passwordHash,
+        fullName: email.split("@")[0],
+        role: "user",
+      },
+    });
+    isRegistered = false;
+  } else {
     isRegistered = true;
   }
+
+  const targetUserId = targetUser.id;
 
   const finalPerms = {
     ...defaultPerms,
