@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   LayoutDashboard,
   Clock,
@@ -36,7 +36,11 @@ export interface MobileBottomNavProps {
 
 export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [openMore, setOpenMore] = React.useState(false);
+
+  const eventId = searchParams.get("eventId");
+  const eventQuery = eventId ? `?eventId=${eventId}` : "";
 
   const baseUrl = `/dashboard/${weddingId}`;
 
@@ -44,25 +48,25 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
   const primaryTabs = [
     {
       label: "Beranda",
-      href: baseUrl,
+      href: `${baseUrl}${eventQuery}`,
       icon: LayoutDashboard,
       exact: true,
     },
     {
       label: "Rundown",
-      href: `${baseUrl}/rundown`,
+      href: `${baseUrl}/rundown${eventQuery}`,
       icon: Clock,
       exact: false,
     },
     {
       label: "Checklist",
-      href: `${baseUrl}/checklists`,
+      href: `${baseUrl}/checklists${eventQuery}`,
       icon: CheckSquare,
       exact: false,
     },
     {
       label: "Anggaran",
-      href: `${baseUrl}/budget`,
+      href: `${baseUrl}/budget${eventQuery}`,
       icon: DollarSign,
       exact: false,
     },
@@ -76,14 +80,14 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
         {
           title: "Moodboard & Palet Warna",
           desc: "Swatch warna HEX & inspirasi tema dekorasi",
-          href: `${baseUrl}/moodboard`,
+          href: `${baseUrl}/moodboard${eventQuery}`,
           icon: Palette,
           color: "text-rose-500 bg-rose-500/10",
         },
         {
           title: "Vendor Hub & SPK",
           desc: "Katalog vendor & kontrak dokumen PDF",
-          href: `${baseUrl}/vendors`,
+          href: `${baseUrl}/vendors${eventQuery}`,
           icon: Briefcase,
           color: "text-purple-500 bg-purple-500/10",
         },
@@ -95,28 +99,28 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
         {
           title: "Master Tamu & RSVP",
           desc: "Buku tamu undangan, kehadiran & kuota pax",
-          href: `${baseUrl}/guests`,
+          href: `${baseUrl}/guests${eventQuery}`,
           icon: Users,
           color: "text-blue-500 bg-blue-500/10",
         },
         {
           title: "Rangkaian Acara (Sub-Events)",
           desc: "Lamaran, Akad Nikah, Resepsi & Unduh Mantu",
-          href: `${baseUrl}/events`,
+          href: `${baseUrl}/events${eventQuery}`,
           icon: Calendar,
           color: "text-amber-500 bg-amber-500/10",
         },
         {
           title: "Penataan Meja Tamu",
           desc: "Layout denah meja VIP & kapasitas kursi",
-          href: `${baseUrl}/seating`,
+          href: `${baseUrl}/seating${eventQuery}`,
           icon: LayoutGrid,
           color: "text-sky-500 bg-sky-500/10",
         },
         {
           title: "Log Kado & Angpao",
           desc: "Catatan amplop tunai & kado fisik",
-          href: `${baseUrl}/gifts`,
+          href: `${baseUrl}/gifts${eventQuery}`,
           icon: Gift,
           color: "text-indigo-500 bg-indigo-500/10",
         },
@@ -128,21 +132,21 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
         {
           title: "Berbagi Link Kru (Share)",
           desc: "Tautan PWA mobile untuk panitia lapangan",
-          href: `${baseUrl}/share`,
+          href: `${baseUrl}/share${eventQuery}`,
           icon: Share2,
           color: "text-teal-500 bg-teal-500/10",
         },
         {
           title: "Tim Kolaborator",
           desc: "Hak akses pasangan, keluarga & WO",
-          href: `${baseUrl}/settings/collaborators`,
+          href: `${baseUrl}/settings/collaborators${eventQuery}`,
           icon: Settings,
           color: "text-slate-500 bg-slate-500/10",
         },
         {
           title: "Profil Pernikahan",
           desc: "Nama kedua mempelai & orang tua kandung",
-          href: `${baseUrl}/settings/profile`,
+          href: `${baseUrl}/settings/profile${eventQuery}`,
           icon: User,
           color: "text-primary bg-primary/10",
         },
@@ -151,18 +155,22 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
   ];
 
   // Cek apakah halaman saat ini merupakan salah satu dari item di menu drawer
-  const isMoreActive = !primaryTabs.some((t) =>
-    t.exact ? pathname === t.href : pathname.startsWith(t.href)
-  );
+  const currentPath = pathname.split("?")[0];
+  const isMoreActive = !primaryTabs.some((t) => {
+    const p = t.href.split("?")[0];
+    return t.exact ? currentPath === p : currentPath.startsWith(p);
+  });
 
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border/80 px-2 py-1.5 shadow-lg safe-area-bottom">
         <div className="grid grid-cols-5 items-center justify-around">
           {primaryTabs.map((item) => {
+            const itemPath = item.href.split("?")[0];
+            const currentPath = pathname.split("?")[0];
             const isActive = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+              ? currentPath === itemPath
+              : currentPath.startsWith(itemPath);
             const Icon = item.icon;
 
             return (
@@ -244,7 +252,9 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
                     <div className="grid grid-cols-1 gap-1.5">
                       {cat.items.map((item) => {
                         const Icon = item.icon;
-                        const isCurrent = pathname.startsWith(item.href);
+                        const itemPath = item.href.split("?")[0];
+                        const currentPath = pathname.split("?")[0];
+                        const isCurrent = currentPath.startsWith(itemPath);
 
                         return (
                           <Link

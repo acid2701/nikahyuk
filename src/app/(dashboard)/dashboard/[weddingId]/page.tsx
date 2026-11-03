@@ -209,7 +209,7 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3.5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs shrink-0"
           >
-            <Link href={`/dashboard/${weddingId}/guests`}>
+            <Link href={`/dashboard/${weddingId}/guests${urlEventId ? `?eventId=${urlEventId}` : ""}`}>
               + Tambah Tamu
             </Link>
           </Button>
@@ -220,7 +220,7 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
           >
-            <Link href={`/dashboard/${weddingId}/moodboard`}>
+            <Link href={`/dashboard/${weddingId}/moodboard${urlEventId ? `?eventId=${urlEventId}` : ""}`}>
               🎨 Moodboard & Warna
             </Link>
           </Button>
@@ -231,7 +231,7 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
           >
-            <Link href={`/dashboard/${weddingId}/budget`}>
+            <Link href={`/dashboard/${weddingId}/budget${urlEventId ? `?eventId=${urlEventId}` : ""}`}>
               + Catat Pembayaran
             </Link>
           </Button>
@@ -242,7 +242,7 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3.5 text-xs font-medium border-border/80 hover:bg-muted shrink-0"
           >
-            <Link href={`/dashboard/${weddingId}/rundown`}>
+            <Link href={`/dashboard/${weddingId}/rundown${urlEventId ? `?eventId=${urlEventId}` : ""}`}>
               + Buat Agenda Rundown
             </Link>
           </Button>
@@ -259,7 +259,7 @@ export default async function WeddingOverviewPage(props: {
             size="sm"
             className="rounded-full h-8 px-3 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0 ml-auto"
           >
-            <Link href={`/dashboard/${weddingId}/share`}>
+            <Link href={`/dashboard/${weddingId}/share${urlEventId ? `?eventId=${urlEventId}` : ""}`}>
               <Share2 className="h-3.5 w-3.5 mr-1.5 text-sky-500" />
               Bagikan Link Kru Lapangan
             </Link>
@@ -270,6 +270,7 @@ export default async function WeddingOverviewPage(props: {
       {/* 2. EMOTIONAL GAMIFICATION: TAMAN CINTA (MELD PATTERN) */}
       <TamanCintaWidget
         weddingId={weddingId}
+        eventId={urlEventId}
         groomName={wedding?.groomName || "Pengantin Pria"}
         brideName={wedding?.brideName || "Pengantin Wanita"}
         checklistTotal={totalChecklists}

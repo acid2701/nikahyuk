@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 
 export interface TamanCintaWidgetProps {
   weddingId: string;
+  eventId?: string;
   groomName: string;
   brideName: string;
   checklistTotal: number;
@@ -21,6 +22,7 @@ export interface TamanCintaWidgetProps {
 
 export function TamanCintaWidget({
   weddingId,
+  eventId,
   groomName,
   brideName,
   checklistTotal,
@@ -29,6 +31,7 @@ export function TamanCintaWidget({
   budgetPaidTotal,
   daysUntilWedding,
 }: TamanCintaWidgetProps) {
+  const eventQuery = eventId ? `?eventId=${eventId}` : "";
   // Hitung progres komposit (Checklist 50% + Pembayaran Budget 50%)
   const checklistRate = checklistTotal > 0 ? (checklistCompleted / checklistTotal) * 100 : 0;
   const budgetRate = budgetEstTotal > 0 ? Math.min(100, (budgetPaidTotal / budgetEstTotal) * 100) : 0;
@@ -156,7 +159,7 @@ export function TamanCintaWidget({
               variant="outline"
               className="h-8 rounded-full text-xs font-semibold meld-bouncy border-border/80 hover:bg-muted"
             >
-              <Link href={`/dashboard/${weddingId}/checklists`}>
+              <Link href={`/dashboard/${weddingId}/checklists${eventQuery}`}>
                 <CheckCircle2 className="h-3.5 w-3.5 mr-1 text-emerald-600" />
                 Checklist ({checklistCompleted}/{checklistTotal})
               </Link>
@@ -166,7 +169,7 @@ export function TamanCintaWidget({
               size="sm"
               className="h-8 rounded-full text-xs font-semibold meld-bouncy bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs"
             >
-              <Link href={`/dashboard/${weddingId}/budget`}>
+              <Link href={`/dashboard/${weddingId}/budget${eventQuery}`}>
                 Anggaran Biaya <ArrowRight className="h-3 w-3 ml-1" />
               </Link>
             </Button>
