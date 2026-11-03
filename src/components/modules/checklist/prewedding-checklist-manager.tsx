@@ -65,6 +65,7 @@ import {
   Clock,
 } from "lucide-react";
 import { EditChecklistModal } from "./edit-checklist-modal";
+import { ConfirmDeleteDialog } from "@/components/shared/modal/confirm-delete-dialog";
 
 
 export interface ChecklistItem {
@@ -127,6 +128,10 @@ export function PreweddingChecklistManager({
   const [completionNoteInput, setCompletionNoteInput] = React.useState("");
   const [editingItem, setEditingItem] = React.useState<ChecklistItem | null>(null);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
+
+  // Confirm Delete Modal State
+  const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
+  const [deleteLoading, setDeleteLoading] = React.useState(false);
 
   const [activeCategory, setActiveCategory] = React.useState<"kua" | "seserahan" | "lamaran" | "emergency">("kua");
 
@@ -426,16 +431,38 @@ export function PreweddingChecklistManager({
     router.refresh();
   }
 
+  function promptDeleteItem(id: string, name: string) {
+    setDeleteTarget({ id, name });
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      const updated = items.filter((it) => it.id !== deleteTarget.id);
+      saveLocalItems(updated);
+      await deleteChecklistItemAction(deleteTarget.id, weddingId);
+      toast({
+        title: "Item Dihapus",
+        description: `'${deleteTarget.name}' berhasil dihapus dari checklist.`,
+        variant: "warning",
+      });
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      toast({
+        title: "Gagal Menghapus",
+        description: "Terjadi kesalahan saat menghapus item.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  }
+
   async function handleDeleteItem(id: string) {
-    const updated = items.filter((it) => it.id !== id);
-    saveLocalItems(updated);
-    toast({
-      title: "Item Dihapus",
-      description: "Item checklist berhasil dihapus.",
-      variant: "warning",
-    });
-    await deleteChecklistItemAction(id, weddingId);
-    router.refresh();
+    const target = items.find((it) => it.id === id);
+    promptDeleteItem(id, target?.item_name || "Item Checklist");
   }
 
   async function handleAddCustomItem(e: React.FormEvent) {
@@ -1348,6 +1375,17 @@ export function PreweddingChecklistManager({
         open={editModalOpen}
         onOpenChange={setEditModalOpen}
         onUpdated={handleItemUpdated}
+      />
+
+      {/* CONFIRM DELETE DIALOG */}
+      <ConfirmDeleteDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Hapus Item Checklist?"
+        description="Tindakan ini akan menghapus tugas ini dari daftar persiapan pernikahan."
+        itemName={deleteTarget?.name}
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );

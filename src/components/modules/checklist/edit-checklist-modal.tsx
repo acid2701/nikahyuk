@@ -105,7 +105,7 @@ export function EditChecklistModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl">
+      <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-left pb-2 border-b border-border/60">
           <DialogTitle className="font-sans text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
             <Pencil className="h-4 w-4 text-primary" />
