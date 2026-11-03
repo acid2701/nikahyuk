@@ -55,9 +55,9 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
       exact: false,
     },
     {
-      label: "Tamu",
-      href: `${baseUrl}/guests`,
-      icon: Users,
+      label: "Checklist",
+      href: `${baseUrl}/checklists`,
+      icon: CheckSquare,
       exact: false,
     },
     {
@@ -81,13 +81,6 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
           color: "text-rose-500 bg-rose-500/10",
         },
         {
-          title: "Checklist Persiapan",
-          desc: "Target to-do list jelang hari bahagia",
-          href: `${baseUrl}/checklists`,
-          icon: CheckSquare,
-          color: "text-emerald-500 bg-emerald-500/10",
-        },
-        {
           title: "Vendor Hub & SPK",
           desc: "Katalog vendor & kontrak dokumen PDF",
           href: `${baseUrl}/vendors`,
@@ -99,6 +92,13 @@ export function MobileBottomNav({ weddingId }: MobileBottomNavProps) {
     {
       category: "Operasional Hari-H",
       items: [
+        {
+          title: "Master Tamu & RSVP",
+          desc: "Buku tamu undangan, kehadiran & kuota pax",
+          href: `${baseUrl}/guests`,
+          icon: Users,
+          color: "text-blue-500 bg-blue-500/10",
+        },
         {
           title: "Rangkaian Acara (Sub-Events)",
           desc: "Lamaran, Akad Nikah, Resepsi & Unduh Mantu",
