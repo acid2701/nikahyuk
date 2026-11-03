@@ -328,9 +328,19 @@ export function PreweddingChecklistManager({
   }
 
   function handleItemUpdated(updated: ChecklistItem) {
-    setItems((prev) =>
-      prev.map((i) => (i.id === updated.id ? { ...i, ...updated } : i))
-    );
+    setItems((prev) => {
+      const exists = prev.some((i) => i.id === updated.id);
+      let nextItems;
+      if (exists) {
+        nextItems = prev.map((i) => (i.id === updated.id ? { ...i, ...updated } : i));
+      } else {
+        nextItems = [updated, ...prev];
+      }
+      if (typeof window !== "undefined") {
+        localStorage.setItem(storageKey, JSON.stringify(nextItems));
+      }
+      return nextItems;
+    });
   }
 
   // Handle Checkbox Toggle
@@ -362,6 +372,13 @@ export function PreweddingChecklistManager({
       weddingId,
       isCompleted: nextStatus,
       completedNotes: it.completed_notes || undefined,
+      defaultPayload: {
+        taskTitle: it.item_name,
+        category: it.category,
+        notes: it.notes || undefined,
+        dueDate: it.due_date || undefined,
+        assignedTo: it.assignee_name || undefined,
+      },
     });
     router.refresh();
   }
@@ -398,6 +415,13 @@ export function PreweddingChecklistManager({
       weddingId,
       isCompleted: true,
       completedNotes: notesText,
+      defaultPayload: {
+        taskTitle: targetItemForCompletion.item_name,
+        category: targetItemForCompletion.category,
+        notes: targetItemForCompletion.notes || undefined,
+        dueDate: targetItemForCompletion.due_date || undefined,
+        assignedTo: targetItemForCompletion.assignee_name || undefined,
+      },
     });
     router.refresh();
   }

@@ -69,6 +69,7 @@ export function EditChecklistModal({
         id: item.id,
         weddingId,
         itemName: itemName.trim(),
+        category: item.category,
         notes: notes.trim() || null,
         assigneeName: assigneeName.trim() || null,
         dueDate: dueDate || null,

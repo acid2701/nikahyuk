@@ -127,11 +127,19 @@ export async function toggleChecklistItemAction({
   weddingId,
   isCompleted,
   completedNotes,
+  defaultPayload,
 }: {
   id: string;
   weddingId: string;
   isCompleted: boolean;
   completedNotes?: string;
+  defaultPayload?: {
+    taskTitle: string;
+    category: string;
+    notes?: string;
+    dueDate?: string;
+    assignedTo?: string;
+  };
 }) {
   const sessionUser = await getCurrentUser();
   if (!sessionUser) return { success: false, error: "Unauthorized" };
@@ -140,15 +148,38 @@ export async function toggleChecklistItemAction({
     const completedBy = isCompleted ? (sessionUser.fullName || sessionUser.email || "Pengguna") : null;
     const completedAt = isCompleted ? new Date() : null;
 
-    const item = await prisma.weddingChecklist.update({
+    const existing = await prisma.weddingChecklist.findUnique({
       where: { id },
-      data: {
-        isCompleted,
-        completedBy,
-        completedAt,
-        notes: completedNotes ? completedNotes.trim() : undefined,
-      },
     });
+
+    let item;
+    if (existing) {
+      item = await prisma.weddingChecklist.update({
+        where: { id },
+        data: {
+          isCompleted,
+          completedBy,
+          completedAt,
+          notes: completedNotes ? completedNotes.trim() : undefined,
+        },
+      });
+    } else if (defaultPayload) {
+      item = await prisma.weddingChecklist.create({
+        data: {
+          weddingId,
+          taskTitle: defaultPayload.taskTitle,
+          category: defaultPayload.category || "Umum",
+          notes: completedNotes ? completedNotes.trim() : defaultPayload.notes || null,
+          dueDate: defaultPayload.dueDate ? new Date(defaultPayload.dueDate) : null,
+          assignedTo: defaultPayload.assignedTo || null,
+          isCompleted,
+          completedBy,
+          completedAt,
+        },
+      });
+    } else {
+      return { success: false, error: "Item tidak ditemukan." };
+    }
 
     revalidatePath(`/dashboard/${weddingId}/checklists`);
     revalidatePath(`/dashboard/${weddingId}`);
@@ -162,6 +193,7 @@ export async function updateChecklistItemAction(payload: {
   id: string;
   weddingId: string;
   itemName: string;
+  category?: string;
   notes?: string | null;
   assigneeName?: string | null;
   dueDate?: string | null;
@@ -172,17 +204,40 @@ export async function updateChecklistItemAction(payload: {
   if (!sessionUser) return { success: false, error: "Unauthorized" };
 
   try {
-    const item = await prisma.weddingChecklist.update({
+    const existing = await prisma.weddingChecklist.findUnique({
       where: { id: payload.id },
-      data: {
-        taskTitle: payload.itemName.trim(),
-        notes: payload.notes?.trim() || null,
-        assignedTo: payload.assigneeName?.trim() || null,
-        dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
-        price: payload.price !== undefined ? payload.price : undefined,
-        purchaseUrl: payload.purchaseUrl?.trim() || null,
-      },
     });
+
+    let item;
+    if (existing) {
+      item = await prisma.weddingChecklist.update({
+        where: { id: payload.id },
+        data: {
+          taskTitle: payload.itemName.trim(),
+          category: payload.category || existing.category,
+          notes: payload.notes?.trim() || null,
+          assignedTo: payload.assigneeName?.trim() || null,
+          dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
+          price: payload.price !== undefined ? payload.price : undefined,
+          purchaseUrl: payload.purchaseUrl?.trim() || null,
+        },
+      });
+    } else {
+      // Auto-upsert jika record berasal dari default template lokal yang belum masuk DB
+      item = await prisma.weddingChecklist.create({
+        data: {
+          weddingId: payload.weddingId,
+          taskTitle: payload.itemName.trim(),
+          category: payload.category || "Umum",
+          notes: payload.notes?.trim() || null,
+          assignedTo: payload.assigneeName?.trim() || null,
+          dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
+          price: payload.price ? Number(payload.price) : null,
+          purchaseUrl: payload.purchaseUrl?.trim() || null,
+          isCompleted: false,
+        },
+      });
+    }
 
     revalidatePath(`/dashboard/${payload.weddingId}/checklists`);
     revalidatePath(`/dashboard/${payload.weddingId}`);
