@@ -25,24 +25,32 @@ export interface DBChecklistItem {
 }
 
 function toChecklistDTO(c: any): DBChecklistItem {
+  const formattedDueDate = c.dueDate
+    ? c.dueDate instanceof Date
+      ? c.dueDate.toISOString().split("T")[0]
+      : String(c.dueDate).split("T")[0]
+    : null;
+
+  const formattedCompletedAt = c.completedAt
+    ? c.completedAt instanceof Date
+      ? c.completedAt.toISOString()
+      : String(c.completedAt)
+    : null;
+
   return {
     id: c.id,
     wedding_id: c.weddingId,
-    event_id: "all",
+    event_id: c.eventId || "all",
     category: (c.category as any) || "emergency",
-    box_name: null,
+    box_name: c.boxName || null,
     item_name: c.taskTitle,
-    price: null,
-    purchase_url: null,
+    price: c.price ? Number(c.price) : null,
+    purchase_url: c.purchaseUrl || null,
     notes: c.notes || null,
     completed_notes: null,
-    completed_by: c.assignedTo || null,
-    completed_at: null,
-    due_date: c.dueDate
-      ? c.dueDate instanceof Date
-        ? c.dueDate.toISOString().split("T")[0]
-        : String(c.dueDate).split("T")[0]
-      : null,
+    completed_by: c.completedBy || null,
+    completed_at: formattedCompletedAt,
+    due_date: formattedDueDate,
     assignee_name: c.assignedTo || null,
     is_completed: c.isCompleted,
     created_at: c.createdAt instanceof Date ? c.createdAt.toISOString() : String(c.createdAt || ""),
@@ -58,8 +66,13 @@ export async function fetchChecklistItemsAction(
   if (!sessionUser) return [];
 
   try {
+    const whereClause: any = { weddingId };
+    if (eventId && eventId !== "all") {
+      whereClause.OR = [{ eventId }, { eventId: null }];
+    }
+
     const items = await prisma.weddingChecklist.findMany({
-      where: { weddingId },
+      where: whereClause,
       orderBy: { createdAt: "asc" },
     });
 
@@ -88,9 +101,13 @@ export async function addChecklistItemAction(payload: {
     const item = await prisma.weddingChecklist.create({
       data: {
         weddingId: payload.wedding_id,
+        eventId: payload.event_id && payload.event_id !== "all" ? payload.event_id : null,
         taskTitle: payload.item_name.trim(),
         category: payload.category || "Umum",
         notes: payload.notes?.trim() || null,
+        price: payload.price ? Number(payload.price) : null,
+        purchaseUrl: payload.purchase_url?.trim() || null,
+        boxName: payload.box_name?.trim() || null,
         dueDate: payload.due_date ? new Date(payload.due_date) : null,
         assignedTo: payload.assignee_name?.trim() || null,
         isCompleted: false,
@@ -120,10 +137,15 @@ export async function toggleChecklistItemAction({
   if (!sessionUser) return { success: false, error: "Unauthorized" };
 
   try {
+    const completedBy = isCompleted ? (sessionUser.fullName || sessionUser.email || "Pengguna") : null;
+    const completedAt = isCompleted ? new Date() : null;
+
     const item = await prisma.weddingChecklist.update({
       where: { id },
       data: {
         isCompleted,
+        completedBy,
+        completedAt,
         notes: completedNotes ? completedNotes.trim() : undefined,
       },
     });
@@ -133,6 +155,40 @@ export async function toggleChecklistItemAction({
     return { success: true, data: toChecklistDTO(item) };
   } catch (error: any) {
     return { success: false, error: error?.message || "Gagal memperbarui status checklist" };
+  }
+}
+
+export async function updateChecklistItemAction(payload: {
+  id: string;
+  weddingId: string;
+  itemName: string;
+  notes?: string | null;
+  assigneeName?: string | null;
+  dueDate?: string | null;
+  price?: number | null;
+  purchaseUrl?: string | null;
+}) {
+  const sessionUser = await getCurrentUser();
+  if (!sessionUser) return { success: false, error: "Unauthorized" };
+
+  try {
+    const item = await prisma.weddingChecklist.update({
+      where: { id: payload.id },
+      data: {
+        taskTitle: payload.itemName.trim(),
+        notes: payload.notes?.trim() || null,
+        assignedTo: payload.assigneeName?.trim() || null,
+        dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
+        price: payload.price !== undefined ? payload.price : undefined,
+        purchaseUrl: payload.purchaseUrl?.trim() || null,
+      },
+    });
+
+    revalidatePath(`/dashboard/${payload.weddingId}/checklists`);
+    revalidatePath(`/dashboard/${payload.weddingId}`);
+    return { success: true, data: toChecklistDTO(item) };
+  } catch (error: any) {
+    return { success: false, error: error?.message || "Gagal memperbarui item checklist" };
   }
 }
 

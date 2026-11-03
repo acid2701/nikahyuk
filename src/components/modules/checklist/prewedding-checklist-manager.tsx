@@ -61,7 +61,10 @@ import {
   Settings2,
   Eye,
   EyeOff,
+  Pencil,
+  Clock,
 } from "lucide-react";
+import { EditChecklistModal } from "./edit-checklist-modal";
 
 
 export interface ChecklistItem {
@@ -122,6 +125,8 @@ export function PreweddingChecklistManager({
   const [completionModalOpen, setCompletionModalOpen] = React.useState(false);
   const [targetItemForCompletion, setTargetItemForCompletion] = React.useState<ChecklistItem | null>(null);
   const [completionNoteInput, setCompletionNoteInput] = React.useState("");
+  const [editingItem, setEditingItem] = React.useState<ChecklistItem | null>(null);
+  const [editModalOpen, setEditModalOpen] = React.useState(false);
 
   const [activeCategory, setActiveCategory] = React.useState<"kua" | "seserahan" | "lamaran" | "emergency">("kua");
 
@@ -314,6 +319,18 @@ export function PreweddingChecklistManager({
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify(newItems));
     }
+  }
+
+  // Handle Checkbox Toggle
+  function handleEditClick(item: ChecklistItem) {
+    setEditingItem(item);
+    setEditModalOpen(true);
+  }
+
+  function handleItemUpdated(updated: ChecklistItem) {
+    setItems((prev) =>
+      prev.map((i) => (i.id === updated.id ? { ...i, ...updated } : i))
+    );
   }
 
   // Handle Checkbox Toggle
@@ -1070,6 +1087,19 @@ export function PreweddingChecklistManager({
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditClick(subItem);
+                                  }}
+                                  className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer print:hidden"
+                                  title="Edit Item"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
                                   onClick={() => handleDeleteItem(subItem.id)}
                                   className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
                                 >
@@ -1196,6 +1226,24 @@ export function PreweddingChecklistManager({
                                 {it.notes}
                               </p>
                             )}
+
+                            {/* DUE DATE & COMPLETION INFO */}
+                            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                              {it.due_date && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium bg-muted/50 px-2 py-0.5 rounded-md">
+                                  <Calendar className="h-3 w-3 text-muted-foreground" />
+                                  Target: {new Date(it.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                                </span>
+                              )}
+
+                              {it.is_completed && it.completed_by && (
+                                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                  Selesai oleh {it.completed_by}
+                                  {it.completed_at && ` • ${new Date(it.completed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
 
@@ -1205,6 +1253,18 @@ export function PreweddingChecklistManager({
                               <User className="h-3 w-3" /> PIC: {it.assignee_name}
                             </Badge>
                           )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditClick(it);
+                            }}
+                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer print:hidden"
+                            title="Edit Item"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -1234,6 +1294,15 @@ export function PreweddingChecklistManager({
           </Card>
         )}
       </Tabs>
+
+      {/* EDIT CHECKLIST MODAL */}
+      <EditChecklistModal
+        item={editingItem}
+        weddingId={weddingId}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onUpdated={handleItemUpdated}
+      />
     </div>
   );
 }

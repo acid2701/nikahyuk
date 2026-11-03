@@ -156,18 +156,25 @@ model WeddingEvent {
 model WeddingChecklist {
   id          String   @id @default(uuid())
   weddingId   String   @map("wedding_id")
+  eventId     String?  @map("event_id")
   taskTitle   String   @map("task_title")
   category    String   @default("Umum")
   dueDate     DateTime? @map("due_date") @db.Date
   isCompleted Boolean  @default(false) @map("is_completed")
   assignedTo  String?  @map("assigned_to")
   notes       String?
+  price       Decimal? @default(0) @db.Decimal(14, 2)
+  purchaseUrl String?  @map("purchase_url")
+  boxName     String?  @map("box_name")
+  completedBy String?  @map("completed_by")
+  completedAt DateTime? @map("completed_at")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   wedding Wedding @relation(fields: [weddingId], references: [id], onDelete: Cascade)
 
   @@index([weddingId])
+  @@index([eventId])
   @@map("wedding_checklists")
 }
 
