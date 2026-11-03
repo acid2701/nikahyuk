@@ -23,16 +23,10 @@ import {
   DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { meldSpring, meldGentle } from "@/lib/motion-tokens";
 import {
   fetchChecklistItemsAction,
   addChecklistItemAction,
@@ -128,6 +122,7 @@ export function PreweddingChecklistManager({
   const [completionNoteInput, setCompletionNoteInput] = React.useState("");
   const [editingItem, setEditingItem] = React.useState<ChecklistItem | null>(null);
   const [editModalOpen, setEditModalOpen] = React.useState(false);
+  const [addModalOpen, setAddModalOpen] = React.useState(false);
 
   // Confirm Delete Modal State
   const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
@@ -202,44 +197,7 @@ export function PreweddingChecklistManager({
   }
 
 
-  // Initial Load from PostgreSQL Database with LocalStorage Fallback
-  const loadChecklistItems = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const dbItems = await fetchChecklistItemsAction(weddingId, eventId);
-      if (dbItems && dbItems.length > 0) {
-        setItems(dbItems as ChecklistItem[]);
-        if (typeof window !== "undefined") {
-          localStorage.setItem(storageKey, JSON.stringify(dbItems));
-        }
-      } else {
-        // Fallback to local storage or load default seeder
-        if (typeof window !== "undefined") {
-          const saved = localStorage.getItem(storageKey);
-          if (saved) {
-            try {
-              const parsed = JSON.parse(saved);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                setItems(parsed);
-              } else {
-                loadDefaultPresets();
-              }
-            } catch {
-              loadDefaultPresets();
-            }
-          } else {
-            loadDefaultPresets();
-          }
-        }
-      }
-    } catch {
-      // Graceful fallback
-    } finally {
-      setLoading(false);
-    }
-  }, [weddingId, eventId, storageKey]);
-
-  const loadDefaultPresets = React.useCallback(() => {
+  const loadDefaultPresets = React.useCallback((silent: boolean = false) => {
     const lowerName = eventName.toLowerCase();
     let defaultItems: ChecklistItem[] = [];
 
@@ -308,12 +266,51 @@ export function PreweddingChecklistManager({
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify(defaultItems));
     }
-    toast({
-      title: "Template Seeder Dimuat",
-      description: `Checklist persiapan khusus untuk '${eventName}' (${defaultItems.length} item) telah diisi.`,
-      variant: "success",
-    });
+    if (!silent) {
+      toast({
+        title: "Template Seeder Dimuat",
+        description: `Checklist persiapan khusus untuk '${eventName}' (${defaultItems.length} item) telah diisi.`,
+        variant: "success",
+      });
+    }
   }, [weddingId, eventId, storageKey, eventName, toast]);
+
+  // Initial Load from PostgreSQL Database with LocalStorage Fallback
+  const loadChecklistItems = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      const dbItems = await fetchChecklistItemsAction(weddingId, eventId);
+      if (dbItems && dbItems.length > 0) {
+        setItems(dbItems as ChecklistItem[]);
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, JSON.stringify(dbItems));
+        }
+      } else {
+        // Fallback to local storage or load default seeder
+        if (typeof window !== "undefined") {
+          const saved = localStorage.getItem(storageKey);
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                setItems(parsed);
+              } else {
+                loadDefaultPresets(true);
+              }
+            } catch {
+              loadDefaultPresets(true);
+            }
+          } else {
+            loadDefaultPresets(true);
+          }
+        }
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setLoading(false);
+    }
+  }, [weddingId, eventId, storageKey, loadDefaultPresets]);
 
   React.useEffect(() => {
     loadChecklistItems();
@@ -494,9 +491,11 @@ export function PreweddingChecklistManager({
 
     toast({
       title: "Item Ditambahkan",
-      description: `Item '${newItem.item_name}' berhasil ditambahkan.`,
+      description: `'${newItem.item_name}' telah dicatat.`,
       variant: "success",
     });
+
+    setAddModalOpen(false);
 
     await addChecklistItemAction({
       wedding_id: weddingId,
@@ -697,27 +696,18 @@ export function PreweddingChecklistManager({
         </DialogContent>
       </Dialog>
 
-      {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
-        <div className="space-y-1">
-          <h1 className="font-sans text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-            Checklist Persiapan {eventName}
+      {/* HEADER SECTION - CLEAN MOBILE-FIRST */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden">
+        <div>
+          <h1 className="font-sans text-xl sm:text-2xl font-extrabold tracking-tight text-foreground">
+            Checklist Persiapan
           </h1>
-          <p className="text-xs sm:text-sm text-muted-foreground">
-            Rincian berkas, perlengkapan, estimasi biaya & tautan perlengkapan untuk acara ini.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {eventName}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => window.print()}
-            className="gap-2 text-xs cursor-pointer"
-          >
-            <Printer className="h-4 w-4" /> Cetak / Export PDF
-          </Button>
-
+        <div className="flex items-center gap-1.5 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -735,80 +725,80 @@ export function PreweddingChecklistManager({
                     `\n\nBuka workspace: https://nikahyu.my.id/dashboard/${weddingId}/checklists`);
               window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
             }}
-            className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+            className="h-8 rounded-full gap-1 text-[11px] font-semibold cursor-pointer border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 meld-bouncy"
           >
-            <MessageSquareQuote className="h-4 w-4" /> Share WA
+            <MessageSquareQuote className="h-3.5 w-3.5" /> Share WA
           </Button>
 
           <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
             <DialogTrigger asChild>
-              <Button size="sm" className="gap-2 text-xs font-semibold shadow-xs cursor-pointer">
-                <Download className="h-4 w-4" /> Ambil dari Template
+              <Button size="sm" variant="outline" className="h-8 rounded-full gap-1 text-[11px] font-semibold border-border/80 hover:bg-muted cursor-pointer meld-bouncy">
+                <Download className="h-3.5 w-3.5" /> Template
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle className="font-sans text-lg flex items-center gap-2">
-                  <Layers className="h-5 w-5 text-primary" /> Pilih Template Preset untuk '{eventName}'
+                  <Layers className="h-5 w-5 text-primary" /> Template Preset '{eventName}'
                 </DialogTitle>
                 <DialogDescription className="text-xs">
-                  Pilih salah satu template preset di bawah untuk menambahkan item persiapan secara otomatis ke acara ini:
+                  Pilih template di bawah untuk menambahkan item persiapan secara otomatis:
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="space-y-3 py-2">
+              <div className="space-y-2.5 py-2">
                 <div
                   onClick={() => importPresetTemplate("lamaran")}
-                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                  className="p-3.5 rounded-2xl border border-border bg-card hover:border-primary cursor-pointer transition-all space-y-1 meld-bouncy"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
-                      💍 Template Acara Lamaran & Tunangan
+                    <span className="font-semibold text-xs text-foreground">
+                      Template Acara Lamaran & Tunangan
                     </span>
                     <Badge variant="outline" className="text-[10px]">8 Item</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Cincin tunangan, kain batik sarimbit, hantaran kue adat, parsel buah, teks sambutan, & sound system.
+                    Cincin tunangan, kain batik sarimbit, hantaran kue adat, parsel buah, & sound system.
                   </p>
                 </div>
 
                 <div
                   onClick={() => importPresetTemplate("akad")}
-                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                  className="p-3.5 rounded-2xl border border-border bg-card hover:border-primary cursor-pointer transition-all space-y-1 meld-bouncy"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
-                      🕌 Template Akad Nikah Sakral & KUA
+                    <span className="font-semibold text-xs text-foreground">
+                      Template Akad Nikah Sakral & KUA
                     </span>
                     <Badge variant="outline" className="text-[10px]">8 Item</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Dokumen KUA (N1, N2, N4, Suket Sehat), mahar/maskawin, saksi akad, & Al-Qur'an sajadah ijab kabul.
+                    Dokumen KUA (N1, N2, N4, Suket Sehat), mahar/maskawin, saksi akad, & Al-Qur'an sajadah.
                   </p>
                 </div>
 
                 <div
                   onClick={() => importPresetTemplate("resepsi")}
-                  className="p-3.5 rounded-lg border border-border bg-card hover:border-primary hover:bg-accent/40 cursor-pointer transition-all space-y-1 group"
+                  className="p-3.5 rounded-2xl border border-border bg-card hover:border-primary cursor-pointer transition-all space-y-1 meld-bouncy"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-foreground group-hover:text-primary flex items-center gap-1.5">
-                      💒 Template Resepsi Utama & Pesta
+                    <span className="font-semibold text-xs text-foreground">
+                      Template Resepsi Utama & Pesta
                     </span>
                     <Badge variant="outline" className="text-[10px]">7 Item</Badge>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Food tasting katering, souvenir & kupon, buku tamu, photo booth props, gaun/beskap, & sandal pelaminan.
+                    Food tasting katering, souvenir & kupon, buku tamu, photo booth, gaun/beskap, & sandal pelaminan.
                   </p>
                 </div>
 
                 <div
                   onClick={() => importPresetTemplate("master")}
-                  className="p-3.5 rounded-lg border border-primary/30 bg-primary/5 hover:border-primary cursor-pointer transition-all space-y-1 group"
+                  className="p-3.5 rounded-2xl border border-primary/30 bg-primary/5 hover:border-primary cursor-pointer transition-all space-y-1 meld-bouncy"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-xs text-primary flex items-center gap-1.5">
-                      🎁 Template Master Pre-Wedding & 9 Kotak Seserahan
+                    <span className="font-semibold text-xs text-primary">
+                      Template Master Pre-Wedding & 9 Kotak Seserahan
                     </span>
                     <Badge variant="default" className="text-[10px]">27 Item Lengkap</Badge>
                   </div>
@@ -820,8 +810,24 @@ export function PreweddingChecklistManager({
             </DialogContent>
           </Dialog>
 
-          <Button variant="outline" size="sm" onClick={loadDefaultPresets} className="gap-2 text-xs cursor-pointer">
-            <RotateCcw className="h-4 w-4" /> Reset Template Seeder
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.print()}
+            className="h-8 rounded-full text-muted-foreground hover:text-foreground text-[11px] p-2"
+            title="Cetak Dokumen"
+          >
+            <Printer className="h-3.5 w-3.5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => loadDefaultPresets(false)}
+            className="h-8 rounded-full text-muted-foreground hover:text-foreground text-[11px] p-2"
+            title="Reset ke Template Awal"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
@@ -858,111 +864,71 @@ export function PreweddingChecklistManager({
       )}
 
       <Tabs value={activeCategory} onValueChange={(v: any) => setActiveCategory(v)} className="space-y-4">
-        <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap print:hidden">
-          <TabsList className="flex flex-wrap h-auto p-1 bg-muted/60 rounded-full border border-border/70 gap-1">
-            {!hiddenCategories.includes("kua") && (
-              <TabsTrigger
-                value="kua"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <FileText className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                <span>Dokumen KUA ({kuaCompleted}/{kuaItems.length})</span>
-              </TabsTrigger>
-            )}
-
-            {!hiddenCategories.includes("seserahan") && (
-              <TabsTrigger
-                value="seserahan"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Gift className="h-3.5 w-3.5 text-pink-600 shrink-0" />
-                <span>Kotak Seserahan ({seserahanCompletedCount}/{seserahanAllItems.length})</span>
-              </TabsTrigger>
-            )}
-
-            {!hiddenCategories.includes("lamaran") && (
-              <TabsTrigger
-                value="lamaran"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <Heart className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                <span>{dynamicTabTriggerLabel} ({lamaranCompleted}/{lamaranItems.length})</span>
-              </TabsTrigger>
-            )}
-
-            {!hiddenCategories.includes("emergency") && (
-              <TabsTrigger
-                value="emergency"
-                className="rounded-full px-3.5 py-1.5 text-xs font-semibold data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                <AlertTriangle className="h-3.5 w-3.5 text-rose-600 shrink-0" />
-                <span>Emergency Kit ({emergencyCompleted}/{emergencyItems.length})</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-
-          {/* MANAGE TABS DROPDOWN */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-10 text-xs gap-1.5 font-medium cursor-pointer shrink-0">
-                <Settings2 className="h-4 w-4" /> Kelola Tab
-                {hiddenCategories.length > 0 && (
-                  <Badge variant="destructive" className="text-[9px] px-1 py-0 h-4 min-w-4 flex items-center justify-center">
-                    {hiddenCategories.length}
-                  </Badge>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="text-xs">Tampilkan Kategori Tab</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-
-              <DropdownMenuCheckboxItem
-                checked={!hiddenCategories.includes("kua")}
-                onCheckedChange={() => toggleCategoryVisibility("kua")}
-                className="text-xs cursor-pointer"
-              >
-                📄 Dokumen
-              </DropdownMenuCheckboxItem>
-
-              <DropdownMenuCheckboxItem
-                checked={!hiddenCategories.includes("seserahan")}
-                onCheckedChange={() => toggleCategoryVisibility("seserahan")}
-                className="text-xs cursor-pointer"
-              >
-                🎁 Kotak Seserahan
-              </DropdownMenuCheckboxItem>
-
-              <DropdownMenuCheckboxItem
-                checked={!hiddenCategories.includes("lamaran")}
-                onCheckedChange={() => toggleCategoryVisibility("lamaran")}
-                className="text-xs cursor-pointer"
-              >
-                ♡ {dynamicTabTriggerLabel}
-              </DropdownMenuCheckboxItem>
-
-              <DropdownMenuCheckboxItem
-                checked={!hiddenCategories.includes("emergency")}
-                onCheckedChange={() => toggleCategoryVisibility("emergency")}
-                className="text-xs cursor-pointer"
-              >
-                ⚠️ Emergency H-Day
-              </DropdownMenuCheckboxItem>
-
-              {hiddenCategories.length > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={showAllCategories}
-                    className="text-xs text-primary font-semibold cursor-pointer"
-                  >
-                    <Eye className="h-3.5 w-3.5 mr-2" /> Tampilkan Semua Tab
-                  </DropdownMenuItem>
-                </>
+        {/* SWIPEABLE PILL CAPSULE TABS */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none print:hidden -mx-1 px-1">
+          {!hiddenCategories.includes("kua") && (
+            <button
+              type="button"
+              onClick={() => setActiveCategory("kua")}
+              className={cn(
+                "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer meld-bouncy",
+                activeCategory === "kua"
+                  ? "bg-primary text-primary-foreground shadow-xs font-bold"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            >
+              <FileText className="h-3.5 w-3.5 shrink-0" />
+              <span>Dokumen ({kuaCompleted}/{kuaItems.length})</span>
+            </button>
+          )}
+
+          {!hiddenCategories.includes("seserahan") && (
+            <button
+              type="button"
+              onClick={() => setActiveCategory("seserahan")}
+              className={cn(
+                "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer meld-bouncy",
+                activeCategory === "seserahan"
+                  ? "bg-pink-600 text-white shadow-xs font-bold"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Gift className="h-3.5 w-3.5 shrink-0" />
+              <span>Seserahan ({seserahanCompletedCount}/{seserahanAllItems.length})</span>
+            </button>
+          )}
+
+          {!hiddenCategories.includes("lamaran") && (
+            <button
+              type="button"
+              onClick={() => setActiveCategory("lamaran")}
+              className={cn(
+                "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer meld-bouncy",
+                activeCategory === "lamaran"
+                  ? "bg-amber-600 text-white shadow-xs font-bold"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Heart className="h-3.5 w-3.5 shrink-0" />
+              <span>Acara & Prosesi ({lamaranCompleted}/{lamaranItems.length})</span>
+            </button>
+          )}
+
+          {!hiddenCategories.includes("emergency") && (
+            <button
+              type="button"
+              onClick={() => setActiveCategory("emergency")}
+              className={cn(
+                "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer meld-bouncy",
+                activeCategory === "emergency"
+                  ? "bg-rose-600 text-white shadow-xs font-bold"
+                  : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+              <span>Emergency ({emergencyCompleted}/{emergencyItems.length})</span>
+            </button>
+          )}
         </div>
 
 
@@ -1000,75 +966,23 @@ export function PreweddingChecklistManager({
               </CardContent>
             </Card>
 
-            {/* Form Add Seserahan Item */}
-            <Card className="p-4 sm:p-5 rounded-2xl border border-border/80 bg-card/60 shadow-xs print:hidden">
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3 text-muted-foreground">
-                + Tambah Item Kotak Seserahan Baru
-              </h3>
-              <form onSubmit={handleAddCustomItem} className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                    Pilih Kotak Seserahan
-                  </label>
-                  <select
-                    value={selectedBoxName}
-                    onChange={(e) => setSelectedBoxName(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-input bg-background px-3 py-1 text-foreground shadow-xs"
-                  >
-                    {availableBoxNames.map((bName) => (
-                      <option key={bName} value={bName}>
-                        {bName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                    Nama Produk / Barang
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="e.g. Mukena Silk Premium"
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
-                    className="h-9 text-xs"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                    Estimasi Harga (Rp)
-                  </label>
-                  <Input
-                    type="number"
-                    placeholder="e.g. 450000"
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
-                    className="h-9 text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[11px] font-medium text-muted-foreground block mb-1">
-                    Link Online (Shopee/Tokopedia)
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="url"
-                      placeholder="https://shopee.co.id/..."
-                      value={newItemUrl}
-                      onChange={(e) => setNewItemUrl(e.target.value)}
-                      className="h-9 text-xs flex-1"
-                    />
-                    <Button type="submit" size="sm" className="h-9 px-3 shrink-0 cursor-pointer">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </form>
-            </Card>
+            <div className="flex items-center justify-between pt-1">
+              <div>
+                <h3 className="font-sans font-bold text-sm text-foreground">
+                  Kotak Seserahan Pernikahan
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Kelola daftar barang dan estimasi belanja hantaran
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setAddModalOpen(true)}
+                className="h-8 rounded-full px-3.5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs meld-bouncy gap-1 cursor-pointer"
+              >
+                <Plus className="h-3.5 w-3.5" /> Tambah Barang
+              </Button>
+            </div>
 
             {/* List Kotak Seserahan Groups */}
             <div className="space-y-4">
@@ -1107,9 +1021,14 @@ export function PreweddingChecklistManager({
 
                       <CardContent className="pt-3 space-y-2">
                         {sortedBoxSubItems.map((subItem) => (
-                          <div
+                          <motion.div
+                            layout
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            transition={meldGentle}
                             key={subItem.id}
-                            className={`p-3 rounded-lg border flex flex-col justify-between gap-2 transition-all ${
+                            className={`p-3 rounded-lg border flex flex-col justify-between gap-2 transition-colors ${
                               subItem.is_completed
                                 ? "bg-accent/20 border-border/50 text-muted-foreground opacity-85"
                                 : "bg-card border-border text-foreground hover:border-primary/50"
@@ -1190,7 +1109,7 @@ export function PreweddingChecklistManager({
                                 </span>
                               </div>
                             )}
-                          </div>
+                          </motion.div>
                         ))}
                       </CardContent>
                     </Card>
@@ -1206,9 +1125,9 @@ export function PreweddingChecklistManager({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-lg sm:text-xl font-sans font-bold tracking-tight text-foreground">
-                    {activeCategory === "kua" && "📄 Berkas & Syarat Dokumen Administrasi KUA"}
-                    {activeCategory === "lamaran" && `💍 ${dynamicEventCategoryLabel}`}
-                    {activeCategory === "emergency" && "🛍️ Emergency Kit & Perlengkapan Hari-H"}
+                    {activeCategory === "kua" && "Berkas & Syarat Dokumen KUA"}
+                    {activeCategory === "lamaran" && dynamicEventCategoryLabel}
+                    {activeCategory === "emergency" && "Emergency Kit & Perlengkapan"}
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
                     Progres: {completedCount} dari {totalCount} item selesai ({progressPercent}%)
@@ -1235,36 +1154,6 @@ export function PreweddingChecklistManager({
             </CardHeader>
 
             <CardContent className="space-y-4 p-5 sm:p-6 pt-0">
-              <form onSubmit={handleAddCustomItem} className="grid gap-2 sm:grid-cols-4 p-3.5 sm:p-4 rounded-2xl border border-border/80 bg-muted/20 print:hidden">
-                <Input
-                  type="text"
-                  placeholder="Tambah item checklist baru..."
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  className="sm:col-span-2 text-xs h-9 bg-background"
-                  required
-                />
-                <Input
-                  type="text"
-                  placeholder="Catatan panduan opsional..."
-                  value={newItemNotes}
-                  onChange={(e) => setNewItemNotes(e.target.value)}
-                  className="text-xs h-9 bg-background"
-                />
-                <div className="flex gap-2">
-                  <Input
-                    type="text"
-                    placeholder="PIC..."
-                    value={newItemAssignee}
-                    onChange={(e) => setNewItemAssignee(e.target.value)}
-                    className="text-xs h-9 flex-1 bg-background"
-                  />
-                  <Button type="submit" size="sm" className="h-9 px-4 gap-1 shrink-0 cursor-pointer rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs font-semibold text-xs">
-                    <Plus className="h-4 w-4" /> Tambah
-                  </Button>
-                </div>
-              </form>
-
               <div className="space-y-2.5 pt-1">
                 {sortedCategoryItems.length === 0 ? (
                   <div className="p-8 text-center border border-dashed rounded-2xl text-muted-foreground text-xs">
@@ -1272,9 +1161,14 @@ export function PreweddingChecklistManager({
                   </div>
                 ) : (
                   sortedCategoryItems.map((it) => (
-                    <div
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={meldGentle}
                       key={it.id}
-                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between gap-2 ${
+                      className={`p-3.5 sm:p-4 rounded-2xl border transition-colors duration-200 flex flex-col justify-between gap-2 ${
                         it.is_completed
                           ? "bg-emerald-500/5 border-emerald-500/30 text-muted-foreground opacity-80"
                           : "bg-card border-border/80 hover:border-border text-foreground hover:shadow-xs"
@@ -1359,7 +1253,7 @@ export function PreweddingChecklistManager({
                           </span>
                         </div>
                       )}
-                    </div>
+                    </motion.div>
                   ))
                 )}
               </div>
@@ -1387,6 +1281,157 @@ export function PreweddingChecklistManager({
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* FLOATING ACTION BUTTON (FAB) & ADD ITEM BOTTOM-SHEET MODAL */}
+      <div className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-30 print:hidden">
+        <Button
+          onClick={() => setAddModalOpen(true)}
+          className="h-13 w-13 rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-lg shadow-rose-500/30 flex items-center justify-center meld-bouncy cursor-pointer"
+          title="Tambah Tugas Checklist"
+          aria-label="Tambah Tugas Checklist"
+        >
+          <Plus className="h-6 w-6 stroke-[2.5]" />
+        </Button>
+      </div>
+
+      <Dialog open={addModalOpen} onOpenChange={setAddModalOpen}>
+        <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="text-left pb-2 border-b border-border/60">
+            <DialogTitle className="font-sans text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <Plus className="h-4 w-4 text-primary" />
+              Tambah Tugas Checklist Baru
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Kategori aktif: <strong className="text-foreground capitalize">{activeCategory}</strong>
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleAddCustomItem} className="space-y-3.5 pt-2">
+            {activeCategory === "seserahan" && (
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground">
+                  Pilih Kotak Seserahan
+                </label>
+                <select
+                  value={selectedBoxName}
+                  onChange={(e) => setSelectedBoxName(e.target.value)}
+                  className="w-full h-10 text-xs rounded-xl border border-input bg-background px-3 py-1 text-foreground"
+                >
+                  {availableBoxNames.map((bName) => (
+                    <option key={bName} value={bName}>
+                      {bName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Nama Tugas / Barang
+              </label>
+              <Input
+                type="text"
+                placeholder="e.g. Booking MUA / Cetak Undangan"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                className="h-10 text-xs rounded-xl"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-foreground">
+                Catatan Instruksi (Opsional)
+              </label>
+              <Input
+                type="text"
+                placeholder="Catatan panduan atau detail teknis..."
+                value={newItemNotes}
+                onChange={(e) => setNewItemNotes(e.target.value)}
+                className="h-10 text-xs rounded-xl"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <User className="h-3 w-3 text-muted-foreground" /> PIC / Penanggung Jawab
+                </label>
+                <Input
+                  type="text"
+                  placeholder="e.g. Mas Raden"
+                  value={newItemAssignee}
+                  onChange={(e) => setNewItemAssignee(e.target.value)}
+                  className="h-10 text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                  <Calendar className="h-3 w-3 text-muted-foreground" /> Target Selesai
+                </label>
+                <Input
+                  type="date"
+                  value={newItemDueDate}
+                  onChange={(e) => setNewItemDueDate(e.target.value)}
+                  className="h-10 text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
+            {activeCategory === "seserahan" && (
+              <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-border/50">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground">
+                    Estimasi Harga (Rp)
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 500000"
+                    value={newItemPrice}
+                    onChange={(e) => setNewItemPrice(e.target.value)}
+                    className="h-10 text-xs rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground">
+                    Link Belanja Online
+                  </label>
+                  <Input
+                    type="url"
+                    placeholder="https://..."
+                    value={newItemUrl}
+                    onChange={(e) => setNewItemUrl(e.target.value)}
+                    className="h-10 text-xs rounded-xl"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="pt-2 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setAddModalOpen(false)}
+                className="h-9 rounded-full text-xs font-semibold"
+              >
+                Batal
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                className="h-9 px-5 rounded-full bg-[#ff385c] hover:bg-[#e00b41] text-white text-xs font-semibold shadow-xs meld-bouncy gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Tambah ke Checklist
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
