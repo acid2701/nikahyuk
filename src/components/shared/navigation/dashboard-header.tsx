@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { EventSwitcher, SubEventOption } from "./event-switcher";
+import { ScopeEventSelector } from "@/components/layout/scope-event-selector";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
 import { NotificationBell } from "./notification-bell";
@@ -110,26 +111,24 @@ export function DashboardHeader({
           )}
 
           {/* Judul Halaman Mobile-First Ringkas */}
-          <div className="min-w-0">
-            <h1 className="font-sans text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate max-w-[170px] sm:max-w-xs md:max-w-md">
-              {isRootDashboard ? `${groomName} & ${brideName}` : currentTitle}
-            </h1>
-            <p className="text-[10px] text-muted-foreground font-medium truncate">
-              {isRootDashboard ? "Workspace Pernikahan" : `${groomName} & ${brideName}`}
-            </p>
-          </div>
-
-          {/* Desktop Sub-Event Scope Switcher */}
-          {events.length > 0 && (
-            <div className="hidden md:block pl-3 border-l border-border shrink-0">
-              <EventSwitcher
-                events={events}
-                activeEventId={activeEventId}
-                weddingId={weddingId}
-                onAddEventClick={onAddEventClick}
-              />
+          <div className="min-w-0 flex items-center gap-2">
+            <div className="min-w-0">
+              <h1 className="font-sans text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate max-w-[130px] sm:max-w-xs md:max-w-md">
+                {isRootDashboard ? `${groomName} & ${brideName}` : currentTitle}
+              </h1>
+              <p className="text-[10px] text-muted-foreground font-medium truncate">
+                {isRootDashboard ? "Workspace Pernikahan" : `${groomName} & ${brideName}`}
+              </p>
             </div>
-          )}
+
+            {/* Scope Acara: Hybrid Dropdown / Bottom-Sheet Pill Trigger */}
+            {weddingId && events.length > 0 && (
+              <ScopeEventSelector
+                weddingId={weddingId}
+                events={events}
+              />
+            )}
+          </div>
         </div>
 
         {/* Sisi Kanan: Theme Toggle + Lonceng Notifikasi + Avatar Akun Ringkas */}

@@ -71,15 +71,6 @@ export default async function WeddingDashboardLayout(props: {
             events={events}
           />
         </Suspense>
-        {events.length > 0 && (
-          <Suspense fallback={null}>
-            <EventScopeHeader
-              weddingId={weddingId}
-              events={events}
-              allowedEventIds={allowedEventIds}
-            />
-          </Suspense>
-        )}
         <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8 pb-28">{props.children}</main>
         <MobileBottomNav weddingId={weddingId} />
       </div>
