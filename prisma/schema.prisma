@@ -164,6 +164,7 @@ model WeddingChecklist {
   assignedTo  String?  @map("assigned_to")
   notes       String?
   price       Decimal? @default(0) @db.Decimal(14, 2)
+  actualPrice Decimal? @default(0) @map("actual_price") @db.Decimal(14, 2)
   purchaseUrl String?  @map("purchase_url")
   boxName     String?  @map("box_name")
   completedBy String?  @map("completed_by")

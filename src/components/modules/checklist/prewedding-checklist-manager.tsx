@@ -70,6 +70,7 @@ export interface ChecklistItem {
   box_name?: string | null;
   item_name: string;
   price?: number | null;
+  actual_price?: number | null;
   purchase_url?: string | null;
   notes?: string | null;
   completed_notes?: string | null;
@@ -356,7 +357,7 @@ export function PreweddingChecklistManager({
           ? {
               ...i,
               is_completed: nextStatus,
-              completed_by: nextStatus ? "Pengguna" : null,
+              completed_by: nextStatus ? (i.completed_by || "Pengguna") : null,
               completed_at: nextStatus ? nowISO : null,
             }
           : i
@@ -369,7 +370,7 @@ export function PreweddingChecklistManager({
       variant: nextStatus ? "success" : "default",
     });
 
-    await toggleChecklistItemAction({
+    const res = await toggleChecklistItemAction({
       id: it.id,
       weddingId,
       isCompleted: nextStatus,
@@ -382,6 +383,25 @@ export function PreweddingChecklistManager({
         assignedTo: it.assignee_name || undefined,
       },
     });
+
+    if (res && res.success && res.data) {
+      setItems((prev) => {
+        const nextItems = prev.map((i) =>
+          i.id === it.id
+            ? {
+                ...i,
+                id: res.data!.id,
+                completed_by: res.data!.completed_by,
+                completed_at: res.data!.completed_at,
+              }
+            : i
+        );
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, JSON.stringify(nextItems));
+        }
+        return nextItems;
+      });
+    }
     router.refresh();
   }
 
@@ -592,13 +612,16 @@ export function PreweddingChecklistManager({
   const totalCount = categoryItems.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
-  // Seserahan financial calculations
+  // Seserahan financial calculations: Estimasi vs Realisasi
   const seserahanItems = items.filter((it) => it.category === "seserahan");
   const totalSeserahanBudget = seserahanItems.reduce((acc, it) => acc + (it.price || 0), 0);
   const totalPaidSeserahan = seserahanItems
     .filter((it) => it.is_completed)
-    .reduce((acc, it) => acc + (it.price || 0), 0);
+    .reduce((acc, it) => acc + (it.actual_price !== null && it.actual_price !== undefined ? it.actual_price : (it.price || 0)), 0);
   const totalRemainingSeserahan = Math.max(0, totalSeserahanBudget - totalPaidSeserahan);
+  const totalSeserahanVariance = seserahanItems
+    .filter((it) => it.is_completed && it.actual_price !== null && it.actual_price !== undefined && it.price)
+    .reduce((acc, it) => acc + ((it.actual_price || 0) - (it.price || 0)), 0);
 
   // Group seserahan items by box_name
   const seserahanBoxesMap: Record<string, ChecklistItem[]> = {};
@@ -944,23 +967,29 @@ export function PreweddingChecklistManager({
                   Progres Pembelian: {completedCount} dari {totalCount} produk selesai ({progressPercent}%)
                 </CardDescription>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 p-5 sm:p-6 pt-0">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 pt-0">
                 <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Total Estimasi Biaya</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Total Estimasi Anggaran</span>
                   <span className="text-base sm:text-lg font-mono font-bold text-foreground mt-0.5 block">
                     Rp {totalSeserahanBudget.toLocaleString("id-ID")}
                   </span>
                 </div>
                 <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Sudah Dibeli / Lunas</span>
+                  <span className="text-xs text-muted-foreground block font-medium">Realisasi Beli</span>
                   <span className="text-base sm:text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
                     Rp {totalPaidSeserahan.toLocaleString("id-ID")}
                   </span>
                 </div>
                 <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Sisa Anggaran Belanja</span>
-                  <span className="text-base sm:text-lg font-mono font-bold text-amber-600 dark:text-amber-400 mt-0.5 block">
-                    Rp {totalRemainingSeserahan.toLocaleString("id-ID")}
+                  <span className="text-xs text-muted-foreground block font-medium">Selisih Realisasi vs Estimasi</span>
+                  <span className={`text-base sm:text-lg font-mono font-bold mt-0.5 block ${
+                    totalSeserahanVariance > 0
+                      ? "text-rose-600 dark:text-rose-400"
+                      : totalSeserahanVariance < 0
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-muted-foreground"
+                  }`}>
+                    {totalSeserahanVariance > 0 ? "+" : ""}{totalSeserahanVariance === 0 ? "Rp 0" : `Rp ${totalSeserahanVariance.toLocaleString("id-ID")}`}
                   </span>
                 </div>
               </CardContent>
@@ -1053,14 +1082,36 @@ export function PreweddingChecklistManager({
                                       Catatan: {subItem.notes}
                                     </p>
                                   )}
+
+                                  {/* COMPLETION AUDIT LOG INFO */}
+                                  {subItem.is_completed && (
+                                    <div className="flex items-center gap-1.5 pt-1">
+                                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                                        <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                        {subItem.completed_by ? `Dibeli oleh ${subItem.completed_by}` : "Sudah Dibeli"}
+                                        {subItem.completed_at && ` • ${new Date(subItem.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-3 self-end sm:self-center">
+                              <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 {subItem.price && (
-                                  <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-1 rounded">
-                                    Rp {subItem.price.toLocaleString("id-ID")}
-                                  </span>
+                                  <div className="flex flex-col items-end">
+                                    <span className="font-mono text-[10px] text-muted-foreground line-through">
+                                      Est: Rp {subItem.price.toLocaleString("id-ID")}
+                                    </span>
+                                    {subItem.actual_price ? (
+                                      <span className="font-mono font-semibold text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                                        Real: Rp {subItem.actual_price.toLocaleString("id-ID")}
+                                      </span>
+                                    ) : (
+                                      <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-0.5 rounded">
+                                        Rp {subItem.price.toLocaleString("id-ID")}
+                                      </span>
+                                    )}
+                                  </div>
                                 )}
 
                                 {subItem.purchase_url && (
@@ -1203,11 +1254,11 @@ export function PreweddingChecklistManager({
                                 </span>
                               )}
 
-                              {it.is_completed && it.completed_by && (
+                              {it.is_completed && (
                                 <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md">
                                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-                                  Selesai oleh {it.completed_by}
-                                  {it.completed_at && ` • ${new Date(it.completed_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}`}
+                                  {it.completed_by ? `Selesai oleh ${it.completed_by}` : "Selesai"}
+                                  {it.completed_at && ` • ${new Date(it.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
                                 </span>
                               )}
                             </div>

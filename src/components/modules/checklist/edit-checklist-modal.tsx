@@ -35,6 +35,7 @@ export function EditChecklistModal({
   const [assigneeName, setAssigneeName] = React.useState("");
   const [dueDate, setDueDate] = React.useState("");
   const [price, setPrice] = React.useState<string>("");
+  const [actualPrice, setActualPrice] = React.useState<string>("");
   const [purchaseUrl, setPurchaseUrl] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const { toast } = useToast();
@@ -46,6 +47,7 @@ export function EditChecklistModal({
       setAssigneeName(item.assignee_name || "");
       setDueDate(item.due_date ? String(item.due_date).split("T")[0] : "");
       setPrice(item.price !== undefined && item.price !== null ? String(item.price) : "");
+      setActualPrice(item.actual_price !== undefined && item.actual_price !== null ? String(item.actual_price) : "");
       setPurchaseUrl(item.purchase_url || "");
     }
   }, [item]);
@@ -74,6 +76,7 @@ export function EditChecklistModal({
         assigneeName: assigneeName.trim() || null,
         dueDate: dueDate || null,
         price: price ? Number(price) : null,
+        actualPrice: actualPrice ? Number(actualPrice) : null,
         purchaseUrl: purchaseUrl.trim() || null,
       });
 
@@ -174,19 +177,35 @@ export function EditChecklistModal({
 
           {/* Kolom Tambahan Khusus Kotak Seserahan */}
           {isSeserahan && (
-            <div className="grid grid-cols-2 gap-2.5 pt-1 border-t border-border/50">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-emerald-600" /> Estimasi Harga (Rp)
-                </label>
-                <Input
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  placeholder="e.g. 500000"
-                  className="h-10 text-xs rounded-xl"
-                  disabled={loading}
-                />
+            <div className="space-y-3 pt-1 border-t border-border/50">
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-muted-foreground" /> Estimasi (Rp)
+                  </label>
+                  <Input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="e.g. 500000"
+                    className="h-10 text-xs rounded-xl"
+                    disabled={loading}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    <DollarSign className="h-3 w-3 text-emerald-600" /> Realisasi Beli (Rp)
+                  </label>
+                  <Input
+                    type="number"
+                    value={actualPrice}
+                    onChange={(e) => setActualPrice(e.target.value)}
+                    placeholder="e.g. 475000"
+                    className="h-10 text-xs rounded-xl border-emerald-500/40 focus-visible:ring-emerald-500 font-semibold text-emerald-700 dark:text-emerald-400"
+                    disabled={loading}
+                  />
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -197,7 +216,7 @@ export function EditChecklistModal({
                   type="url"
                   value={purchaseUrl}
                   onChange={(e) => setPurchaseUrl(e.target.value)}
-                  placeholder="https://..."
+                  placeholder="https://shopee.co.id/..."
                   className="h-10 text-xs rounded-xl"
                   disabled={loading}
                 />

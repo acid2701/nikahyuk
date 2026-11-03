@@ -12,6 +12,7 @@ export interface DBChecklistItem {
   box_name?: string | null;
   item_name: string;
   price?: number | null;
+  actual_price?: number | null;
   purchase_url?: string | null;
   notes?: string | null;
   completed_notes?: string | null;
@@ -45,6 +46,7 @@ function toChecklistDTO(c: any): DBChecklistItem {
     box_name: c.boxName || null,
     item_name: c.taskTitle,
     price: c.price ? Number(c.price) : null,
+    actual_price: c.actualPrice ? Number(c.actualPrice) : null,
     purchase_url: c.purchaseUrl || null,
     notes: c.notes || null,
     completed_notes: null,
@@ -198,6 +200,7 @@ export async function updateChecklistItemAction(payload: {
   assigneeName?: string | null;
   dueDate?: string | null;
   price?: number | null;
+  actualPrice?: number | null;
   purchaseUrl?: string | null;
 }) {
   const sessionUser = await getCurrentUser();
@@ -219,6 +222,7 @@ export async function updateChecklistItemAction(payload: {
           assignedTo: payload.assigneeName?.trim() || null,
           dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
           price: payload.price !== undefined ? payload.price : undefined,
+          actualPrice: payload.actualPrice !== undefined ? payload.actualPrice : undefined,
           purchaseUrl: payload.purchaseUrl?.trim() || null,
         },
       });
@@ -233,6 +237,7 @@ export async function updateChecklistItemAction(payload: {
           assignedTo: payload.assigneeName?.trim() || null,
           dueDate: payload.dueDate ? new Date(payload.dueDate) : null,
           price: payload.price ? Number(payload.price) : null,
+          actualPrice: payload.actualPrice ? Number(payload.actualPrice) : null,
           purchaseUrl: payload.purchaseUrl?.trim() || null,
           isCompleted: false,
         },
