@@ -691,6 +691,28 @@ export function PreweddingChecklistManager({
             <Printer className="h-4 w-4" /> Cetak / Export PDF
           </Button>
 
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const pendingItems = items.filter((i) => !i.is_completed);
+              const text = `💍 *Checklist Persiapan - ${eventName}*\n\n` +
+                (pendingItems.length === 0
+                  ? "Alhamdulillah, semua checklist persiapan telah selesai! 🎉"
+                  : `Berikut daftar ${pendingItems.length} item persiapan yang masih perlu diselesaikan:\n\n` +
+                    pendingItems
+                      .slice(0, 15)
+                      .map((i, idx) => `${idx + 1}. [ ] ${i.item_name}${i.assignee_name ? ` (PIC: ${i.assignee_name})` : ""}${i.due_date ? ` - Target: ${i.due_date}` : ""}`)
+                      .join("\n") +
+                    (pendingItems.length > 15 ? `\n\n...dan ${pendingItems.length - 15} item lainnya.` : "") +
+                    `\n\nBuka workspace: https://nikahyu.my.id/dashboard/${weddingId}/checklists`);
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+            }}
+            className="gap-1.5 text-xs font-semibold cursor-pointer border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+          >
+            <MessageSquareQuote className="h-4 w-4" /> Share WA
+          </Button>
+
           <Dialog open={importModalOpen} onOpenChange={setImportModalOpen}>
             <DialogTrigger asChild>
               <Button size="sm" className="gap-2 text-xs font-semibold shadow-xs cursor-pointer">

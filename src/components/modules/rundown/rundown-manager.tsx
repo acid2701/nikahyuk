@@ -19,7 +19,7 @@ import {
 } from "@/actions/rundown-actions";
 import { useToast } from "@/components/ui/use-toast";
 import { CueTypeEnum } from "@/types/database.types";
-import { Plus, Clock, Volume2 } from "lucide-react";
+import { Plus, Clock, Volume2, MessageSquareQuote } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -227,6 +227,26 @@ export function RundownManager({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (rundowns.length === 0) {
+                toast({ title: "Rundown Kosong", description: "Belum ada agenda susunan acara.", variant: "warning" });
+                return;
+              }
+              const text = `📋 *Susunan Acara (Rundown) - ${eventName}*\n\n` +
+                rundowns
+                  .map((r, idx) => `${idx + 1}. *${r.time_start} - ${r.time_end}*: ${r.activity_title}${r.pic_name ? ` (PIC: ${r.pic_name})` : ""}${r.location ? ` @ ${r.location}` : ""}`)
+                  .join("\n") +
+                `\n\nBuka live rundown: https://nikahyu.my.id/dashboard/${weddingId}/rundown`;
+              window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+            }}
+            className="gap-1.5 h-8 text-xs font-semibold rounded-full border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+          >
+            <MessageSquareQuote className="h-3.5 w-3.5" /> Share WA
+          </Button>
+
           <AudioCuesDrawer rundowns={rundowns} />
           <RundownPDFPrintButton
             eventName={eventName}
