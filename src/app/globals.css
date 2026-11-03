@@ -176,6 +176,14 @@
   .meld-bouncy:active {
     transform: scale(0.96);
   }
+
+  /* Native Mobile App Safe-Area Utilities */
+  .safe-area-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
+  }
+  .safe-area-top {
+    padding-top: max(env(safe-area-inset-top, 0px), 8px);
+  }
 }
 
 .cute .bg-card,
@@ -186,10 +194,16 @@
 @layer base {
   * {
     border-color: hsl(var(--border));
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    overscroll-behavior-y: contain;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: var(--font-sans);
+    overscroll-behavior-y: contain;
   }
 }

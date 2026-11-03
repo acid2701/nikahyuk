@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/shared/theme/theme-provider";
@@ -12,6 +12,18 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-sans",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FFFFFF" },
+    { media: "(prefers-color-scheme: dark)", color: "#0B1120" },
+  ],
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getAppBranding();
@@ -33,6 +45,12 @@ export async function generateMetadata(): Promise<Metadata> {
       ],
       shortcut: branding.faviconUrl || "/favicon.ico",
       apple: branding.logoUrl || branding.faviconUrl || "/favicon.ico",
+    },
+    manifest: "/manifest.webmanifest",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: branding.appName,
     },
     openGraph: {
       type: "website",
