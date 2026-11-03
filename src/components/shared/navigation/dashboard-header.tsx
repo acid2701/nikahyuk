@@ -9,7 +9,6 @@ import {
   Home,
   Building2,
   ChevronLeft,
-  Heart,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,13 +19,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { EventSwitcher, SubEventOption } from "./event-switcher";
-import { ScopeEventSelector } from "@/components/layout/scope-event-selector";
+import { ScopeEventSelector, SubEventOption } from "@/components/layout/scope-event-selector";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
 import { NotificationBell } from "./notification-bell";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
 export interface DashboardHeaderProps {
   weddingId?: string;
@@ -40,9 +37,9 @@ export interface DashboardHeaderProps {
 
 const PAGE_TITLES: Record<string, string> = {
   events: "Rangkaian Acara",
-  budget: "Anggaran & Biaya",
+  budget: "Anggaran Biaya",
   vendors: "Vendor Hub",
-  guests: "Master Tamu & RSVP",
+  guests: "Buku Tamu & RSVP",
   seating: "Penataan Meja",
   rundown: "Susunan Acara",
   checklists: "Checklist Persiapan",
@@ -58,12 +55,8 @@ const PAGE_TITLES: Record<string, string> = {
 
 export function DashboardHeader({
   weddingId,
-  groomName = "Pengantin Pria",
-  brideName = "Pengantin Wanita",
   userEmail = "user@nikahyu.my.id",
   events = [],
-  activeEventId,
-  onAddEventClick,
 }: DashboardHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -72,9 +65,9 @@ export function DashboardHeader({
   const isRootDashboard =
     pathname === `/dashboard/${weddingId}` || pathname === "/dashboard";
 
-  // Ambil segmen terakhir untuk judul halaman aktif
+  // Ambil judul halaman saat ini
   const currentSegment = pathname.split("/").filter(Boolean).pop() || "";
-  const currentTitle = PAGE_TITLES[currentSegment] || `${groomName} & ${brideName}`;
+  const currentTitle = PAGE_TITLES[currentSegment] || "NikahYuk";
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -88,61 +81,60 @@ export function DashboardHeader({
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-md safe-area-top select-none shrink-0">
-      <div className="max-w-7xl mx-auto h-14 px-3.5 sm:px-6 flex items-center justify-between gap-3">
-        {/* Sisi Kiri: Back Button (Sub-page) atau Inisial Pasangan */}
-        <div className="flex items-center space-x-2.5 min-w-0">
+    <header className="sticky top-0 z-30 border-b border-border/70 bg-background/90 backdrop-blur-md safe-area-top select-none shrink-0">
+      <div className="max-w-5xl mx-auto h-14 px-3.5 sm:px-6 flex items-center justify-between gap-2">
+        {/* SISI KIRI: Brand / Back Button + Sub-Event Pill */}
+        <div className="flex items-center space-x-2 min-w-0">
           {!isRootDashboard && weddingId ? (
-            <Button
-              asChild
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 rounded-full border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 meld-bouncy"
-              aria-label="Kembali ke Beranda Workspace"
-            >
-              <Link href={`/dashboard/${weddingId}`}>
-                <ChevronLeft className="h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-full border border-border/70 hover:bg-muted text-foreground shrink-0 meld-bouncy"
+                aria-label="Kembali ke Beranda"
+              >
+                <Link href={`/dashboard/${weddingId}`}>
+                  <ChevronLeft className="h-4 w-4" />
+                </Link>
+              </Button>
+              <h1 className="font-sans text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate max-w-[170px] sm:max-w-xs">
+                {currentTitle}
+              </h1>
+            </div>
           ) : (
-            <div className="h-8 w-8 rounded-full bg-rose-500/10 border border-rose-200 text-rose-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              <Heart className="h-4 w-4 fill-rose-500/20" />
+            <div className="flex items-center space-x-2.5">
+              {/* Brand Mark Minimalis */}
+              <Link
+                href="/"
+                className="h-8 w-8 rounded-full bg-[#ff385c] flex items-center justify-center text-white font-extrabold text-xs shadow-xs shrink-0 hover:scale-105 transition-transform"
+              >
+                N
+              </Link>
+
+              {/* Scope Acara Terintegrasi (Bebas Sesak di Mobile) */}
+              {weddingId && events.length > 0 && (
+                <ScopeEventSelector
+                  weddingId={weddingId}
+                  events={events}
+                />
+              )}
             </div>
           )}
-
-          {/* Judul Halaman Mobile-First Ringkas */}
-          <div className="min-w-0 flex items-center gap-2">
-            <div className="min-w-0">
-              <h1 className="font-sans text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate max-w-[130px] sm:max-w-xs md:max-w-md">
-                {isRootDashboard ? `${groomName} & ${brideName}` : currentTitle}
-              </h1>
-              <p className="text-[10px] text-muted-foreground font-medium truncate">
-                {isRootDashboard ? "Workspace Pernikahan" : `${groomName} & ${brideName}`}
-              </p>
-            </div>
-
-            {/* Scope Acara: Hybrid Dropdown / Bottom-Sheet Pill Trigger */}
-            {weddingId && events.length > 0 && (
-              <ScopeEventSelector
-                weddingId={weddingId}
-                events={events}
-              />
-            )}
-          </div>
         </div>
 
-        {/* Sisi Kanan: Theme Toggle + Lonceng Notifikasi + Avatar Akun Ringkas */}
-        <div className="flex items-center space-x-2 shrink-0">
+        {/* SISI KANAN: Theme Toggle + Bell Notifikasi + Avatar Akun */}
+        <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
           <ThemeToggle />
           <NotificationBell weddingId={weddingId} />
 
-          {/* Avatar Profil Akun Ringkas (Clean Circle, No Long Text) */}
+          {/* Avatar Lingkaran Elegan (Tanpa Teks Email Panjang) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 rounded-full border border-border/80 bg-secondary/40 hover:bg-secondary text-primary font-bold text-xs shadow-2xs shrink-0 meld-bouncy"
+                className="h-8 w-8 rounded-full border border-border/80 bg-secondary/50 hover:bg-secondary text-primary font-bold text-xs shadow-2xs shrink-0 meld-bouncy"
                 aria-label="Menu Pengguna"
               >
                 <span>{userEmail.charAt(0).toUpperCase()}</span>
