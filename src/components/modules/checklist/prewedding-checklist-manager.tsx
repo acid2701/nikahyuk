@@ -266,6 +266,7 @@ export function PreweddingChecklistManager({
     setItems(defaultItems);
     if (typeof window !== "undefined") {
       localStorage.setItem(storageKey, JSON.stringify(defaultItems));
+      localStorage.setItem(`${storageKey}_seeded`, "true");
     }
     if (!silent) {
       toast({
@@ -287,22 +288,27 @@ export function PreweddingChecklistManager({
           localStorage.setItem(storageKey, JSON.stringify(dbItems));
         }
       } else {
-        // Fallback to local storage or load default seeder
+        // Fallback to local storage or load default seeder HANYA SEKALI
         if (typeof window !== "undefined") {
+          const alreadySeeded = localStorage.getItem(`${storageKey}_seeded`);
           const saved = localStorage.getItem(storageKey);
           if (saved) {
             try {
               const parsed = JSON.parse(saved);
               if (Array.isArray(parsed) && parsed.length > 0) {
                 setItems(parsed);
-              } else {
+              } else if (!alreadySeeded) {
                 loadDefaultPresets(true);
+              } else {
+                setItems([]);
               }
             } catch {
-              loadDefaultPresets(true);
+              if (!alreadySeeded) loadDefaultPresets(true);
             }
-          } else {
+          } else if (!alreadySeeded) {
             loadDefaultPresets(true);
+          } else {
+            setItems([]);
           }
         }
       }
@@ -486,13 +492,31 @@ export function PreweddingChecklistManager({
     e.preventDefault();
     if (!newItemName.trim()) return;
 
+    // Cek duplikasi item dengan nama yang sama di kategori aktif
+    const trimmedTitle = newItemName.trim();
+    const isDuplicate = items.some(
+      (it) =>
+        it.category === activeCategory &&
+        it.item_name.trim().toLowerCase() === trimmedTitle.toLowerCase()
+    );
+
+    if (isDuplicate) {
+      toast({
+        title: "Item Sudah Ada",
+        description: `'${trimmedTitle}' sudah ada dalam daftar kategori ini.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const tempId = `custom_${Date.now()}`;
     const newItem: ChecklistItem = {
-      id: `custom_${Date.now()}`,
+      id: tempId,
       wedding_id: weddingId,
       event_id: eventId,
       category: activeCategory,
       box_name: activeCategory === "seserahan" ? selectedBoxName : null,
-      item_name: newItemName.trim(),
+      item_name: trimmedTitle,
       price: newItemPrice ? Number(newItemPrice) : null,
       purchase_url: newItemUrl.trim() || null,
       notes: newItemNotes.trim() || null,
@@ -517,7 +541,7 @@ export function PreweddingChecklistManager({
 
     setAddModalOpen(false);
 
-    await addChecklistItemAction({
+    const res = await addChecklistItemAction({
       wedding_id: weddingId,
       event_id: eventId,
       category: activeCategory,
@@ -529,7 +553,16 @@ export function PreweddingChecklistManager({
       due_date: newItem.due_date || undefined,
       assignee_name: newItem.assignee_name || undefined,
     });
-    router.refresh();
+
+    if (res && res.success && res.data) {
+      setItems((prev) => {
+        const nextItems = prev.map((i) => (i.id === tempId ? { ...i, id: res.data!.id } : i));
+        if (typeof window !== "undefined") {
+          localStorage.setItem(storageKey, JSON.stringify(nextItems));
+        }
+        return nextItems;
+      });
+    }
   }
 
   function importPresetTemplate(presetKey: "lamaran" | "akad" | "resepsi" | "master") {
@@ -595,12 +628,30 @@ export function PreweddingChecklistManager({
       ];
     }
 
-    const updated = [...items, ...presetsToImport];
+    // Filter out item yang sudah ada di daftar checklist agar tidak terduplikasi
+    const existingTitles = new Set(
+      items.map((i) => i.item_name.trim().toLowerCase())
+    );
+    const nonDuplicatePresets = presetsToImport.filter(
+      (p) => !existingTitles.has(p.item_name.trim().toLowerCase())
+    );
+
+    if (nonDuplicatePresets.length === 0) {
+      toast({
+        title: "Item Sudah Ada",
+        description: "Semua item dari template ini sudah ada di dalam checklist Anda.",
+        variant: "default",
+      });
+      setImportModalOpen(false);
+      return;
+    }
+
+    const updated = [...items, ...nonDuplicatePresets];
     saveLocalItems(updated);
     setImportModalOpen(false);
     toast({
       title: "Template Berhasil Diimpor",
-      description: `${presetsToImport.length} item dari template telah ditambahkan ke checklist '${eventName}'.`,
+      description: `${nonDuplicatePresets.length} item baru dari template telah ditambahkan ke checklist '${eventName}'.`,
       variant: "success",
     });
   }
