@@ -2,7 +2,15 @@
 
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, User, Shield, ChevronRight, Home, Building2 } from "lucide-react";
+import {
+  LogOut,
+  User,
+  Shield,
+  Home,
+  Building2,
+  ChevronLeft,
+  Heart,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,11 +23,9 @@ import { Button } from "@/components/ui/button";
 import { EventSwitcher, SubEventOption } from "./event-switcher";
 import { ThemeToggle } from "@/components/shared/theme/theme-toggle";
 import { useToast } from "@/components/ui/use-toast";
-import { MobileSidebarDrawer } from "./mobile-sidebar-drawer";
 import { NotificationBell } from "./notification-bell";
 import Link from "next/link";
-
-
+import { cn } from "@/lib/utils";
 
 export interface DashboardHeaderProps {
   weddingId?: string;
@@ -31,58 +37,25 @@ export interface DashboardHeaderProps {
   onAddEventClick?: () => void;
 }
 
-const BREADCRUMB_LABELS: Record<string, string> = {
-  dashboard: "Dashboard",
-  events: "Sub-Events",
-  budget: "Anggaran",
+const PAGE_TITLES: Record<string, string> = {
+  events: "Rangkaian Acara",
+  budget: "Anggaran & Biaya",
   vendors: "Vendor Hub",
-  guests: "Master Tamu",
-  seating: "Penataan Duduk",
-  rundown: "Live Rundown",
-  checklists: "Checklist",
-  gifts: "Log Kado",
-  "audit-logs": "Audit Trail",
+  guests: "Master Tamu & RSVP",
+  seating: "Penataan Meja",
+  rundown: "Susunan Acara",
+  checklists: "Checklist Persiapan",
+  gifts: "Catatan Kado & Angpao",
+  "audit-logs": "Catatan Aktivitas",
   settings: "Pengaturan",
-  collaborators: "Kolaborator",
-  profile: "Profil Acara",
-  "user-profile": "Profil Saya",
-  share: "Berbagi Link",
-  tokens: "Token Publik",
-  "export-delete": "Ekspor & Hapus",
+  collaborators: "Tim Kolaborator",
+  profile: "Profil Pernikahan",
+  "user-profile": "Profil Akun Saya",
+  share: "Tautan Akses Kru",
+  moodboard: "Moodboard & Palet",
 };
 
-function generateBreadcrumbs(
-  pathname: string,
-  weddingId?: string
-): { label: string; href: string }[] {
-  const crumbs: { label: string; href: string }[] = [];
-
-  crumbs.push({ label: "Dashboard", href: "/dashboard" });
-
-  if (!weddingId) return crumbs;
-
-  const weddingBase = `/dashboard/${weddingId}`;
-  const afterWedding = pathname.replace(weddingBase, "").replace(/^\//, "");
-
-  if (!afterWedding) {
-    crumbs.push({ label: "Ringkasan", href: weddingBase });
-    return crumbs;
-  }
-
-  const segments = afterWedding.split("/").filter(Boolean);
-  let currentPath = weddingBase;
-
-  for (const segment of segments) {
-    currentPath += `/${segment}`;
-    const label = BREADCRUMB_LABELS[segment] || segment;
-    crumbs.push({ label, href: currentPath });
-  }
-
-  return crumbs;
-}
-
 export function DashboardHeader({
-
   weddingId,
   groomName = "Pengantin Pria",
   brideName = "Pengantin Wanita",
@@ -95,7 +68,12 @@ export function DashboardHeader({
   const pathname = usePathname();
   const { toast } = useToast();
 
-  const breadcrumbs = generateBreadcrumbs(pathname, weddingId);
+  const isRootDashboard =
+    pathname === `/dashboard/${weddingId}` || pathname === "/dashboard";
+
+  // Ambil segmen terakhir untuk judul halaman aktif
+  const currentSegment = pathname.split("/").filter(Boolean).pop() || "";
+  const currentTitle = PAGE_TITLES[currentSegment] || `${groomName} & ${brideName}`;
 
   async function handleSignOut() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -109,22 +87,41 @@ export function DashboardHeader({
   }
 
   return (
-    <header className="border-b border-border bg-card shrink-0">
-      {/* Top Bar: Mobile Hamburger + Couple Name + Event Switcher + Theme Toggle + User Profile */}
-      <div className="h-14 px-3 sm:px-6 flex items-center justify-between gap-2">
-        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
-          <MobileSidebarDrawer weddingId={weddingId} />
+    <header className="sticky top-0 z-30 border-b border-border/80 bg-background/95 backdrop-blur-md safe-area-top select-none shrink-0">
+      <div className="max-w-7xl mx-auto h-14 px-3.5 sm:px-6 flex items-center justify-between gap-3">
+        {/* Sisi Kiri: Back Button (Sub-page) atau Inisial Pasangan */}
+        <div className="flex items-center space-x-2.5 min-w-0">
+          {!isRootDashboard && weddingId ? (
+            <Button
+              asChild
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-full border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground shrink-0 meld-bouncy"
+              aria-label="Kembali ke Beranda Workspace"
+            >
+              <Link href={`/dashboard/${weddingId}`}>
+                <ChevronLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-rose-500/10 border border-rose-200 text-rose-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+              <Heart className="h-4 w-4 fill-rose-500/20" />
+            </div>
+          )}
+
+          {/* Judul Halaman Mobile-First Ringkas */}
           <div className="min-w-0">
-            <h2 className="font-sans text-xs sm:text-base font-bold tracking-tight text-foreground leading-tight truncate max-w-[130px] sm:max-w-xs md:max-w-md">
-              {groomName} & {brideName}
-            </h2>
-            <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-tight truncate font-medium">
-              Workspace Pernikahan
+            <h1 className="font-sans text-sm sm:text-base font-extrabold tracking-tight text-foreground truncate max-w-[170px] sm:max-w-xs md:max-w-md">
+              {isRootDashboard ? `${groomName} & ${brideName}` : currentTitle}
+            </h1>
+            <p className="text-[10px] text-muted-foreground font-medium truncate">
+              {isRootDashboard ? "Workspace Pernikahan" : `${groomName} & ${brideName}`}
             </p>
           </div>
 
+          {/* Desktop Sub-Event Scope Switcher */}
           {events.length > 0 && (
-            <div className="hidden sm:block pl-3 sm:pl-4 border-l border-border shrink-0">
+            <div className="hidden md:block pl-3 border-l border-border shrink-0">
               <EventSwitcher
                 events={events}
                 activeEventId={activeEventId}
@@ -135,35 +132,27 @@ export function DashboardHeader({
           )}
         </div>
 
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        {/* Sisi Kanan: Theme Toggle + Lonceng Notifikasi + Avatar Akun Ringkas */}
+        <div className="flex items-center space-x-2 shrink-0">
           <ThemeToggle />
           <NotificationBell weddingId={weddingId} />
 
-
-
+          {/* Avatar Profil Akun Ringkas (Clean Circle, No Long Text) */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                size="sm"
-                className="flex items-center gap-2 rounded-full px-3 py-1 bg-secondary/50 hover:bg-secondary"
+                size="icon"
+                className="h-8 w-8 rounded-full border border-border/80 bg-secondary/40 hover:bg-secondary text-primary font-bold text-xs shadow-2xs shrink-0 meld-bouncy"
+                aria-label="Menu Pengguna"
               >
-                <div className="h-7 w-7 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
-                  {userEmail.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-xs font-medium text-foreground max-w-[120px] truncate">
-                  {userEmail}
-                </span>
+                <span>{userEmail.charAt(0).toUpperCase()}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                Akun Terhubung
-              </DropdownMenuLabel>
-              <DropdownMenuItem className="text-xs font-medium truncate">
-                <User className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
+            <DropdownMenuContent align="end" className="w-56 rounded-2xl p-1.5 shadow-md">
+              <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1 font-semibold truncate">
                 {userEmail}
-              </DropdownMenuItem>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() =>
@@ -173,7 +162,7 @@ export function DashboardHeader({
                       : "/dashboard/profile"
                   )
                 }
-                className="text-xs font-medium cursor-pointer"
+                className="text-xs font-medium cursor-pointer rounded-xl"
               >
                 <User className="h-3.5 w-3.5 mr-2 text-primary" />
                 Profil Akun Saya
@@ -181,7 +170,7 @@ export function DashboardHeader({
               {weddingId && (
                 <DropdownMenuItem
                   onClick={() => router.push(`/dashboard/${weddingId}/settings/profile`)}
-                  className="text-xs font-medium cursor-pointer"
+                  className="text-xs font-medium cursor-pointer rounded-xl"
                 >
                   <Home className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                   Profil Pernikahan
@@ -189,14 +178,14 @@ export function DashboardHeader({
               )}
               <DropdownMenuItem
                 onClick={() => router.push("/vendor/dashboard")}
-                className="text-xs font-medium cursor-pointer"
+                className="text-xs font-medium cursor-pointer rounded-xl"
               >
                 <Building2 className="h-3.5 w-3.5 mr-2 text-amber-500" />
-                Portal Vendor Saya
+                Portal Mitra Vendor
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => router.push("/admin")}
-                className="text-xs font-medium cursor-pointer"
+                className="text-xs font-medium cursor-pointer rounded-xl"
               >
                 <Shield className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                 Superadmin Panel
@@ -204,7 +193,7 @@ export function DashboardHeader({
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
-                className="text-xs text-destructive font-medium cursor-pointer"
+                className="text-xs text-destructive font-semibold cursor-pointer rounded-xl"
               >
                 <LogOut className="h-3.5 w-3.5 mr-2" />
                 Keluar Akun
@@ -213,39 +202,6 @@ export function DashboardHeader({
           </DropdownMenu>
         </div>
       </div>
-
-      {/* Breadcrumbs Bar */}
-      {breadcrumbs.length > 1 && (
-        <div className="h-8 px-6 flex items-center bg-muted/30 border-t border-border/50">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex items-center space-x-1 text-[11px]"
-          >
-            {breadcrumbs.map((crumb, index) => {
-              const isLast = index === breadcrumbs.length - 1;
-              return (
-                <React.Fragment key={crumb.href}>
-                  {index > 0 && (
-                    <ChevronRight className="h-3 w-3 text-muted-foreground/60 shrink-0" />
-                  )}
-                  {isLast ? (
-                    <span className="font-semibold text-foreground truncate max-w-[160px]">
-                      {crumb.label}
-                    </span>
-                  ) : (
-                    <Link
-                      href={crumb.href}
-                      className="text-muted-foreground hover:text-primary transition-colors truncate max-w-[120px]"
-                    >
-                      {crumb.label}
-                    </Link>
-                  )}
-                </React.Fragment>
-              );
-            })}
-          </nav>
-        </div>
-      )}
     </header>
   );
 }
