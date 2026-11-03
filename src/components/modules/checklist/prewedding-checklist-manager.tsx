@@ -668,10 +668,13 @@ export function PreweddingChecklistManager({
   const totalSeserahanBudget = seserahanItems.reduce((acc, it) => acc + (it.price || 0), 0);
   const totalPaidSeserahan = seserahanItems
     .filter((it) => it.is_completed)
-    .reduce((acc, it) => acc + (it.actual_price !== null && it.actual_price !== undefined ? it.actual_price : (it.price || 0)), 0);
+    .reduce((acc, it) => acc + (it.price || 0), 0);
+  const totalActualSeserahan = seserahanItems
+    .filter((it) => it.is_completed)
+    .reduce((acc, it) => acc + (it.actual_price !== null && it.actual_price !== undefined && it.actual_price > 0 ? it.actual_price : (it.price || 0)), 0);
   const totalRemainingSeserahan = Math.max(0, totalSeserahanBudget - totalPaidSeserahan);
   const totalSeserahanVariance = seserahanItems
-    .filter((it) => it.is_completed && it.actual_price !== null && it.actual_price !== undefined && it.price)
+    .filter((it) => it.is_completed && it.actual_price !== null && it.actual_price !== undefined && it.actual_price > 0 && it.price)
     .reduce((acc, it) => acc + ((it.actual_price || 0) - (it.price || 0)), 0);
 
   // Group seserahan items by box_name
@@ -1028,7 +1031,7 @@ export function PreweddingChecklistManager({
                 <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
                   <span className="text-xs text-muted-foreground block font-medium">Realisasi Beli</span>
                   <span className="text-base sm:text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-                    Rp {totalPaidSeserahan.toLocaleString("id-ID")}
+                    Rp {totalActualSeserahan.toLocaleString("id-ID")}
                   </span>
                 </div>
                 <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
@@ -1077,29 +1080,29 @@ export function PreweddingChecklistManager({
                   const sortedBoxSubItems = sortChecklistItems(boxSubItems);
 
                   return (
-                    <Card key={boxTitle} className="border-border/80">
-                      <CardHeader className="pb-3 bg-muted/30">
+                    <Card key={boxTitle} className="rounded-3xl border-border/80 shadow-xs overflow-hidden">
+                      <CardHeader className="p-4 sm:p-5 bg-muted/40 border-b border-border/60">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div className="flex items-center space-x-2">
-                            <Gift className="h-5 w-5 text-pink-600 shrink-0" />
-                            <CardTitle className="text-base font-semibold">
+                            <Gift className="h-4 w-4 text-pink-600 shrink-0" />
+                            <CardTitle className="text-sm sm:text-base font-bold font-sans">
                               {boxTitle}
                             </CardTitle>
-                            <Badge variant="outline" className="text-[10px]">
-                              {boxCompleted}/{boxSubItems.length} Produk Dibeli
+                            <Badge variant="outline" className="text-[10px] font-semibold rounded-full px-2">
+                              {boxCompleted}/{boxSubItems.length} Selesai
                             </Badge>
                           </div>
 
-                          <div className="text-right">
-                            <span className="text-xs text-muted-foreground">Total Biaya Kotak Ini: </span>
-                            <span className="font-mono font-bold text-sm text-foreground">
+                          <div className="text-left sm:text-right">
+                            <span className="text-[11px] text-muted-foreground">Total Kotak: </span>
+                            <span className="font-mono font-bold text-xs sm:text-sm text-foreground">
                               Rp {boxTotal.toLocaleString("id-ID")}
                             </span>
                           </div>
                         </div>
                       </CardHeader>
 
-                      <CardContent className="pt-3 space-y-2">
+                      <CardContent className="p-3.5 sm:p-4 space-y-2.5">
                         {sortedBoxSubItems.map((subItem) => (
                           <motion.div
                             layout
@@ -1108,10 +1111,10 @@ export function PreweddingChecklistManager({
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={meldGentle}
                             key={subItem.id}
-                            className={`p-3 rounded-lg border flex flex-col justify-between gap-2 transition-colors ${
+                            className={`p-3.5 sm:p-4 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all duration-200 ${
                               subItem.is_completed
-                                ? "bg-accent/20 border-border/50 text-muted-foreground opacity-85"
-                                : "bg-card border-border text-foreground hover:border-primary/50"
+                                ? "bg-emerald-500/5 border-emerald-500/30 text-muted-foreground opacity-85"
+                                : "bg-card border-border/80 hover:border-border text-foreground hover:shadow-xs"
                             }`}
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1150,13 +1153,15 @@ export function PreweddingChecklistManager({
                               <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
                                 {subItem.price && (
                                   <div className="flex flex-col items-end">
-                                    <span className="font-mono text-[10px] text-muted-foreground line-through">
-                                      Est: Rp {subItem.price.toLocaleString("id-ID")}
-                                    </span>
                                     {subItem.actual_price ? (
-                                      <span className="font-mono font-semibold text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                                        Real: Rp {subItem.actual_price.toLocaleString("id-ID")}
-                                      </span>
+                                      <>
+                                        <span className="font-mono text-[10px] text-muted-foreground line-through">
+                                          Est: Rp {subItem.price.toLocaleString("id-ID")}
+                                        </span>
+                                        <span className="font-mono font-semibold text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
+                                          Real: Rp {subItem.actual_price.toLocaleString("id-ID")}
+                                        </span>
+                                      </>
                                     ) : (
                                       <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-0.5 rounded">
                                         Rp {subItem.price.toLocaleString("id-ID")}
