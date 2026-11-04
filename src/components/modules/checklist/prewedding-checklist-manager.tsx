@@ -87,6 +87,58 @@ export interface PreweddingChecklistManagerProps {
   eventName?: string;
 }
 
+// Helper format due date badge
+function getDueDateBadge(dueDateStr?: string | null, isCompleted?: boolean) {
+  if (!dueDateStr) return null;
+  const target = new Date(dueDateStr);
+  if (isNaN(target.getTime())) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const targetMidnight = new Date(target);
+  targetMidnight.setHours(0, 0, 0, 0);
+
+  const diffDays = Math.round((targetMidnight.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  const formattedDate = target.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+
+  if (isCompleted) {
+    return {
+      text: formattedDate,
+      className: "text-muted-foreground bg-muted/60",
+    };
+  }
+
+  if (diffDays < 0) {
+    return {
+      text: `Lewat ${Math.abs(diffDays)} hari (${formattedDate})`,
+      className: "text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/30 font-semibold",
+    };
+  }
+  if (diffDays === 0) {
+    return {
+      text: `Hari ini (${formattedDate})`,
+      className: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30 font-semibold",
+    };
+  }
+  if (diffDays === 1) {
+    return {
+      text: `Besok (${formattedDate})`,
+      className: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/30",
+    };
+  }
+  if (diffDays <= 7) {
+    return {
+      text: `H-${diffDays} (${formattedDate})`,
+      className: "text-sky-600 dark:text-sky-400 bg-sky-500/10 border-sky-500/30",
+    };
+  }
+
+  return {
+    text: formattedDate,
+    className: "text-muted-foreground bg-muted/60",
+  };
+}
+
 // Helper to sort uncompleted items first to the top, completed to the bottom
 function sortChecklistItems<T extends { is_completed: boolean }>(itemsList: T[]): T[] {
   return [...itemsList].sort((a, b) => {
@@ -1236,11 +1288,23 @@ export function PreweddingChecklistManager({
                                     </span>
                                   )}
                                 </div>
-                                {subItem.notes && (
-                                  <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
-                                    {subItem.notes}
-                                  </p>
-                                )}
+                                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
+                                  {(() => {
+                                    const badge = getDueDateBadge(subItem.due_date, subItem.is_completed);
+                                    if (!badge) return null;
+                                    return (
+                                      <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.2 rounded-full border border-transparent ${badge.className}`}>
+                                        <Calendar className="h-3 w-3" />
+                                        {badge.text}
+                                      </span>
+                                    );
+                                  })()}
+                                  {subItem.notes && (
+                                    <p className="line-clamp-1 truncate">
+                                      {subItem.notes}
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
 
@@ -1394,10 +1458,17 @@ export function PreweddingChecklistManager({
                           )}
                         </div>
 
-                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
-                          {it.due_date && (
-                            <span>Target: {new Date(it.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short" })}</span>
-                          )}
+                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
+                          {(() => {
+                            const badge = getDueDateBadge(it.due_date, it.is_completed);
+                            if (!badge) return null;
+                            return (
+                              <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.2 rounded-full border border-transparent ${badge.className}`}>
+                                <Calendar className="h-3 w-3" />
+                                {badge.text}
+                              </span>
+                            );
+                          })()}
                           {it.assignee_name && (
                             <span>• PIC: {it.assignee_name}</span>
                           )}
