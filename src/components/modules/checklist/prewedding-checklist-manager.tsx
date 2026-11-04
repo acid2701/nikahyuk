@@ -1011,59 +1011,55 @@ export function PreweddingChecklistManager({
 
         {/* SESERAHAN VIEW */}
         {activeCategory === "seserahan" ? (
-          <div className="space-y-6">
-            <Card className="rounded-3xl border border-pink-500/20 bg-pink-500/5 shadow-xs">
-              <CardHeader className="pb-3 p-5 sm:p-6">
-                <CardTitle className="text-base sm:text-lg font-sans font-bold text-pink-700 dark:text-pink-400 flex items-center gap-2">
-                  <Gift className="h-5 w-5" /> Ringkasan Anggaran & Status Kotak Seserahan
-                </CardTitle>
-                <CardDescription className="text-xs sm:text-sm">
-                  Progres Pembelian: {completedCount} dari {totalCount} produk selesai ({progressPercent}%)
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-5 pt-0">
-                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Total Estimasi Anggaran</span>
-                  <span className="text-base sm:text-lg font-mono font-bold text-foreground mt-0.5 block">
-                    Rp {totalSeserahanBudget.toLocaleString("id-ID")}
-                  </span>
-                </div>
-                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Realisasi Beli</span>
-                  <span className="text-base sm:text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block">
-                    Rp {totalActualSeserahan.toLocaleString("id-ID")}
-                  </span>
-                </div>
-                <div className="p-4 bg-card rounded-2xl border border-border/80 shadow-xs">
-                  <span className="text-xs text-muted-foreground block font-medium">Selisih Realisasi vs Estimasi</span>
-                  <span className={`text-base sm:text-lg font-mono font-bold mt-0.5 block ${
-                    totalSeserahanVariance > 0
-                      ? "text-rose-600 dark:text-rose-400"
-                      : totalSeserahanVariance < 0
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-muted-foreground"
-                  }`}>
-                    {totalSeserahanVariance > 0 ? "+" : ""}{totalSeserahanVariance === 0 ? "Rp 0" : `Rp ${totalSeserahanVariance.toLocaleString("id-ID")}`}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-4">
+            {/* CLEAN COMPACT METRICS STRIP (AIRBNB LUXE) */}
+            <div className="grid grid-cols-3 gap-2.5">
+              <div className="p-3.5 bg-card/80 backdrop-blur-xs rounded-2xl border border-border/70 shadow-xs">
+                <span className="text-[10px] sm:text-xs text-muted-foreground block font-medium">Estimasi</span>
+                <span className="text-xs sm:text-sm font-mono font-bold text-foreground mt-0.5 block truncate">
+                  Rp {totalSeserahanBudget.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <div className="p-3.5 bg-card/80 backdrop-blur-xs rounded-2xl border border-border/70 shadow-xs">
+                <span className="text-[10px] sm:text-xs text-muted-foreground block font-medium">Realisasi</span>
+                <span className="text-xs sm:text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 block truncate">
+                  Rp {totalActualSeserahan.toLocaleString("id-ID")}
+                </span>
+              </div>
+              <div className="p-3.5 bg-card/80 backdrop-blur-xs rounded-2xl border border-border/70 shadow-xs">
+                <span className="text-[10px] sm:text-xs text-muted-foreground block font-medium">Selisih</span>
+                <span className={`text-xs sm:text-sm font-mono font-bold mt-0.5 block truncate ${
+                  totalSeserahanVariance > 0
+                    ? "text-rose-600 dark:text-rose-400"
+                    : totalSeserahanVariance < 0
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-muted-foreground"
+                }`}>
+                  {totalSeserahanVariance > 0 ? "+" : ""}{totalSeserahanVariance === 0 ? "Rp 0" : `Rp ${totalSeserahanVariance.toLocaleString("id-ID")}`}
+                </span>
+              </div>
+            </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <div>
-                <h3 className="font-sans font-bold text-sm text-foreground">
-                  Kotak Seserahan Pernikahan
-                </h3>
-                <p className="text-[11px] text-muted-foreground">
-                  Kelola daftar barang dan estimasi belanja hantaran
-                </p>
+            {/* PROGRESS BAR */}
+            <div className="bg-card/60 p-3 rounded-2xl border border-border/60 flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <div className="flex justify-between text-[11px] mb-1 font-medium">
+                  <span className="text-muted-foreground">Progres Kotak Seserahan</span>
+                  <span className="text-foreground font-semibold">{completedCount} dari {totalCount} ({progressPercent}%)</span>
+                </div>
+                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-primary h-full transition-all duration-300 rounded-full"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
               </div>
               <Button
                 size="sm"
                 onClick={() => setAddModalOpen(true)}
-                className="h-8 rounded-full px-3.5 text-xs font-semibold bg-[#ff385c] hover:bg-[#e00b41] text-white shadow-xs meld-bouncy gap-1 cursor-pointer"
+                className="h-8 rounded-full px-3 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs meld-bouncy gap-1 cursor-pointer shrink-0"
               >
-                <Plus className="h-3.5 w-3.5" /> Tambah Barang
+                <Plus className="h-3.5 w-3.5" /> Tambah
               </Button>
             </div>
 
@@ -1080,29 +1076,27 @@ export function PreweddingChecklistManager({
                   const sortedBoxSubItems = sortChecklistItems(boxSubItems);
 
                   return (
-                    <Card key={boxTitle} className="rounded-3xl border-border/80 shadow-xs overflow-hidden">
-                      <CardHeader className="p-4 sm:p-5 bg-muted/40 border-b border-border/60">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center space-x-2">
-                            <Gift className="h-4 w-4 text-pink-600 shrink-0" />
-                            <CardTitle className="text-sm sm:text-base font-bold font-sans">
-                              {boxTitle}
-                            </CardTitle>
-                            <Badge variant="outline" className="text-[10px] font-semibold rounded-full px-2">
-                              {boxCompleted}/{boxSubItems.length} Selesai
-                            </Badge>
-                          </div>
-
-                          <div className="text-left sm:text-right">
-                            <span className="text-[11px] text-muted-foreground">Total Kotak: </span>
-                            <span className="font-mono font-bold text-xs sm:text-sm text-foreground">
-                              Rp {boxTotal.toLocaleString("id-ID")}
-                            </span>
-                          </div>
+                    <div key={boxTitle} className="rounded-3xl border border-border/70 bg-card/70 backdrop-blur-xs shadow-xs overflow-hidden">
+                      <div className="p-3.5 sm:p-4 bg-muted/30 border-b border-border/50 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <div className="flex items-center space-x-2">
+                          <Gift className="h-4 w-4 text-pink-600 shrink-0" />
+                          <h4 className="text-xs sm:text-sm font-bold font-sans text-foreground">
+                            {boxTitle}
+                          </h4>
+                          <span className="text-[10px] font-semibold rounded-full px-2 py-0.5 bg-muted text-muted-foreground border border-border/60">
+                            {boxCompleted}/{boxSubItems.length}
+                          </span>
                         </div>
-                      </CardHeader>
 
-                      <CardContent className="p-3.5 sm:p-4 space-y-2.5">
+                        <div className="text-left sm:text-right">
+                          <span className="text-[10px] text-muted-foreground">Total: </span>
+                          <span className="font-mono font-bold text-xs text-foreground">
+                            Rp {boxTotal.toLocaleString("id-ID")}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-3 sm:p-4 space-y-2">
                         {sortedBoxSubItems.map((subItem) => (
                           <motion.div
                             layout
@@ -1111,10 +1105,10 @@ export function PreweddingChecklistManager({
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={meldGentle}
                             key={subItem.id}
-                            className={`p-3.5 sm:p-4 rounded-2xl border flex flex-col justify-between gap-2.5 transition-all duration-200 ${
+                            className={`p-3 sm:p-3.5 rounded-2xl border flex flex-col justify-between gap-2 transition-all duration-200 ${
                               subItem.is_completed
                                 ? "bg-emerald-500/5 border-emerald-500/30 text-muted-foreground opacity-85"
-                                : "bg-card border-border/80 hover:border-border text-foreground hover:shadow-xs"
+                                : "bg-card border-border/70 hover:border-border text-foreground hover:shadow-xs"
                             }`}
                           >
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1218,8 +1212,8 @@ export function PreweddingChecklistManager({
                             )}
                           </motion.div>
                         ))}
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </div>
                   );
                 })
               )}
@@ -1227,41 +1221,38 @@ export function PreweddingChecklistManager({
           </div>
         ) : (
           /* STANDARD VIEW FOR KUA, LAMARAN, & EMERGENCY */
-          <Card className="rounded-3xl border border-border/80 bg-card shadow-xs">
-            <CardHeader className="pb-3 sm:pb-4 p-5 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <div>
-                  <CardTitle className="text-lg sm:text-xl font-sans font-bold tracking-tight text-foreground">
-                    {activeCategory === "kua" && "Berkas & Syarat Dokumen KUA"}
+          <div className="space-y-4">
+            {/* CLEAN COMPACT METRICS STRIP */}
+            <div className="bg-card/70 backdrop-blur-xs p-4 rounded-3xl border border-border/70 shadow-xs flex items-center justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <h3 className="text-sm font-bold font-sans text-foreground">
+                    {activeCategory === "kua" && "Berkas Syarat KUA"}
                     {activeCategory === "lamaran" && dynamicEventCategoryLabel}
-                    {activeCategory === "emergency" && "Emergency Kit & Perlengkapan"}
-                  </CardTitle>
-                  <CardDescription className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Progres: {completedCount} dari {totalCount} item selesai ({progressPercent}%)
-                  </CardDescription>
+                    {activeCategory === "emergency" && "Emergency Kit & Logistik"}
+                  </h3>
+                  <span className="text-xs font-semibold text-foreground font-mono">
+                    {completedCount}/{totalCount} ({progressPercent}%)
+                  </span>
                 </div>
-                <Badge
-                  variant="outline"
-                  className={`rounded-full px-3 py-1 font-mono text-xs font-bold border self-start sm:self-auto ${
-                    progressPercent === 100
-                      ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
-                      : "bg-[#ff385c]/10 text-[#ff385c] border-[#ff385c]/20"
-                  }`}
-                >
-                  {progressPercent}% Selesai
-                </Badge>
+                <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden">
+                  <div
+                    className="bg-primary h-full transition-all duration-300 rounded-full"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
               </div>
 
-              <div className="w-full bg-muted h-2 rounded-full overflow-hidden mt-3">
-                <div
-                  className="bg-[#ff385c] h-full transition-all duration-300 rounded-full"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </CardHeader>
+              <Button
+                size="sm"
+                onClick={() => setAddModalOpen(true)}
+                className="h-8 rounded-full px-3 text-[11px] font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs meld-bouncy gap-1 cursor-pointer shrink-0"
+              >
+                <Plus className="h-3.5 w-3.5" /> Tambah
+              </Button>
+            </div>
 
-            <CardContent className="space-y-4 p-5 sm:p-6 pt-0">
-              <div className="space-y-2.5 pt-1">
+            <div className="space-y-2.5 pt-1">
                 {sortedCategoryItems.length === 0 ? (
                   <div className="p-8 text-center border border-dashed rounded-2xl text-muted-foreground text-xs">
                     Belum ada item di kategori ini. Klik &apos;Ambil dari Template&apos; di atas.
@@ -1364,8 +1355,7 @@ export function PreweddingChecklistManager({
                   ))
                 )}
               </div>
-            </CardContent>
-          </Card>
+          </div>
         )}
       </Tabs>
 
