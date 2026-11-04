@@ -1105,37 +1105,42 @@ export function PreweddingChecklistManager({
                             exit={{ opacity: 0, scale: 0.95 }}
                             transition={meldGentle}
                             key={subItem.id}
-                            className={`p-3 sm:p-3.5 rounded-2xl border flex flex-col justify-between gap-2 transition-all duration-200 ${
+                            className={`p-3.5 rounded-2xl border transition-all duration-200 ${
                               subItem.is_completed
-                                ? "bg-emerald-500/5 border-emerald-500/30 text-muted-foreground opacity-85"
+                                ? "bg-muted/30 border-border/50 text-muted-foreground"
                                 : "bg-card border-border/70 hover:border-border text-foreground hover:shadow-xs"
                             }`}
                           >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-start justify-between gap-3">
+                              {/* LEFT: CHECKBOX & INFO */}
                               <div
-                                className="flex items-start space-x-3 cursor-pointer flex-1"
+                                className="flex items-start space-x-3 cursor-pointer flex-1 min-w-0"
                                 onClick={() => handleCheckboxClick(subItem)}
                               >
-                                {subItem.is_completed ? (
-                                  <CheckSquare className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                                ) : (
-                                  <Square className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                                )}
-                                <div>
-                                  <p className={`font-semibold text-xs leading-snug ${subItem.is_completed ? "line-through opacity-75" : ""}`}>
+                                <div className="mt-0.5 shrink-0">
+                                  {subItem.is_completed ? (
+                                    <div className="h-5 w-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600">
+                                      <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />
+                                    </div>
+                                  ) : (
+                                    <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40 hover:border-primary transition-colors" />
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className={`font-semibold text-xs sm:text-sm leading-snug break-words ${subItem.is_completed ? "line-through opacity-70" : "text-foreground"}`}>
                                     {subItem.item_name}
                                   </p>
                                   {subItem.notes && (
-                                    <p className="text-[11px] text-muted-foreground font-normal mt-0.5">
-                                      Catatan: {subItem.notes}
+                                    <p className="text-[11px] text-muted-foreground font-normal mt-0.5 line-clamp-2">
+                                      {subItem.notes}
                                     </p>
                                   )}
 
-                                  {/* COMPLETION AUDIT LOG INFO */}
+                                  {/* STATUS BADGE / AUDIT TIMESTAMP */}
                                   {subItem.is_completed && (
-                                    <div className="flex items-center gap-1.5 pt-1">
-                                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md">
-                                        <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                                    <div className="flex items-center gap-1.5 mt-1.5">
+                                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                                        <CheckCircle2 className="h-3 w-3 shrink-0" />
                                         {subItem.completed_by ? `Dibeli oleh ${subItem.completed_by}` : "Sudah Dibeli"}
                                         {subItem.completed_at && ` • ${new Date(subItem.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
                                       </span>
@@ -1144,69 +1149,73 @@ export function PreweddingChecklistManager({
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 self-end sm:self-center flex-wrap">
+                              {/* RIGHT: PRICE DISPLAY & ACTION ICONS */}
+                              <div className="flex flex-col items-end gap-1.5 shrink-0">
                                 {subItem.price && (
-                                  <div className="flex flex-col items-end">
+                                  <div>
                                     {subItem.actual_price ? (
-                                      <>
+                                      <div className="flex flex-col items-end">
                                         <span className="font-mono text-[10px] text-muted-foreground line-through">
-                                          Est: Rp {subItem.price.toLocaleString("id-ID")}
+                                          Rp {subItem.price.toLocaleString("id-ID")}
                                         </span>
-                                        <span className="font-mono font-semibold text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                                          Real: Rp {subItem.actual_price.toLocaleString("id-ID")}
+                                        <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                                          Rp {subItem.actual_price.toLocaleString("id-ID")}
                                         </span>
-                                      </>
+                                      </div>
                                     ) : (
-                                      <span className="font-mono font-semibold text-xs text-foreground bg-muted px-2 py-0.5 rounded">
+                                      <span className="font-mono font-bold text-xs text-foreground bg-muted/80 px-2 py-1 rounded-md">
                                         Rp {subItem.price.toLocaleString("id-ID")}
                                       </span>
                                     )}
                                   </div>
                                 )}
 
-                                {subItem.purchase_url && (
-                                  <a
-                                    href={subItem.purchase_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 text-[11px] text-primary hover:underline font-medium"
-                                    onClick={(e) => e.stopPropagation()}
+                                <div className="flex items-center gap-1 mt-0.5">
+                                  {subItem.purchase_url && (
+                                    <a
+                                      href={subItem.purchase_url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="h-7 w-7 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors"
+                                      onClick={(e) => e.stopPropagation()}
+                                      title="Link Belanja Online"
+                                    >
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                    </a>
+                                  )}
+
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditClick(subItem);
+                                    }}
+                                    className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer print:hidden"
+                                    title="Edit Item"
                                   >
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                    Link Beli
-                                  </a>
-                                )}
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </Button>
 
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditClick(subItem);
-                                  }}
-                                  className="h-7 w-7 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted shrink-0 cursor-pointer print:hidden"
-                                  title="Edit Item"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleDeleteItem(subItem.id)}
-                                  className="h-7 w-7 text-destructive hover:bg-destructive/10 shrink-0 cursor-pointer"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => handleDeleteItem(subItem.id)}
+                                    className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
+                                    title="Hapus Item"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
                               </div>
                             </div>
 
                             {/* EXECUTION NOTES DISPLAY */}
                             {subItem.is_completed && subItem.completed_notes && (
-                              <div className="mt-1 p-2 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
+                              <div className="mt-1 p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
                                 <MessageSquareQuote className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
                                 <span>
-                                  <strong>Catatan Pelaksanaan:</strong> "{subItem.completed_notes}"
+                                  <strong>Catatan:</strong> "{subItem.completed_notes}"
                                 </span>
                               </div>
                             )}
@@ -1274,35 +1283,39 @@ export function PreweddingChecklistManager({
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div
-                          className="flex items-start space-x-3 cursor-pointer flex-1"
+                          className="flex items-start space-x-3 cursor-pointer flex-1 min-w-0"
                           onClick={() => handleCheckboxClick(it)}
                         >
-                          {it.is_completed ? (
-                            <CheckSquare className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
-                          ) : (
-                            <Square className="h-5 w-5 text-muted-foreground hover:text-foreground shrink-0 mt-0.5" />
-                          )}
-                          <div className="space-y-1">
-                            <p className={`font-semibold text-xs sm:text-sm leading-snug ${it.is_completed ? "line-through opacity-75" : "text-foreground"}`}>
+                          <div className="mt-0.5 shrink-0">
+                            {it.is_completed ? (
+                              <div className="h-5 w-5 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600">
+                                <CheckCircle2 className="h-4 w-4 stroke-[2.5]" />
+                              </div>
+                            ) : (
+                              <div className="h-5 w-5 rounded-full border-2 border-muted-foreground/40 hover:border-primary transition-colors" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={`font-semibold text-xs sm:text-sm leading-snug break-words ${it.is_completed ? "line-through opacity-70" : "text-foreground"}`}>
                               {it.item_name}
                             </p>
                             {it.notes && (
-                              <p className="text-[11px] text-muted-foreground font-normal">
+                              <p className="text-[11px] text-muted-foreground font-normal mt-0.5 line-clamp-2">
                                 {it.notes}
                               </p>
                             )}
 
                             {/* DUE DATE & COMPLETION INFO */}
-                            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                            <div className="flex flex-wrap items-center gap-1.5 pt-1">
                               {it.due_date && (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium bg-muted/50 px-2 py-0.5 rounded-md">
+                                <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground font-medium bg-muted/60 px-2 py-0.5 rounded-full">
                                   <Calendar className="h-3 w-3 text-muted-foreground" />
                                   Target: {new Date(it.due_date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
                                 </span>
                               )}
 
                               {it.is_completed && (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-md">
+                                <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
                                   <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                                   {it.completed_by ? `Selesai oleh ${it.completed_by}` : "Selesai"}
                                   {it.completed_at && ` • ${new Date(it.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
@@ -1312,9 +1325,9 @@ export function PreweddingChecklistManager({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="flex items-center gap-1 shrink-0">
                           {it.assignee_name && (
-                            <Badge variant="outline" className="text-[10px] gap-1 rounded-full px-2.5 py-0.5 bg-muted/60">
+                            <Badge variant="outline" className="text-[10px] gap-1 rounded-full px-2.5 py-0.5 bg-muted/60 border-border/60">
                               <User className="h-3 w-3" /> PIC: {it.assignee_name}
                             </Badge>
                           )}
@@ -1334,7 +1347,7 @@ export function PreweddingChecklistManager({
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteItem(it.id)}
-                            className="h-7 w-7 rounded-full text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
+                            className="h-7 w-7 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer print:hidden"
                             title="Hapus Item"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
