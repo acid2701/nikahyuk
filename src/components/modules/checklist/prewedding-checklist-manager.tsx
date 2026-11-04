@@ -129,6 +129,10 @@ export function PreweddingChecklistManager({
   const [deleteTarget, setDeleteTarget] = React.useState<{ id: string; name: string } | null>(null);
   const [deleteLoading, setDeleteLoading] = React.useState(false);
 
+  // Confirm Reset Modal State
+  const [resetModalOpen, setResetModalOpen] = React.useState(false);
+  const [resetOption, setResetOption] = React.useState<"missing_only" | "full_reset">("missing_only");
+
   const [activeCategory, setActiveCategory] = React.useState<"kua" | "seserahan" | "lamaran" | "emergency">("kua");
 
   const hiddenTabsStorageKey = `nikahyuk_checklist_hidden_tabs_${weddingId}_${eventId}`;
@@ -197,6 +201,103 @@ export function PreweddingChecklistManager({
     });
   }
 
+
+  const handleExecuteReset = React.useCallback((mode: "missing_only" | "full_reset") => {
+    const lowerName = eventName.toLowerCase();
+    let defaultItems: ChecklistItem[] = [];
+
+    if (lowerName.includes("lamaran") || lowerName.includes("tunangan")) {
+      defaultItems = (LAMARAN_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `lam_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        box_name: (p as any).box_name || null,
+        item_name: p.item_name,
+        price: (p as any).estimated_price || null,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else if (lowerName.includes("akad")) {
+      defaultItems = (AKAD_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `akd_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        item_name: p.item_name,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else if (lowerName.includes("resepsi")) {
+      defaultItems = (RESEPSI_CHECKLIST_PRESETS || []).map((p, idx) => ({
+        id: `rsp_${idx}_${Date.now()}`,
+        wedding_id: weddingId,
+        event_id: eventId,
+        category: p.category,
+        item_name: p.item_name,
+        notes: p.notes || null,
+        is_completed: false,
+      }));
+    } else {
+      const generalPresets = PREWEDDING_CHECKLIST_PRESETS || [];
+      const seserahanPresets = PREWEDDING_SESERAHAN_PRESETS || [];
+
+      defaultItems = [
+        ...generalPresets.map((p, idx) => ({
+          id: `gen_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: p.category,
+          item_name: p.item_name,
+          notes: p.notes || null,
+          is_completed: false,
+        })),
+        ...seserahanPresets.map((s, idx) => ({
+          id: `ses_${idx}_${Date.now()}`,
+          wedding_id: weddingId,
+          event_id: eventId,
+          category: "seserahan" as const,
+          box_name: s.box_name,
+          item_name: s.item_name,
+          price: s.estimated_price || null,
+          purchase_url: s.purchase_url || null,
+          notes: s.notes || null,
+          is_completed: false,
+        })),
+      ];
+    }
+
+    let finalItems: ChecklistItem[] = [];
+
+    if (mode === "missing_only") {
+      // Pertahankan item lama (status selesai, realisasi harga, catatan, dll)
+      const existingNames = new Set(items.map((i) => i.item_name.trim().toLowerCase()));
+      const missingPresets = defaultItems.filter(
+        (p) => !existingNames.has(p.item_name.trim().toLowerCase())
+      );
+      finalItems = [...items, ...missingPresets];
+      toast({
+        title: "Item Template Dipulihkan",
+        description: `${missingPresets.length} item bawaan yang belum ada berhasil ditambahkan tanpa menghapus riwayat checklist lama.`,
+        variant: "success",
+      });
+    } else {
+      // Reset total
+      finalItems = defaultItems;
+      toast({
+        title: "Checklist Direset Total",
+        description: `Checklist dikembalikan ke template awal (${defaultItems.length} item).`,
+        variant: "destructive",
+      });
+    }
+
+    setItems(finalItems);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(storageKey, JSON.stringify(finalItems));
+      localStorage.setItem(`${storageKey}_seeded`, "true");
+    }
+    setResetModalOpen(false);
+  }, [weddingId, eventId, storageKey, eventName, items, toast]);
 
   const loadDefaultPresets = React.useCallback((silent: boolean = false) => {
     const lowerName = eventName.toLowerCase();
@@ -900,9 +1001,9 @@ export function PreweddingChecklistManager({
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => loadDefaultPresets(false)}
+            onClick={() => setResetModalOpen(true)}
             className="h-8 rounded-full text-muted-foreground hover:text-foreground text-[11px] p-2"
-            title="Reset ke Template Awal"
+            title="Reset / Pulihkan Template"
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </Button>
@@ -1360,6 +1461,109 @@ export function PreweddingChecklistManager({
         loading={deleteLoading}
         onConfirm={handleConfirmDelete}
       />
+
+      {/* CONFIRM RESET TEMPLATE DIALOG WITH SAFE RECOVERY OPTION */}
+      <Dialog open={resetModalOpen} onOpenChange={setResetModalOpen}>
+        <DialogContent className="sm:max-w-md p-5 sm:p-6 rounded-3xl">
+          <DialogHeader className="text-left pb-2 border-b border-border/60">
+            <DialogTitle className="font-sans text-base sm:text-lg font-bold text-foreground flex items-center gap-2">
+              <RotateCcw className="h-4 w-4 text-primary" />
+              Kelola Ulang Template Checklist
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Pilih opsi pemulihan di bawah ini agar riwayat checklist Anda tidak hilang tanpa sengaja:
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-3">
+            {/* OPSI 1: AMAN (RECOMMENDED) */}
+            <div
+              onClick={() => setResetOption("missing_only")}
+              className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                resetOption === "missing_only"
+                  ? "border-emerald-500/80 bg-emerald-500/5 ring-1 ring-emerald-500/30"
+                  : "border-border/80 bg-card hover:border-border"
+              }`}
+            >
+              <div className="mt-0.5 shrink-0">
+                <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${
+                  resetOption === "missing_only" ? "border-emerald-600 bg-emerald-600" : "border-muted-foreground/40"
+                }`}>
+                  {resetOption === "missing_only" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                </div>
+              </div>
+              <div className="space-y-0.5 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs text-foreground">
+                    Pulihkan Item yang Hilang Saja (Aman)
+                  </span>
+                  <Badge variant="outline" className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/30">
+                    Disarankan
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Menambahkan kembali item template yang belum ada, <strong>tanpa menghapus item buatan sendiri</strong> atau <strong>centang riwayat yang sudah selesai</strong>.
+                </p>
+              </div>
+            </div>
+
+            {/* OPSI 2: RESET TOTAL (DESTRUCTIVE) */}
+            <div
+              onClick={() => setResetOption("full_reset")}
+              className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start gap-3 ${
+                resetOption === "full_reset"
+                  ? "border-destructive/80 bg-destructive/5 ring-1 ring-destructive/30"
+                  : "border-border/80 bg-card hover:border-border"
+              }`}
+            >
+              <div className="mt-0.5 shrink-0">
+                <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${
+                  resetOption === "full_reset" ? "border-destructive bg-destructive" : "border-muted-foreground/40"
+                }`}>
+                  {resetOption === "full_reset" && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                </div>
+              </div>
+              <div className="space-y-0.5 flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-xs text-destructive">
+                    Reset Total ke Awal (Hapus Semua)
+                  </span>
+                  <Badge variant="destructive" className="text-[9px]">
+                    Bahaya
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Menghapus seluruh daftar checklist saat ini dan mengisi ulang dengan template default baru.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex flex-row justify-end gap-2 pt-2 border-t border-border/60">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setResetModalOpen(false)}
+              className="h-9 rounded-full text-xs font-semibold cursor-pointer"
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => handleExecuteReset(resetOption)}
+              className={`h-9 px-4 rounded-full text-xs font-semibold text-white shadow-xs meld-bouncy cursor-pointer ${
+                resetOption === "full_reset"
+                  ? "bg-destructive hover:bg-destructive/90"
+                  : "bg-emerald-600 hover:bg-emerald-700"
+              }`}
+            >
+              {resetOption === "full_reset" ? "Ya, Reset Total" : "Terapkan Pemulihan Aman"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* FLOATING ACTION BUTTON (FAB) & ADD ITEM BOTTOM-SHEET MODAL */}
       <div className="fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-30 print:hidden">
