@@ -1282,9 +1282,11 @@ export function PreweddingChecklistManager({
                                   <p className={`text-xs sm:text-sm font-medium tracking-tight truncate ${subItem.is_completed ? "line-through text-muted-foreground/70" : "text-foreground"}`}>
                                     {subItem.item_name}
                                   </p>
-                                  {subItem.is_completed && subItem.completed_by && (
-                                    <span className="text-[10px] text-muted-foreground font-normal">
-                                      • {subItem.completed_by}
+                                  {subItem.is_completed && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      {subItem.completed_by ? subItem.completed_by : "Selesai"}
+                                      {subItem.completed_at && ` • ${new Date(subItem.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
                                     </span>
                                   )}
                                 </div>
@@ -1451,9 +1453,11 @@ export function PreweddingChecklistManager({
                           <p className={`text-xs sm:text-sm font-medium tracking-tight truncate ${it.is_completed ? "line-through text-muted-foreground/70" : "text-foreground"}`}>
                             {it.item_name}
                           </p>
-                          {it.is_completed && it.completed_by && (
-                            <span className="text-[10px] text-muted-foreground font-normal">
-                              • {it.completed_by}
+                          {it.is_completed && (
+                            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                              <CheckCircle2 className="h-3 w-3" />
+                              {it.completed_by ? it.completed_by : "Selesai"}
+                              {it.completed_at && ` • ${new Date(it.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
                             </span>
                           )}
                         </div>
