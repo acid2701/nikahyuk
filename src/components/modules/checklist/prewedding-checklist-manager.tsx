@@ -60,6 +60,7 @@ import {
 } from "lucide-react";
 import { EditChecklistModal } from "./edit-checklist-modal";
 import { ConfirmDeleteDialog } from "@/components/shared/modal/confirm-delete-dialog";
+import { SwipeableChecklistRow } from "./swipeable-checklist-row";
 
 
 export interface ChecklistItem {
@@ -1249,128 +1250,22 @@ export function PreweddingChecklistManager({
                       {/* Clean Inset Separator Rows */}
                       <div className="divide-y divide-border/50">
                         {sortedBoxSubItems.map((subItem) => (
-                          <motion.div
-                            layout
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={meldGentle}
+                          <SwipeableChecklistRow
                             key={subItem.id}
-                            className={`px-4 py-3.5 flex items-center justify-between gap-3 transition-colors ${
-                              subItem.is_completed
-                                ? "bg-muted/15 text-muted-foreground"
-                                : "hover:bg-muted/30 text-foreground"
-                            }`}
-                          >
-                            {/* LEFT: Checkbox + Typography */}
-                            <div
-                              className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-                              onClick={() => handleCheckboxClick(subItem)}
-                            >
-                              <div className="shrink-0">
-                                {subItem.is_completed ? (
-                                  <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center">
-                                    <CheckCircle2 className="h-3.5 w-3.5 stroke-[3]" />
-                                  </div>
-                                ) : (
-                                  <div className="h-5 w-5 rounded-full border border-muted-foreground/40 hover:border-foreground transition-colors" />
-                                )}
-                              </div>
-
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <p className={`text-xs sm:text-sm font-medium tracking-tight truncate ${subItem.is_completed ? "line-through text-muted-foreground/70" : "text-foreground"}`}>
-                                    {subItem.item_name}
-                                  </p>
-                                  {subItem.is_completed && (
-                                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                                      <CheckCircle2 className="h-3 w-3" />
-                                      {subItem.completed_by ? subItem.completed_by : "Selesai"}
-                                      {subItem.completed_at && ` • ${new Date(subItem.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
-                                  {(() => {
-                                    const badge = getDueDateBadge(subItem.due_date, subItem.is_completed);
-                                    if (!badge) return null;
-                                    return (
-                                      <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.2 rounded-full border border-transparent ${badge.className}`}>
-                                        <Calendar className="h-3 w-3" />
-                                        {badge.text}
-                                      </span>
-                                    );
-                                  })()}
-                                  {subItem.notes && (
-                                    <p className="line-clamp-1 truncate">
-                                      {subItem.notes}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* RIGHT: Numeric Price + Subtle Actions */}
-                            <div className="flex items-center gap-3 shrink-0">
-                              {subItem.price && (
-                                <div className="text-right">
-                                  {subItem.actual_price ? (
-                                    <div>
-                                      <span className="font-mono text-[10px] text-muted-foreground line-through block">
-                                        Rp {subItem.price.toLocaleString("id-ID")}
-                                      </span>
-                                      <span className="font-mono font-bold text-xs text-foreground block">
-                                        Rp {subItem.actual_price.toLocaleString("id-ID")}
-                                      </span>
-                                    </div>
-                                  ) : (
-                                    <span className="font-mono font-semibold text-xs text-foreground block">
-                                      Rp {subItem.price.toLocaleString("id-ID")}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="flex items-center gap-0.5">
-                                {subItem.purchase_url && (
-                                  <a
-                                    href={subItem.purchase_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                                    onClick={(e) => e.stopPropagation()}
-                                    title="Link Belanja Online"
-                                  >
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                  </a>
-                                )}
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleEditClick(subItem);
-                                  }}
-                                  className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                  title="Edit"
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </button>
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteItem(subItem.id);
-                                  }}
-                                  className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                                  title="Hapus"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                              </div>
-                            </div>
-                          </motion.div>
+                            id={subItem.id}
+                            itemName={subItem.item_name}
+                            isCompleted={subItem.is_completed}
+                            completedBy={subItem.completed_by}
+                            completedAt={subItem.completed_at}
+                            dueDateBadge={getDueDateBadge(subItem.due_date, subItem.is_completed)}
+                            notes={subItem.notes}
+                            price={subItem.price}
+                            actualPrice={subItem.actual_price}
+                            purchaseUrl={subItem.purchase_url}
+                            onToggleComplete={() => handleCheckboxClick(subItem)}
+                            onEdit={() => handleEditClick(subItem)}
+                            onDelete={() => handleDeleteItem(subItem.id)}
+                          />
                         ))}
                       </div>
                     </div>
@@ -1420,96 +1315,20 @@ export function PreweddingChecklistManager({
                 </div>
               ) : (
                 sortedCategoryItems.map((it) => (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={meldGentle}
+                  <SwipeableChecklistRow
                     key={it.id}
-                    className={`px-4 py-3.5 flex items-center justify-between gap-3 transition-colors ${
-                      it.is_completed
-                        ? "bg-muted/15 text-muted-foreground"
-                        : "hover:bg-muted/30 text-foreground"
-                    }`}
-                  >
-                    {/* LEFT: Checkbox + Typography */}
-                    <div
-                      className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-                      onClick={() => handleCheckboxClick(it)}
-                    >
-                      <div className="shrink-0">
-                        {it.is_completed ? (
-                          <div className="h-5 w-5 rounded-full bg-emerald-600 text-white flex items-center justify-center">
-                            <CheckCircle2 className="h-3.5 w-3.5 stroke-[3]" />
-                          </div>
-                        ) : (
-                          <div className="h-5 w-5 rounded-full border border-muted-foreground/40 hover:border-foreground transition-colors" />
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className={`text-xs sm:text-sm font-medium tracking-tight truncate ${it.is_completed ? "line-through text-muted-foreground/70" : "text-foreground"}`}>
-                            {it.item_name}
-                          </p>
-                          {it.is_completed && (
-                            <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                              <CheckCircle2 className="h-3 w-3" />
-                              {it.completed_by ? it.completed_by : "Selesai"}
-                              {it.completed_at && ` • ${new Date(it.completed_at).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}`}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
-                          {(() => {
-                            const badge = getDueDateBadge(it.due_date, it.is_completed);
-                            if (!badge) return null;
-                            return (
-                              <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.2 rounded-full border border-transparent ${badge.className}`}>
-                                <Calendar className="h-3 w-3" />
-                                {badge.text}
-                              </span>
-                            );
-                          })()}
-                          {it.assignee_name && (
-                            <span>• PIC: {it.assignee_name}</span>
-                          )}
-                          {it.notes && (
-                            <span className="truncate">• {it.notes}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* RIGHT: Action Icons */}
-                    <div className="flex items-center gap-0.5 shrink-0">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleEditClick(it);
-                        }}
-                        className="p-1.5 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
-                        title="Edit"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteItem(it.id);
-                        }}
-                        className="p-1.5 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
-                        title="Hapus"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </motion.div>
+                    id={it.id}
+                    itemName={it.item_name}
+                    isCompleted={it.is_completed}
+                    completedBy={it.completed_by}
+                    completedAt={it.completed_at}
+                    dueDateBadge={getDueDateBadge(it.due_date, it.is_completed)}
+                    notes={it.notes}
+                    assigneeName={it.assignee_name}
+                    onToggleComplete={() => handleCheckboxClick(it)}
+                    onEdit={() => handleEditClick(it)}
+                    onDelete={() => handleDeleteItem(it.id)}
+                  />
                 ))
               )}
             </div>
